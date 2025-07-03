@@ -67,7 +67,13 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                             "cylinder_volume": "POST /3d/volume/cylinder - Calculate volume of cylinder",
                             "aabb_volume": "POST /3d/volume/aabb - Calculate volume of axis-aligned bounding box",
                             "pyramid_volume": "POST /3d/volume/pyramid - Calculate volume of pyramid",
-                            "convex_hull_volume": "POST /3d/volume/convex-hull - Calculate volume of convex hull"
+                            "convex_hull_volume": "POST /3d/volume/convex-hull - Calculate volume of convex hull",
+                            "point_line_distance": "POST /3d/distance/point-line - Calculate distance from point to line",
+                            "point_plane_distance": "POST /3d/distance/point-plane - Calculate distance from point to plane",
+                            "line_plane_distance": "POST /3d/distance/line-plane - Calculate distance from line to plane",
+                            "vector_projection": "POST /3d/projection/vector - Project one vector onto another",
+                            "point_projection_line": "POST /3d/projection/point-line - Project point onto line",
+                            "point_projection_plane": "POST /3d/projection/point-plane - Project point onto plane"
                         }
                     }"#;
                     Ok(Response::builder()
@@ -1067,6 +1073,204 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                                 .status(400)
                                 .header("content-type", "application/json")
                                 .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/distance/point-line" => {
+                    let input: math_3d::distance_operations::PointLineInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_point_line_distance(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/distance/point-plane" => {
+                    let input: math_3d::distance_operations::PointPlaneInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_point_plane_distance(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/distance/line-plane" => {
+                    let input: math_3d::distance_operations::LinePlaneInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_line_plane_distance(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/projection/vector" => {
+                    let input: math_3d::distance_operations::VectorProjectionInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_vector_projection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/projection/point-line" => {
+                    let input: math_3d::distance_operations::PointProjectionInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_point_projection_on_line(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/projection/point-plane" => {
+                    let input: math_3d::distance_operations::PlaneProjectionInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::distance_operations::compute_point_projection_on_plane(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            let error_response = ErrorResponse { error: e };
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
                                 .build())
                         }
                     }
