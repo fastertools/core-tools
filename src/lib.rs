@@ -54,7 +54,13 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                             "multiple_line_intersection": "POST /3d/multi-line-intersection - Find best intersection point for multiple lines",
                             "line_plane_intersection": "POST /3d/line-plane - Find intersection of line and plane",
                             "plane_plane_intersection": "POST /3d/plane-plane - Find intersection of two planes",
-                            "point_plane_distance": "POST /3d/point-plane-distance - Calculate distance from point to plane"
+                            "point_plane_distance": "POST /3d/point-plane-distance - Calculate distance from point to plane",
+                            "tetrahedron_volume": "POST /3d/volume/tetrahedron - Calculate volume of tetrahedron from 4 points",
+                            "sphere_volume": "POST /3d/volume/sphere - Calculate volume of sphere",
+                            "cylinder_volume": "POST /3d/volume/cylinder - Calculate volume of cylinder",
+                            "aabb_volume": "POST /3d/volume/aabb - Calculate volume of axis-aligned bounding box",
+                            "pyramid_volume": "POST /3d/volume/pyramid - Calculate volume of pyramid",
+                            "convex_hull_volume": "POST /3d/volume/convex-hull - Calculate volume of convex hull"
                         }
                     }"#;
                     Ok(Response::builder()
@@ -638,6 +644,198 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                                 .status(400)
                                 .header("content-type", "application/json")
                                 .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/tetrahedron" => {
+                    let input: math_3d::volume_calculations::TetrahedronInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_tetrahedron_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/sphere" => {
+                    let input: math_3d::volume_calculations::SphereInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_sphere_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/cylinder" => {
+                    let input: math_3d::volume_calculations::CylinderInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_cylinder_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/aabb" => {
+                    let input: math_3d::volume_calculations::BoundingBoxInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_aabb_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/pyramid" => {
+                    let input: math_3d::volume_calculations::PyramidInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_pyramid_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/volume/convex-hull" => {
+                    let input: math_3d::volume_calculations::ConvexHullInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::volume_calculations::handle_convex_hull_volume(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
                                 .build())
                         }
                     }
