@@ -9,6 +9,14 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[[bin]]
+name = "test_client"
+path = "src/bin/test_client.rs"
+
+[[bin]]
+name = "simple_test"
+path = "src/bin/simple_test.rs"
+
 [dependencies]
 anyhow = "1"
 spin-sdk = "3.1.0"
