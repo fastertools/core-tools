@@ -1,6 +1,6 @@
-# Geospatial Tools API
+# Geospatial & 3D Mathematics API
 
-A comprehensive suite of geospatial analysis tools built with Rust and Spin, providing high-performance GPS coordinate calculations, geofencing capabilities, and spatial analysis functions.
+A comprehensive suite of geospatial analysis and 3D mathematics tools built with Rust and Spin, providing high-performance GPS coordinate calculations, geofencing capabilities, spatial analysis functions, and advanced 3D mathematical operations.
 
 ## 🌍 Overview
 
@@ -22,11 +22,18 @@ src/
 │   ├── mod.rs
 │   ├── coordinate_conversion.rs     # DMS ↔ Decimal conversion
 │   └── validation.rs                # Coordinate validation
-└── geofencing/                      # Advanced geofencing tools
+├── geofencing/                      # Advanced geofencing tools
+│   ├── mod.rs
+│   ├── point_in_polygon.rs          # Point-in-polygon algorithms
+│   ├── buffer_zones.rs              # Buffer zone creation
+│   └── proximity.rs                 # Proximity detection tools
+└── math_3d/                         # 3D mathematics operations
     ├── mod.rs
-    ├── point_in_polygon.rs          # Point-in-polygon algorithms
-    ├── buffer_zones.rs              # Buffer zone creation
-    └── proximity.rs                 # Proximity detection tools
+    ├── vector_ops.rs                # Vector operations (dot, cross, magnitude)
+    ├── line_intersection.rs         # 3D line intersection algorithms
+    ├── plane_operations.rs          # Plane intersection and distance calculations
+    ├── transformations.rs           # 3D transformations (matrices, quaternions)
+    └── volume_calculations.rs       # 3D volume calculations
 ```
 
 ### Technology Stack
@@ -267,6 +274,265 @@ Find nearest points to a query location.
 }
 ```
 
+## 🧮 3D Mathematics Tools
+
+### Vector Operations
+
+#### Dot Product
+```bash
+POST /3d/dot-product
+```
+Calculate the dot product of two 3D vectors.
+
+**Input:**
+```json
+{
+  "vector1": {"x": 1.0, "y": 2.0, "z": 3.0},
+  "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}
+}
+```
+
+**Output:**
+```json
+{
+  "dot_product": 32.0,
+  "vector1": {"x": 1.0, "y": 2.0, "z": 3.0},
+  "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}
+}
+```
+
+#### Cross Product
+```bash
+POST /3d/cross-product
+```
+Calculate the cross product of two 3D vectors.
+
+**Input:**
+```json
+{
+  "vector1": {"x": 1.0, "y": 0.0, "z": 0.0},
+  "vector2": {"x": 0.0, "y": 1.0, "z": 0.0}
+}
+```
+
+**Output:**
+```json
+{
+  "cross_product": {"x": 0.0, "y": 0.0, "z": 1.0},
+  "magnitude": 1.0,
+  "vector1": {"x": 1.0, "y": 0.0, "z": 0.0},
+  "vector2": {"x": 0.0, "y": 1.0, "z": 0.0}
+}
+```
+
+#### Vector Magnitude
+```bash
+POST /3d/vector-magnitude
+```
+Calculate magnitude and unit vector of a 3D vector.
+
+**Input:**
+```json
+{
+  "vector": {"x": 3.0, "y": 4.0, "z": 5.0}
+}
+```
+
+**Output:**
+```json
+{
+  "magnitude": 7.0710678118654755,
+  "unit_vector": {"x": 0.4242640687119285, "y": 0.5656854249492381, "z": 0.7071067811865476}
+}
+```
+
+### Line Intersection
+
+#### 3D Line Intersection
+```bash
+POST /3d/line-intersection
+```
+Find intersection of two 3D lines.
+
+**Input:**
+```json
+{
+  "line1": {
+    "point": {"x": 0.0, "y": 0.0, "z": 0.0},
+    "direction": {"x": 1.0, "y": 0.0, "z": 0.0}
+  },
+  "line2": {
+    "point": {"x": 1.0, "y": 0.0, "z": 0.0},
+    "direction": {"x": 0.0, "y": 1.0, "z": 0.0}
+  }
+}
+```
+
+**Output:**
+```json
+{
+  "intersection_type": "Intersecting",
+  "intersection_point": {"x": 1.0, "y": 0.0, "z": 0.0},
+  "distance_between_lines": 0.0
+}
+```
+
+### 3D Transformations
+
+#### Rotation Matrix
+```bash
+POST /3d/rotation-matrix
+```
+Create rotation matrix around X, Y, or Z axis.
+
+**Input:**
+```json
+{
+  "axis": "z",
+  "angle": 1.5707963267948966
+}
+```
+
+**Output:**
+```json
+{
+  "matrix": {
+    "m00": 0.0, "m01": -1.0, "m02": 0.0,
+    "m10": 1.0, "m11": 0.0, "m12": 0.0,
+    "m20": 0.0, "m21": 0.0, "m22": 1.0
+  }
+}
+```
+
+#### Quaternion Operations
+```bash
+POST /3d/quaternion-from-axis
+```
+Create quaternion from axis and angle.
+
+**Input:**
+```json
+{
+  "axis": {"x": 0.0, "y": 0.0, "z": 1.0},
+  "angle": 1.5707963267948966
+}
+```
+
+**Output:**
+```json
+{
+  "quaternion": {"x": 0.0, "y": 0.0, "z": 0.7071067811865476, "w": 0.7071067811865476}
+}
+```
+
+#### Coordinate Conversion
+```bash
+POST /3d/coordinate-convert
+```
+Convert between coordinate systems (cartesian, spherical, cylindrical).
+
+**Input:**
+```json
+{
+  "from_type": "cartesian",
+  "to_type": "spherical",
+  "coordinates": {"x": 1.0, "y": 1.0, "z": 1.0}
+}
+```
+
+**Output:**
+```json
+{
+  "original": {"x": 1.0, "y": 1.0, "z": 1.0},
+  "converted": {"x": 1.7320508075688772, "y": 0.7853981633974483, "z": 0.9553166181245093},
+  "from_type": "cartesian",
+  "to_type": "spherical"
+}
+```
+
+### Volume Calculations
+
+#### Tetrahedron Volume
+```bash
+POST /3d/volume/tetrahedron
+```
+Calculate volume of tetrahedron from 4 points.
+
+**Input:**
+```json
+{
+  "point_a": {"x": 0.0, "y": 0.0, "z": 0.0},
+  "point_b": {"x": 1.0, "y": 0.0, "z": 0.0},
+  "point_c": {"x": 0.0, "y": 1.0, "z": 0.0},
+  "point_d": {"x": 0.0, "y": 0.0, "z": 1.0}
+}
+```
+
+**Output:**
+```json
+{
+  "volume": 0.16666666666666666,
+  "calculation_method": "Scalar triple product",
+  "points": [
+    {"x": 0.0, "y": 0.0, "z": 0.0},
+    {"x": 1.0, "y": 0.0, "z": 0.0},
+    {"x": 0.0, "y": 1.0, "z": 0.0},
+    {"x": 0.0, "y": 0.0, "z": 1.0}
+  ]
+}
+```
+
+#### Sphere Volume
+```bash
+POST /3d/volume/sphere
+```
+Calculate volume of sphere.
+
+**Input:**
+```json
+{
+  "center": {"x": 0.0, "y": 0.0, "z": 0.0},
+  "radius": 5.0
+}
+```
+
+**Output:**
+```json
+{
+  "volume": 523.5987755982989,
+  "calculation_method": "Sphere formula: (4/3)πr³"
+}
+```
+
+#### Bounding Box Volume
+```bash
+POST /3d/volume/aabb
+```
+Calculate volume of axis-aligned bounding box.
+
+**Input:**
+```json
+{
+  "points": [
+    {"x": 0.0, "y": 0.0, "z": 0.0},
+    {"x": 2.0, "y": 3.0, "z": 4.0},
+    {"x": 1.0, "y": 1.0, "z": 1.0}
+  ],
+  "box_type": "aabb"
+}
+```
+
+**Output:**
+```json
+{
+  "volume": 24.0,
+  "box_type": "AABB (Axis-Aligned Bounding Box)",
+  "min_point": {"x": 0.0, "y": 0.0, "z": 0.0},
+  "max_point": {"x": 2.0, "y": 3.0, "z": 4.0},
+  "dimensions": {"x": 2.0, "y": 3.0, "z": 4.0}
+}
+```
+
 ## 🎯 Key Features
 
 ### Algorithms Implemented
@@ -285,6 +551,15 @@ Find nearest points to a query location.
 - **Input Validation**: Comprehensive lat/lon range checking
 - **DMS Support**: Full degrees/minutes/seconds conversion
 - **Multiple Units**: Distance in km/miles/nautical miles, area in multiple formats
+
+#### 3D Mathematics Algorithms
+- **Vector Operations**: Dot product, cross product, magnitude calculations
+- **Line Intersection**: 3D line-line intersection with classification (intersecting, parallel, skew, coincident)
+- **Rotation Mathematics**: Rotation matrices around X/Y/Z axes and arbitrary axes
+- **Quaternion Operations**: Creation, multiplication, SLERP interpolation
+- **Coordinate Transformations**: Cartesian ↔ Spherical ↔ Cylindrical conversions
+- **Volume Calculations**: Tetrahedron, sphere, cylinder, AABB, pyramid, convex hull
+- **Plane Operations**: Line-plane intersection, point-to-plane distance
 
 ### Performance Characteristics
 - **Accuracy**: Meter-level precision for most calculations
@@ -323,6 +598,27 @@ curl -X POST http://localhost:3000/buffer/circular \
   -d '{"center": {"lat": 40.7128, "lon": -74.0060}, "radius_meters": 1000}'
 ```
 
+### 3D Vector Dot Product
+```bash
+curl -X POST http://localhost:3000/3d/dot-product \
+  -H "Content-Type: application/json" \
+  -d '{"vector1": {"x": 1.0, "y": 2.0, "z": 3.0}, "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}}'
+```
+
+### 3D Line Intersection
+```bash
+curl -X POST http://localhost:3000/3d/line-intersection \
+  -H "Content-Type: application/json" \
+  -d '{"line1": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}, "line2": {"point": {"x": 1.0, "y": 0.0, "z": 0.0}, "direction": {"x": 0.0, "y": 1.0, "z": 0.0}}}'
+```
+
+### 3D Tetrahedron Volume
+```bash
+curl -X POST http://localhost:3000/3d/volume/tetrahedron \
+  -H "Content-Type: application/json" \
+  -d '{"point_a": {"x": 0.0, "y": 0.0, "z": 0.0}, "point_b": {"x": 1.0, "y": 0.0, "z": 0.0}, "point_c": {"x": 0.0, "y": 1.0, "z": 0.0}, "point_d": {"x": 0.0, "y": 0.0, "z": 1.0}}'
+```
+
 ## 🧪 Testing Results
 
 ### Validation Tests
@@ -330,11 +626,17 @@ curl -X POST http://localhost:3000/buffer/circular \
 - **London to Paris**: 344 km (expected ~344 km) - 100% accuracy
 - **Point-in-Polygon**: Correctly identifies points inside/outside complex polygons
 - **Buffer Zones**: Accurate circular buffers with proper area calculations
+- **3D Vector Operations**: Validated dot/cross products with known mathematical results
+- **3D Line Intersection**: Correctly classifies intersecting, parallel, skew, and coincident lines
+- **3D Transformations**: Rotation matrices and quaternions validated against reference implementations
+- **Volume Calculations**: Tetrahedron volumes validated using scalar triple product formula
 
 ### Performance Benchmarks
 - **Distance Calculation**: Sub-millisecond response times
 - **Geofencing**: Handles complex polygons with 100+ vertices efficiently
 - **Batch Processing**: Processes 1000+ points in under 100ms
+- **3D Operations**: Vector operations and transformations complete in microseconds
+- **Volume Calculations**: Complex hull calculations process in milliseconds
 
 ## 🔧 Development
 
@@ -359,6 +661,8 @@ curl http://localhost:3000/
 - **Spatial Reasoning**: Provide LLMs with precise geospatial calculations
 - **Location Queries**: Answer distance, bearing, and containment questions
 - **Geographic Analysis**: Support complex spatial analysis tasks
+- **3D Mathematics**: Enable 3D spatial reasoning, transformations, and volume calculations
+- **Engineering Support**: Provide accurate mathematical operations for CAD, robotics, and graphics
 
 ### Real-World Applications
 - **Fleet Management**: Vehicle tracking and route optimization
@@ -366,6 +670,10 @@ curl http://localhost:3000/
 - **Security Systems**: Perimeter monitoring and intrusion detection
 - **Location-Based Services**: Proximity detection and area analysis
 - **Urban Planning**: Spatial analysis and boundary management
+- **3D Graphics**: Rotation matrices, quaternions, and coordinate transformations
+- **CAD/Manufacturing**: Volume calculations, bounding boxes, and geometric analysis
+- **Robotics**: 3D transformations, collision detection, and path planning
+- **Game Development**: 3D math operations, physics simulations, and spatial calculations
 
 ## 📈 Future Enhancements
 
@@ -375,11 +683,16 @@ curl http://localhost:3000/
 - **Multi-Polygon Support**: Handle complex shapes with holes
 - **Great Circle Routes**: Optimal path calculations
 - **Coordinate System Projections**: Support for UTM and other projections
+- **3D Distance Operations**: Point-to-line, point-to-plane distance calculations
+- **3D Geometric Primitives**: Sphere, cylinder, ray intersection algorithms
+- **Advanced Volume Calculations**: Oriented bounding boxes, mesh volumes
 
 ### Performance Optimizations
 - **Parallel Processing**: Multi-threaded calculations for large datasets
 - **Caching**: Intelligent caching for repeated calculations
 - **Approximation Algorithms**: Fast approximate calculations for real-time use
+- **SIMD Operations**: Vectorized mathematical operations for 3D calculations
+- **GPU Acceleration**: Offload complex 3D operations to GPU when available
 
 ## 📋 API Reference
 
