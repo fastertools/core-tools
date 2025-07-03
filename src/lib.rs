@@ -6,6 +6,7 @@ mod geospatial;
 mod coordinate_utils;
 mod geofencing;
 mod math_3d;
+mod statistics;
 
 use common::ErrorResponse;
 
