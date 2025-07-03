@@ -1,0 +1,18 @@
+spin_manifest_version = 2
+
+[application]
+name = "tool"
+version = "0.1.0"
+authors = ["Corey Ryan <corey@coreyr.com>"]
+description = ""
+
+[[trigger.http]]
+route = "/..."
+component = "tool"
+
+[component.tool]
+source = "target/wasm32-wasip1/release/tool.wasm"
+allowed_outbound_hosts = []
+[component.tool.build]
+command = "cargo build --target wasm32-wasip1 --release"
+watch = ["src/**/*.rs", "Cargo.toml"]
