@@ -73,7 +73,12 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                             "line_plane_distance": "POST /3d/distance/line-plane - Calculate distance from line to plane",
                             "vector_projection": "POST /3d/projection/vector - Project one vector onto another",
                             "point_projection_line": "POST /3d/projection/point-line - Project point onto line",
-                            "point_projection_plane": "POST /3d/projection/point-plane - Project point onto plane"
+                            "point_projection_plane": "POST /3d/projection/point-plane - Project point onto plane",
+                            "sphere_ray_intersection": "POST /3d/primitives/sphere-ray - Test ray-sphere intersection",
+                            "sphere_sphere_intersection": "POST /3d/primitives/sphere-sphere - Test sphere-sphere intersection",
+                            "cylinder_ray_intersection": "POST /3d/primitives/cylinder-ray - Test ray-cylinder intersection",
+                            "aabb_ray_intersection": "POST /3d/primitives/aabb-ray - Test ray-AABB intersection",
+                            "aabb_aabb_intersection": "POST /3d/primitives/aabb-aabb - Test AABB-AABB intersection"
                         }
                     }"#;
                     Ok(Response::builder()
@@ -1271,6 +1276,166 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                                 .status(400)
                                 .header("content-type", "application/json")
                                 .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/primitives/sphere-ray" => {
+                    let input: math_3d::primitives::SphereRayInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::primitives::handle_sphere_ray_intersection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/primitives/sphere-sphere" => {
+                    let input: math_3d::primitives::SphereSphereInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::primitives::handle_sphere_sphere_intersection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/primitives/cylinder-ray" => {
+                    let input: math_3d::primitives::CylinderRayInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::primitives::handle_cylinder_ray_intersection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/primitives/aabb-ray" => {
+                    let input: math_3d::primitives::AABBRayInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::primitives::handle_aabb_ray_intersection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/primitives/aabb-aabb" => {
+                    let input: math_3d::primitives::AABBAABBInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::primitives::handle_aabb_aabb_intersection(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
                                 .build())
                         }
                     }

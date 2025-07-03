@@ -4,3 +4,4 @@ pub mod plane_operations;
 pub mod transformations;
 pub mod volume_calculations;
 pub mod distance_operations;
+pub mod primitives;
