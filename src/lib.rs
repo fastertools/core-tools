@@ -54,7 +54,14 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                             "multiple_line_intersection": "POST /3d/multi-line-intersection - Find best intersection point for multiple lines",
                             "line_plane_intersection": "POST /3d/line-plane - Find intersection of line and plane",
                             "plane_plane_intersection": "POST /3d/plane-plane - Find intersection of two planes",
-                            "point_plane_distance": "POST /3d/point-plane-distance - Calculate distance from point to plane"
+                            "point_plane_distance": "POST /3d/point-plane-distance - Calculate distance from point to plane",
+                            "rotation_matrix": "POST /3d/rotation-matrix - Create rotation matrix around X, Y, or Z axis",
+                            "arbitrary_rotation": "POST /3d/rotation-arbitrary - Create rotation matrix around arbitrary axis",
+                            "quaternion_from_axis": "POST /3d/quaternion-from-axis - Create quaternion from axis and angle",
+                            "quaternion_multiply": "POST /3d/quaternion-multiply - Multiply two quaternions",
+                            "quaternion_slerp": "POST /3d/quaternion-slerp - Spherical linear interpolation between quaternions",
+                            "matrix_vector_multiply": "POST /3d/matrix-vector - Multiply 3x3 matrix with vector",
+                            "coordinate_convert": "POST /3d/coordinate-convert - Convert between coordinate systems"
                         }
                     }"#;
                     Ok(Response::builder()
@@ -638,6 +645,230 @@ fn handle_tool(req: Request) -> anyhow::Result<impl IntoResponse> {
                                 .status(400)
                                 .header("content-type", "application/json")
                                 .body(serde_json::to_string(&error_response)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/rotation-matrix" => {
+                    let input: math_3d::transformations::RotationMatrixInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_rotation_matrix(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/rotation-arbitrary" => {
+                    let input: math_3d::transformations::ArbitraryRotationInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_arbitrary_rotation(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/quaternion-from-axis" => {
+                    let input: math_3d::transformations::QuaternionFromAxisAngleInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_quaternion_from_axis_angle(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/quaternion-multiply" => {
+                    let input: math_3d::transformations::QuaternionMultiplyInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_quaternion_multiply(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/quaternion-slerp" => {
+                    let input: math_3d::transformations::QuaternionSlerpInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_quaternion_slerp(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/matrix-vector" => {
+                    let input: math_3d::transformations::MatrixVectorInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_matrix_vector_multiply(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
+                                .build())
+                        }
+                    }
+                }
+                "/3d/coordinate-convert" => {
+                    let input: math_3d::transformations::CoordinateConversionInput = match serde_json::from_slice(body) {
+                        Ok(input) => input,
+                        Err(e) => {
+                            let error_response = ErrorResponse {
+                                error: format!("Invalid JSON input: {}", e),
+                            };
+                            return Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&error_response)?)
+                                .build());
+                        }
+                    };
+                    
+                    match math_3d::transformations::handle_coordinate_conversion(input) {
+                        Ok(result) => {
+                            Ok(Response::builder()
+                                .status(200)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&result)?)
+                                .build())
+                        }
+                        Err(e) => {
+                            Ok(Response::builder()
+                                .status(400)
+                                .header("content-type", "application/json")
+                                .body(serde_json::to_string(&e)?)
                                 .build())
                         }
                     }
