@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -273,5 +273,17 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/point_plane_distance"
 watch = ["tools/math3d/point_plane_distance/src/**/*.rs", "tools/math3d/point_plane_distance/Cargo.toml"]
+
+[[trigger.http]]
+route = "/rotation-matrix"
+component = "rotation-matrix"
+
+[component.rotation-matrix]
+source = "tools/math3d/rotation_matrix/target/wasm32-wasip1/release/rotation_matrix_tool.wasm"
+allowed_outbound_hosts = []
+[component.rotation-matrix.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/rotation_matrix"
+watch = ["tools/math3d/rotation_matrix/src/**/*.rs", "tools/math3d/rotation_matrix/Cargo.toml"]
 
 
