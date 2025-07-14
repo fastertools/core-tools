@@ -285,16 +285,117 @@
 
 ---
 
+## PRIORITY 5: Outstanding Migrations from Old Architecture
+
+### SEGMENT 8: Math3D Function Migrations
+**Status**: NOT_STARTED  
+**Priority**: 1 (HIGH)  
+**Dependencies**: None
+**Estimated Effort**: 2-3 days
+
+**Objective**: Migrate remaining 3D mathematics functions from src/math_3d/ to FTL-SDK tools
+
+**Functions to Migrate**:
+1. **Plane Operations** (src/math_3d/plane_operations.rs)
+   - line-plane intersection
+   - plane-plane intersection  
+   - point-plane distance
+2. **Transformations** (src/math_3d/transformations.rs)
+   - rotation matrices (X, Y, Z, arbitrary axis)
+   - quaternion operations (creation, multiply, SLERP)
+   - coordinate conversions
+3. **Volume Calculations** (src/math_3d/volume_calculations.rs)
+   - tetrahedron, sphere, cylinder, AABB, pyramid, convex hull
+4. **3D Primitives** (src/math_3d/primitives.rs)
+   - sphere-ray intersection
+   - sphere-sphere intersection
+5. **Distance Operations** (src/math_3d/distance_operations.rs)
+   - point-to-line, point-to-plane distance
+   - vector projections
+
+**Success Criteria**:
+- [ ] All 11 major 3D math functions migrated to FTL-SDK
+- [ ] Each function in its own tool directory
+- [ ] Full test coverage for migrated functions
+- [ ] Performance parity with old implementation
+
+---
+
+### SEGMENT 9: Statistics Module Migration
+**Status**: NOT_STARTED  
+**Priority**: 2 (MEDIUM)  
+**Dependencies**: None
+**Estimated Effort**: 3-4 days
+
+**Objective**: Migrate complete statistics functionality from src/statistics/ to FTL-SDK tools
+
+**Functions to Migrate**:
+1. **Descriptive Statistics** (src/statistics/descriptive.rs)
+   - mean, median, mode, std dev, variance
+   - quartiles, IQR, skewness, kurtosis
+2. **Correlation Analysis** (src/statistics/correlation.rs)
+   - Pearson correlation
+   - Spearman correlation
+   - Correlation matrix
+3. **Regression Analysis** (src/statistics/regression.rs)
+   - Linear regression
+   - Polynomial regression
+4. **Distribution Analysis** (src/statistics/distribution.rs)
+   - Normality tests
+   - Distribution fitting
+
+**Success Criteria**:
+- [ ] All 15-20 statistical functions migrated
+- [ ] Descriptive stats tool properly implemented
+- [ ] New tools created for correlation, regression, distribution
+- [ ] Statistical accuracy validated against test cases
+
+---
+
+### SEGMENT 10: Advanced Geofencing Migrations
+**Status**: NOT_STARTED  
+**Priority**: 3 (LOW)  
+**Dependencies**: None
+**Estimated Effort**: 1 day
+
+**Objective**: Migrate remaining geofencing algorithms from src/geofencing/
+
+**Functions to Migrate**:
+1. **Polygon Simplification** (src/geofencing/polygon_simplification.rs)
+   - Douglas-Peucker algorithm
+   - Visvalingam algorithm
+2. **Multi-distance Buffers**
+   - Create multiple buffer zones at different distances
+3. **Winding Number Algorithm**
+   - Alternative point-in-polygon implementation
+
+**Success Criteria**:
+- [ ] All 3-4 advanced geofencing functions migrated
+- [ ] Integration with existing geofencing tools
+- [ ] Performance benchmarks for simplification algorithms
+
+---
+
 ## Current Status Summary
 
 **COMPLETED**: 
-- ✅ Core tool suites (Geospatial, 3D Math, Statistics)
-- ✅ 50+ API endpoints implemented
+- ✅ Basic tool suites (Geospatial core, Basic Math)
+- ✅ Tool composition via Spin local service chaining
+- ✅ 18 tools fully migrated to FTL-SDK
 - ✅ Production-ready error handling and validation
-- ✅ Performance benchmarks established
 
-**IN PROGRESS**: 
-- 🔄 Memory system setup and workflow integration
+**PARTIALLY COMPLETED**:
+- ⚠️ Math3D suite (4 of 15 functions migrated)
+- ⚠️ Geofencing (most done, 3-4 advanced functions remain)
+
+**NOT STARTED**:
+- ❌ Statistics suite (0 of 20 functions migrated)
+- ❌ Advanced 3D math operations
+- ❌ Code cleanup (blocked by migrations)
+
+**CRITICAL**: 
+- 🚨 DO NOT DELETE src/ directory until migrations complete
+- 🚨 Approximately 35-40 functions still need migration
 
 **IMMEDIATE NEXT STEPS**:
 1. Begin SEGMENT 1: FTL SDK Migration Foundation
