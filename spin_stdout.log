@@ -1,0 +1,17 @@
+Logging component stdio to ".spin/logs/"
+
+Serving http://127.0.0.1:3000
+Available Routes:
+  ftl-mcp-gateway: http://127.0.0.1:3000/mcp
+  distance: http://127.0.0.1:3000/distance
+  bearing: http://127.0.0.1:3000/bearing
+  dot-product: http://127.0.0.1:3000/dot-product
+  polygon-area: http://127.0.0.1:3000/polygon-area
+  point-in-polygon: http://127.0.0.1:3000/point-in-polygon
+  coordinate-conversion: http://127.0.0.1:3000/coordinate-conversion
+  cross-product: http://127.0.0.1:3000/cross-product
+  vector-magnitude: http://127.0.0.1:3000/vector-magnitude
+  line-intersection: http://127.0.0.1:3000/line-intersection
+  buffer-polygon: http://127.0.0.1:3000/buffer-polygon
+  proximity-search: http://127.0.0.1:3000/proximity-search
+  proximity-zone: http://127.0.0.1:3000/proximity-zone

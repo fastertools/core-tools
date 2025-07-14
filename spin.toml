@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -129,5 +129,41 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/line_intersection"
 watch = ["tools/math3d/line_intersection/src/**/*.rs", "tools/math3d/line_intersection/Cargo.toml"]
+
+[[trigger.http]]
+route = "/buffer-polygon"
+component = "buffer-polygon"
+
+[component.buffer-polygon]
+source = "tools/geospatial/buffer_polygon/target/wasm32-wasip1/release/buffer_polygon_tool.wasm"
+allowed_outbound_hosts = []
+[component.buffer-polygon.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/buffer_polygon"
+watch = ["tools/geospatial/buffer_polygon/src/**/*.rs", "tools/geospatial/buffer_polygon/Cargo.toml"]
+
+[[trigger.http]]
+route = "/proximity-search"
+component = "proximity-search"
+
+[component.proximity-search]
+source = "tools/geospatial/proximity_search/target/wasm32-wasip1/release/proximity_search_tool.wasm"
+allowed_outbound_hosts = []
+[component.proximity-search.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/proximity_search"
+watch = ["tools/geospatial/proximity_search/src/**/*.rs", "tools/geospatial/proximity_search/Cargo.toml"]
+
+[[trigger.http]]
+route = "/proximity-zone"
+component = "proximity-zone"
+
+[component.proximity-zone]
+source = "tools/geospatial/proximity_zone/target/wasm32-wasip1/release/proximity_zone_tool.wasm"
+allowed_outbound_hosts = []
+[component.proximity-zone.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/proximity_zone"
+watch = ["tools/geospatial/proximity_zone/src/**/*.rs", "tools/geospatial/proximity_zone/Cargo.toml"]
 
 

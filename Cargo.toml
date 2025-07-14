@@ -26,4 +26,4 @@ dot_product = []
 
 [workspace]
 members = []
-exclude = ["server", "tools/geospatial/distance", "tools/geospatial/bearing", "tools/math3d/dot_product", "tools/geospatial/polygon_area", "tools/geospatial/point_in_polygon", "tools/geospatial/coordinate_conversion", "tools/math3d/cross_product", "tools/math3d/vector_magnitude", "tools/math3d/line_intersection"]
+exclude = ["server", "tools/geospatial/distance", "tools/geospatial/bearing", "tools/math3d/dot_product", "tools/geospatial/polygon_area", "tools/geospatial/point_in_polygon", "tools/geospatial/coordinate_conversion", "tools/math3d/cross_product", "tools/math3d/vector_magnitude", "tools/math3d/line_intersection", "tools/geospatial/buffer_polygon", "tools/geospatial/proximity_search", "tools/geospatial/proximity_zone"]
