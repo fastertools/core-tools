@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -93,5 +93,41 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/geospatial/coordinate_conversion"
 watch = ["tools/geospatial/coordinate_conversion/src/**/*.rs", "tools/geospatial/coordinate_conversion/Cargo.toml"]
+
+[[trigger.http]]
+route = "/cross-product"
+component = "cross-product"
+
+[component.cross-product]
+source = "tools/math3d/cross_product/target/wasm32-wasip1/release/cross_product_tool.wasm"
+allowed_outbound_hosts = []
+[component.cross-product.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/cross_product"
+watch = ["tools/math3d/cross_product/src/**/*.rs", "tools/math3d/cross_product/Cargo.toml"]
+
+[[trigger.http]]
+route = "/vector-magnitude"
+component = "vector-magnitude"
+
+[component.vector-magnitude]
+source = "tools/math3d/vector_magnitude/target/wasm32-wasip1/release/vector_magnitude_tool.wasm"
+allowed_outbound_hosts = []
+[component.vector-magnitude.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/vector_magnitude"
+watch = ["tools/math3d/vector_magnitude/src/**/*.rs", "tools/math3d/vector_magnitude/Cargo.toml"]
+
+[[trigger.http]]
+route = "/line-intersection"
+component = "line-intersection"
+
+[component.line-intersection]
+source = "tools/math3d/line_intersection/target/wasm32-wasip1/release/line_intersection_tool.wasm"
+allowed_outbound_hosts = []
+[component.line-intersection.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/line_intersection"
+watch = ["tools/math3d/line_intersection/src/**/*.rs", "tools/math3d/line_intersection/Cargo.toml"]
 
 
