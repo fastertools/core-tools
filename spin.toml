@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -57,5 +57,41 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/dot_product"
 watch = ["tools/math3d/dot_product/src/**/*.rs", "tools/math3d/dot_product/Cargo.toml"]
+
+[[trigger.http]]
+route = "/polygon-area"
+component = "polygon-area"
+
+[component.polygon-area]
+source = "tools/geospatial/polygon_area/target/wasm32-wasip1/release/polygon_area_tool.wasm"
+allowed_outbound_hosts = []
+[component.polygon-area.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/polygon_area"
+watch = ["tools/geospatial/polygon_area/src/**/*.rs", "tools/geospatial/polygon_area/Cargo.toml"]
+
+[[trigger.http]]
+route = "/point-in-polygon"
+component = "point-in-polygon"
+
+[component.point-in-polygon]
+source = "tools/geospatial/point_in_polygon/target/wasm32-wasip1/release/point_in_polygon_tool.wasm"
+allowed_outbound_hosts = []
+[component.point-in-polygon.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/point_in_polygon"
+watch = ["tools/geospatial/point_in_polygon/src/**/*.rs", "tools/geospatial/point_in_polygon/Cargo.toml"]
+
+[[trigger.http]]
+route = "/coordinate-conversion"
+component = "coordinate-conversion"
+
+[component.coordinate-conversion]
+source = "tools/geospatial/coordinate_conversion/target/wasm32-wasip1/release/coordinate_conversion_tool.wasm"
+allowed_outbound_hosts = []
+[component.coordinate-conversion.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/coordinate_conversion"
+watch = ["tools/geospatial/coordinate_conversion/src/**/*.rs", "tools/geospatial/coordinate_conversion/Cargo.toml"]
 
 
