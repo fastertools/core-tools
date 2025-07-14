@@ -1,26 +1,29 @@
 [package]
-name = "tool"
+name = "coretools"
 authors = ["Corey Ryan <corey@coreyr.com>"]
-description = ""
+description = "MCP server for core computational tools"
 version = "0.1.0"
-rust-version = "1.78"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
-[[bin]]
-name = "test_client"
-path = "src/bin/test_client.rs"
-
-[[bin]]
-name = "simple_test"
-path = "src/bin/simple_test.rs"
 
 [dependencies]
-anyhow = "1"
-spin-sdk = "3.1.0"
+ftl-sdk = { version = "0.2.3", features = ["macros"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+schemars = "0.8"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+spin-sdk = "4.0"
+
+[features]
+default = ["distance"]
+distance = []
+bearing = []
+dot_product = []
 
 [workspace]
+members = []
+exclude = ["server", "tools/geospatial/distance", "tools/geospatial/bearing", "tools/math3d/dot_product"]

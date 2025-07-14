@@ -1,18 +1,61 @@
 spin_manifest_version = 2
 
 [application]
-name = "tool"
+name = "coretools"
 version = "0.1.0"
 authors = ["Corey Ryan <corey@coreyr.com>"]
-description = ""
+description = "Core computational tools MCP server"
+
+[variables]
+# List all tool components that should be discovered by the gateway
+# Each component hosts exactly one tool due to WASM constraints
+tool_components = { default = "distance,bearing,dot-product" }
 
 [[trigger.http]]
-route = "/..."
-component = "tool"
+route = "/mcp"
+component = "ftl-mcp-gateway"
 
-[component.tool]
-source = "target/wasm32-wasip1/release/tool.wasm"
+[component.ftl-mcp-gateway]
+source = { registry = "ghcr.io", package = "fastertools:ftl-mcp-gateway", version = "0.0.3" }
+allowed_outbound_hosts = ["http://*.spin.internal"]
+[component.ftl-mcp-gateway.variables]
+tool_components = "{{ tool_components }}"
+validate_arguments = "true"
+
+[[trigger.http]]
+route = "/distance"
+component = "distance"
+
+[component.distance]
+source = "tools/geospatial/distance/target/wasm32-wasip1/release/distance_tool.wasm"
 allowed_outbound_hosts = []
-[component.tool.build]
+[component.distance.build]
 command = "cargo build --target wasm32-wasip1 --release"
-watch = ["src/**/*.rs", "Cargo.toml"]
+workdir = "tools/geospatial/distance"
+watch = ["tools/geospatial/distance/src/**/*.rs", "tools/geospatial/distance/Cargo.toml"]
+
+[[trigger.http]]
+route = "/bearing"
+component = "bearing"
+
+[component.bearing]
+source = "tools/geospatial/bearing/target/wasm32-wasip1/release/bearing_tool.wasm"
+allowed_outbound_hosts = []
+[component.bearing.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/bearing"
+watch = ["tools/geospatial/bearing/src/**/*.rs", "tools/geospatial/bearing/Cargo.toml"]
+
+[[trigger.http]]
+route = "/dot-product"
+component = "dot-product"
+
+[component.dot-product]
+source = "tools/math3d/dot_product/target/wasm32-wasip1/release/dot_product_tool.wasm"
+allowed_outbound_hosts = []
+[component.dot-product.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/dot_product"
+watch = ["tools/math3d/dot_product/src/**/*.rs", "tools/math3d/dot_product/Cargo.toml"]
+
+
