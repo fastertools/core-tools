@@ -178,7 +178,7 @@
 **Priority**: 2  
 **Dependencies**: SEGMENT 1 (FTL SDK foundation)
 **Completed**: 2025-01-14
-**Commit**: (pending)
+**Commit**: a8c9430
 
 **Objective**: Enable tools to call each other using Spin's local service chaining
 
