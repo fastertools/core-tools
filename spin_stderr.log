@@ -1,2 +1,26 @@
 Loading Wasm components is taking a few seconds...
 
+2025-07-14T23:19:08.927085Z ERROR spin_trigger_http::server: Error processing request: guest invocation failed
+
+Caused by:
+    0: error while executing at wasm backtrace:
+           0: 0x38dd1d - wit-component:shim!indirect-wasi:http/types@0.2.0-[method]future-incoming-response.get
+           1: 0x23606f - ftl_mcp_gateway.wasm!spin_sdk::wit::wasi::http0_2_0::types::FutureIncomingResponse::get::hae52954fa0d97492
+           2:  0x32217 - ftl_mcp_gateway.wasm!<futures_util::future::poll_fn::PollFn<F> as core::future::future::Future>::poll::hff00f81748d73d86
+           3:  0x14a40 - ftl_mcp_gateway.wasm!spin_sdk::http::send::{{closure}}::hd9a16add439242cc
+           4:  0x109eb - ftl_mcp_gateway.wasm!ftl_mcp_gateway::gateway::handle_mcp_request::{{closure}}::h0942df6597122025
+           5:   0xe812 - ftl_mcp_gateway.wasm!spin_executor::run::h02d4c400b0765b15
+           6:  0x37803 - ftl_mcp_gateway.wasm!wasi:http/incoming-handler@0.2.0#handle
+    1: no such component "distance-2d"
+2025-07-14T23:19:27.657689Z ERROR spin_trigger_http::server: Error processing request: guest invocation failed
+
+Caused by:
+    0: error while executing at wasm backtrace:
+           0: 0x38dd1d - wit-component:shim!indirect-wasi:http/types@0.2.0-[method]future-incoming-response.get
+           1: 0x23606f - ftl_mcp_gateway.wasm!spin_sdk::wit::wasi::http0_2_0::types::FutureIncomingResponse::get::hae52954fa0d97492
+           2:  0x32217 - ftl_mcp_gateway.wasm!<futures_util::future::poll_fn::PollFn<F> as core::future::future::Future>::poll::hff00f81748d73d86
+           3:  0x14a40 - ftl_mcp_gateway.wasm!spin_sdk::http::send::{{closure}}::hd9a16add439242cc
+           4:  0x109eb - ftl_mcp_gateway.wasm!ftl_mcp_gateway::gateway::handle_mcp_request::{{closure}}::h0942df6597122025
+           5:   0xe812 - ftl_mcp_gateway.wasm!spin_executor::run::h02d4c400b0765b15
+           6:  0x37803 - ftl_mcp_gateway.wasm!wasi:http/incoming-handler@0.2.0#handle
+    1: no such component "distance-2d"

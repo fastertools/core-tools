@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -165,5 +165,77 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/geospatial/proximity_zone"
 watch = ["tools/geospatial/proximity_zone/src/**/*.rs", "tools/geospatial/proximity_zone/Cargo.toml"]
+
+[[trigger.http]]
+route = "/add"
+component = "add"
+
+[component.add]
+source = "tools/basic_math/add/target/wasm32-wasip1/release/add_tool.wasm"
+allowed_outbound_hosts = []
+[component.add.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/add"
+watch = ["tools/basic_math/add/src/**/*.rs", "tools/basic_math/add/Cargo.toml"]
+
+[[trigger.http]]
+route = "/multiply"
+component = "multiply"
+
+[component.multiply]
+source = "tools/basic_math/multiply/target/wasm32-wasip1/release/multiply_tool.wasm"
+allowed_outbound_hosts = []
+[component.multiply.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/multiply"
+watch = ["tools/basic_math/multiply/src/**/*.rs", "tools/basic_math/multiply/Cargo.toml"]
+
+[[trigger.http]]
+route = "/square"
+component = "square"
+
+[component.square]
+source = "tools/basic_math/square/target/wasm32-wasip1/release/square_tool.wasm"
+allowed_outbound_hosts = []
+[component.square.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/square"
+watch = ["tools/basic_math/square/src/**/*.rs", "tools/basic_math/square/Cargo.toml"]
+
+[[trigger.http]]
+route = "/sqrt"
+component = "sqrt"
+
+[component.sqrt]
+source = "tools/basic_math/sqrt/target/wasm32-wasip1/release/sqrt_tool.wasm"
+allowed_outbound_hosts = []
+[component.sqrt.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/sqrt"
+watch = ["tools/basic_math/sqrt/src/**/*.rs", "tools/basic_math/sqrt/Cargo.toml"]
+
+[[trigger.http]]
+route = "/pythagorean"
+component = "pythagorean"
+
+[component.pythagorean]
+source = "tools/basic_math/pythagorean/target/wasm32-wasip1/release/pythagorean_tool.wasm"
+allowed_outbound_hosts = ["http://square.spin.internal", "http://add.spin.internal", "http://sqrt.spin.internal"]
+[component.pythagorean.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/pythagorean"
+watch = ["tools/basic_math/pythagorean/src/**/*.rs", "tools/basic_math/pythagorean/Cargo.toml"]
+
+[[trigger.http]]
+route = "/distance-two-d"
+component = "distance-two-d"
+
+[component.distance-two-d]
+source = "tools/basic_math/distance_2d/target/wasm32-wasip1/release/distance_2d_tool.wasm"
+allowed_outbound_hosts = ["http://pythagorean.spin.internal"]
+[component.distance-two-d.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/distance_2d"
+watch = ["tools/basic_math/distance_2d/src/**/*.rs", "tools/basic_math/distance_2d/Cargo.toml"]
 
 

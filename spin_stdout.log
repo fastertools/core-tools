@@ -15,3 +15,9 @@ Available Routes:
   buffer-polygon: http://127.0.0.1:3000/buffer-polygon
   proximity-search: http://127.0.0.1:3000/proximity-search
   proximity-zone: http://127.0.0.1:3000/proximity-zone
+  add: http://127.0.0.1:3000/add
+  multiply: http://127.0.0.1:3000/multiply
+  square: http://127.0.0.1:3000/square
+  sqrt: http://127.0.0.1:3000/sqrt
+  pythagorean: http://127.0.0.1:3000/pythagorean
+  distance-two-d: http://127.0.0.1:3000/distance-two-d
