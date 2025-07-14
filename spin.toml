@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -237,5 +237,41 @@ allowed_outbound_hosts = ["http://pythagorean.spin.internal"]
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/basic_math/distance_2d"
 watch = ["tools/basic_math/distance_2d/src/**/*.rs", "tools/basic_math/distance_2d/Cargo.toml"]
+
+[[trigger.http]]
+route = "/line-plane-intersection"
+component = "line-plane-intersection"
+
+[component.line-plane-intersection]
+source = "tools/math3d/line_plane_intersection/target/wasm32-wasip1/release/line_plane_intersection_tool.wasm"
+allowed_outbound_hosts = []
+[component.line-plane-intersection.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/line_plane_intersection"
+watch = ["tools/math3d/line_plane_intersection/src/**/*.rs", "tools/math3d/line_plane_intersection/Cargo.toml"]
+
+[[trigger.http]]
+route = "/plane-plane-intersection"
+component = "plane-plane-intersection"
+
+[component.plane-plane-intersection]
+source = "tools/math3d/plane_plane_intersection/target/wasm32-wasip1/release/plane_plane_intersection_tool.wasm"
+allowed_outbound_hosts = []
+[component.plane-plane-intersection.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/plane_plane_intersection"
+watch = ["tools/math3d/plane_plane_intersection/src/**/*.rs", "tools/math3d/plane_plane_intersection/Cargo.toml"]
+
+[[trigger.http]]
+route = "/point-plane-distance"
+component = "point-plane-distance"
+
+[component.point-plane-distance]
+source = "tools/math3d/point_plane_distance/target/wasm32-wasip1/release/point_plane_distance_tool.wasm"
+allowed_outbound_hosts = []
+[component.point-plane-distance.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/point_plane_distance"
+watch = ["tools/math3d/point_plane_distance/src/**/*.rs", "tools/math3d/point_plane_distance/Cargo.toml"]
 
 
