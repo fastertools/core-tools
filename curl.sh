@@ -122,4 +122,46 @@ echo "Testing invalid conversion type:"
 curl -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{"from_type": "invalid", "to_type": "spherical", "coordinates": {"x": 1.0, "y": 1.0, "z": 1.0}}'
 echo
 
+# Test volume calculations
+echo "=== Volume Calculations ==="
+echo "Testing tetrahedron volume (unit tetrahedron):"
+curl -X POST $BASE_URL/tetrahedron-volume -H "Content-Type: application/json" -d '{"point_a": {"x": 0.0, "y": 0.0, "z": 0.0}, "point_b": {"x": 1.0, "y": 0.0, "z": 0.0}, "point_c": {"x": 0.0, "y": 1.0, "z": 0.0}, "point_d": {"x": 0.0, "y": 0.0, "z": 1.0}}'
+echo
+
+echo "Testing sphere volume (radius=2, center at origin):"
+curl -X POST $BASE_URL/sphere-volume -H "Content-Type: application/json" -d '{"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 2.0}'
+echo
+
+echo "Testing sphere volume error handling (negative radius):"
+curl -X POST $BASE_URL/sphere-volume -H "Content-Type: application/json" -d '{"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": -1.0}'
+echo
+
+echo "Testing cylinder volume (radius=3, height=5):"
+curl -X POST $BASE_URL/cylinder-volume -H "Content-Type: application/json" -d '{"base_center": {"x": 0.0, "y": 0.0, "z": 0.0}, "axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "radius": 3.0, "height": 5.0}'
+echo
+
+echo "Testing cylinder volume error handling (negative radius):"
+curl -X POST $BASE_URL/cylinder-volume -H "Content-Type: application/json" -d '{"base_center": {"x": 0.0, "y": 0.0, "z": 0.0}, "axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "radius": -2.0, "height": 5.0}'
+echo
+
+echo "Testing AABB volume (unit cube from origin to (1,1,1)):"
+curl -X POST $BASE_URL/aabb-volume -H "Content-Type: application/json" -d '{"points": [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 1.0, "y": 1.0, "z": 1.0}]}'
+echo
+
+echo "Testing AABB volume (complex point cloud):"
+curl -X POST $BASE_URL/aabb-volume -H "Content-Type: application/json" -d '{"points": [{"x": -1.0, "y": -2.0, "z": -3.0}, {"x": 2.0, "y": 1.0, "z": 4.0}, {"x": 0.5, "y": -0.5, "z": 1.5}]}'
+echo
+
+echo "Testing AABB volume error handling (empty points):"
+curl -X POST $BASE_URL/aabb-volume -H "Content-Type: application/json" -d '{"points": []}'
+echo
+
+echo "Testing pyramid volume (square base with apex above):"
+curl -X POST $BASE_URL/pyramid-volume -H "Content-Type: application/json" -d '{"base_points": [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 2.0, "y": 0.0, "z": 0.0}, {"x": 2.0, "y": 2.0, "z": 0.0}, {"x": 0.0, "y": 2.0, "z": 0.0}], "apex": {"x": 1.0, "y": 1.0, "z": 3.0}}'
+echo
+
+echo "Testing pyramid volume error handling (insufficient base points):"
+curl -X POST $BASE_URL/pyramid-volume -H "Content-Type: application/json" -d '{"base_points": [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 1.0, "y": 0.0, "z": 0.0}], "apex": {"x": 0.5, "y": 1.0, "z": 2.0}}'
+echo
+
 echo "All tests completed!"

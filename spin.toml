@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -357,5 +357,65 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/coordinate_conversion"
 watch = ["tools/math3d/coordinate_conversion/src/**/*.rs", "tools/math3d/coordinate_conversion/Cargo.toml"]
+
+[[trigger.http]]
+route = "/tetrahedron-volume"
+component = "tetrahedron-volume"
+
+[component.tetrahedron-volume]
+source = "tools/math3d/tetrahedron_volume/target/wasm32-wasip1/release/tetrahedron_volume_tool.wasm"
+allowed_outbound_hosts = []
+[component.tetrahedron-volume.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/tetrahedron_volume"
+watch = ["tools/math3d/tetrahedron_volume/src/**/*.rs", "tools/math3d/tetrahedron_volume/Cargo.toml"]
+
+[[trigger.http]]
+route = "/sphere-volume"
+component = "sphere-volume"
+
+[component.sphere-volume]
+source = "tools/math3d/sphere_volume/target/wasm32-wasip1/release/sphere_volume_tool.wasm"
+allowed_outbound_hosts = []
+[component.sphere-volume.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/sphere_volume"
+watch = ["tools/math3d/sphere_volume/src/**/*.rs", "tools/math3d/sphere_volume/Cargo.toml"]
+
+[[trigger.http]]
+route = "/cylinder-volume"
+component = "cylinder-volume"
+
+[component.cylinder-volume]
+source = "tools/math3d/cylinder_volume/target/wasm32-wasip1/release/cylinder_volume_tool.wasm"
+allowed_outbound_hosts = []
+[component.cylinder-volume.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/cylinder_volume"
+watch = ["tools/math3d/cylinder_volume/src/**/*.rs", "tools/math3d/cylinder_volume/Cargo.toml"]
+
+[[trigger.http]]
+route = "/aabb-volume"
+component = "aabb-volume"
+
+[component.aabb-volume]
+source = "tools/math3d/aabb_volume/target/wasm32-wasip1/release/aabb_volume_tool.wasm"
+allowed_outbound_hosts = []
+[component.aabb-volume.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/aabb_volume"
+watch = ["tools/math3d/aabb_volume/src/**/*.rs", "tools/math3d/aabb_volume/Cargo.toml"]
+
+[[trigger.http]]
+route = "/pyramid-volume"
+component = "pyramid-volume"
+
+[component.pyramid-volume]
+source = "tools/math3d/pyramid_volume/target/wasm32-wasip1/release/pyramid_volume_tool.wasm"
+allowed_outbound_hosts = []
+[component.pyramid-volume.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/pyramid_volume"
+watch = ["tools/math3d/pyramid_volume/src/**/*.rs", "tools/math3d/pyramid_volume/Cargo.toml"]
 
 
