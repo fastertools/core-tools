@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -297,5 +297,29 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/arbitrary_rotation"
 watch = ["tools/math3d/arbitrary_rotation/src/**/*.rs", "tools/math3d/arbitrary_rotation/Cargo.toml"]
+
+[[trigger.http]]
+route = "/quaternion-from-axis-angle"
+component = "quaternion-from-axis-angle"
+
+[component.quaternion-from-axis-angle]
+source = "tools/math3d/quaternion_from_axis_angle/target/wasm32-wasip1/release/quaternion_from_axis_angle_tool.wasm"
+allowed_outbound_hosts = []
+[component.quaternion-from-axis-angle.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/quaternion_from_axis_angle"
+watch = ["tools/math3d/quaternion_from_axis_angle/src/**/*.rs", "tools/math3d/quaternion_from_axis_angle/Cargo.toml"]
+
+[[trigger.http]]
+route = "/quaternion-multiply"
+component = "quaternion-multiply"
+
+[component.quaternion-multiply]
+source = "tools/math3d/quaternion_multiply/target/wasm32-wasip1/release/quaternion_multiply_tool.wasm"
+allowed_outbound_hosts = []
+[component.quaternion-multiply.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/quaternion_multiply"
+watch = ["tools/math3d/quaternion_multiply/src/**/*.rs", "tools/math3d/quaternion_multiply/Cargo.toml"]
 
 

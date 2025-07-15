@@ -76,4 +76,18 @@ echo "Testing arbitrary rotation error handling (zero axis):"
 curl -X POST $BASE_URL/arbitrary-rotation -H "Content-Type: application/json" -d '{"axis": {"x": 0.0, "y": 0.0, "z": 0.0}, "angle": 1.0}'
 echo
 
+# Test quaternion operations
+echo "=== Quaternion Operations ==="
+echo "Testing quaternion from axis-angle (90 degrees around Z axis):"
+curl -X POST $BASE_URL/quaternion-from-axis-angle -H "Content-Type: application/json" -d '{"axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "angle": 1.5707963267948966}'
+echo
+
+echo "Testing quaternion from axis-angle error handling (zero axis):"
+curl -X POST $BASE_URL/quaternion-from-axis-angle -H "Content-Type: application/json" -d '{"axis": {"x": 0.0, "y": 0.0, "z": 0.0}, "angle": 1.0}'
+echo
+
+echo "Testing quaternion multiplication (identity * rotation):"
+curl -X POST $BASE_URL/quaternion-multiply -H "Content-Type: application/json" -d '{"q1": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, "q2": {"x": 0.0, "y": 0.0, "z": 0.7071067811865475, "w": 0.7071067811865476}}'
+echo
+
 echo "All tests completed!"
