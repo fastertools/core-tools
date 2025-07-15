@@ -21,3 +21,22 @@ Available Routes:
   sqrt: http://127.0.0.1:3000/sqrt
   pythagorean: http://127.0.0.1:3000/pythagorean
   distance-two-d: http://127.0.0.1:3000/distance-two-d
+  line-plane-intersection: http://127.0.0.1:3000/line-plane-intersection
+  plane-plane-intersection: http://127.0.0.1:3000/plane-plane-intersection
+  point-plane-distance: http://127.0.0.1:3000/point-plane-distance
+  rotation-matrix: http://127.0.0.1:3000/rotation-matrix
+  arbitrary-rotation: http://127.0.0.1:3000/arbitrary-rotation
+  quaternion-from-axis-angle: http://127.0.0.1:3000/quaternion-from-axis-angle
+  quaternion-multiply: http://127.0.0.1:3000/quaternion-multiply
+  quaternion-slerp: http://127.0.0.1:3000/quaternion-slerp
+  matrix-vector-multiply: http://127.0.0.1:3000/matrix-vector-multiply
+  coordinate-conversion-three-d: http://127.0.0.1:3000/coordinate-conversion-three-d
+  tetrahedron-volume: http://127.0.0.1:3000/tetrahedron-volume
+  sphere-volume: http://127.0.0.1:3000/sphere-volume
+  cylinder-volume: http://127.0.0.1:3000/cylinder-volume
+  aabb-volume: http://127.0.0.1:3000/aabb-volume
+  pyramid-volume: http://127.0.0.1:3000/pyramid-volume
+  sphere-ray-intersection: http://127.0.0.1:3000/sphere-ray-intersection
+  sphere-sphere-intersection: http://127.0.0.1:3000/sphere-sphere-intersection
+  cylinder-ray-intersection: http://127.0.0.1:3000/cylinder-ray-intersection
+  ray-aabb-intersection: http://127.0.0.1:3000/ray-aabb-intersection

@@ -288,10 +288,10 @@
 ## PRIORITY 5: Outstanding Migrations from Old Architecture
 
 ### SEGMENT 8: Math3D Function Migrations
-**Status**: IN_PROGRESS (17 of 23 functions completed - 74%)  
+**Status**: IN_PROGRESS (21 of 23 functions completed - 91%)  
 **Priority**: 1 (HIGH)  
 **Dependencies**: None
-**Estimated Effort**: 2-3 days (0.5 days remaining)
+**Estimated Effort**: 2-3 days (0.2 days remaining)
 
 **Objective**: Migrate remaining 3D mathematics functions from src/math_3d/ to FTL-SDK tools
 
@@ -314,16 +314,22 @@
    - ✅ cylinder_volume tool (full 3D cylinder with base_center, axis, radius, height)
    - ✅ aabb_volume tool (axis-aligned bounding box from point clouds)
    - ✅ pyramid_volume tool (complex polygon area + point-to-plane distance)
-4. **⏳ 3D Primitives** (src/math_3d/primitives.rs) - **PENDING**
-   - sphere-ray intersection, sphere-sphere intersection (~4 functions)
+4. **✅ 3D Primitives** (src/math_3d/primitives.rs) - **COMPLETED**
+   - ✅ sphere_ray_intersection tool
+   - ✅ sphere_sphere_intersection tool  
+   - ✅ cylinder_ray_intersection tool
+   - ✅ ray_aabb_intersection tool
 5. **⏳ Distance Operations** (src/math_3d/distance_operations.rs) - **PENDING**
    - point-to-line, point-to-plane distance, vector projections (~3 functions)
 
 **Progress Notes**:
 - 🎯 **MAJOR MILESTONE**: All transformation operations completed (9 tools)
 - 🎯 **MAJOR MILESTONE**: All volume calculation operations completed (5 tools)
+- 🎯 **MAJOR MILESTONE**: All 3D primitive operations completed (4 tools)
 - Commit 89587d6: Complete Math3D volume calculations with comprehensive coverage
-- Volume tools include basic shapes (sphere, cylinder), complex polyhedra (tetrahedron, pyramid), and bounding volumes (AABB)
+- NEW: All primitive intersection algorithms implemented with mathematical accuracy
+- Primitive tools include sphere-sphere, sphere-ray, cylinder-ray, and AABB-ray intersections
+- Intersection algorithms return detailed results: points, normals, distances, intersection types
 - All tools implement advanced algorithms: scalar triple product, shoelace formula, 3D projections
 - All completed tools tested and validated with curl.sh script
 - Coordinate conversion handles cartesian↔spherical and cartesian↔cylindrical with error handling
@@ -332,6 +338,7 @@
 - Updated entire project to Rust edition 2024
 - All tools use FTL-SDK pattern with individual WASM modules
 - Created centralized testing infrastructure (curl.sh mandated in CLAUDE.md)
+- Created server.sh wrapper script to handle orphaned server processes
 
 **Success Criteria**:
 - [x] Plane operations migrated (3/3 functions)
@@ -341,8 +348,8 @@
 - [x] Matrix operations migrated (1/1 functions)
 - [x] Coordinate conversions migrated (1/1 functions)
 - [x] Volume calculations migrated (5/5 functions) ✨
-- [ ] 3D primitives migrated (~4 functions)
-- [ ] Distance operations migrated (~3 functions)
+- [x] 3D primitives migrated (4/4 functions) ✨
+- [ ] Distance operations migrated (~2 functions remaining)
 - [x] Each function in its own tool directory
 - [x] Test coverage for migrated functions
 - [x] Performance parity with old implementation

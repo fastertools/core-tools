@@ -178,4 +178,48 @@ echo "Testing sphere-ray intersection error handling (negative radius):"
 curl -X POST $BASE_URL/sphere-ray-intersection -H "Content-Type: application/json" -d '{"sphere": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": -1.0}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
 echo
 
+echo "Testing sphere-sphere intersection (two separate spheres):"
+curl -X POST $BASE_URL/sphere-sphere-intersection -H "Content-Type: application/json" -d '{"sphere1": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 1.0}, "sphere2": {"center": {"x": 3.0, "y": 0.0, "z": 0.0}, "radius": 1.0}}'
+echo
+
+echo "Testing sphere-sphere intersection (two intersecting spheres):"
+curl -X POST $BASE_URL/sphere-sphere-intersection -H "Content-Type: application/json" -d '{"sphere1": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 1.0}, "sphere2": {"center": {"x": 1.5, "y": 0.0, "z": 0.0}, "radius": 1.0}}'
+echo
+
+echo "Testing sphere-sphere intersection (one sphere inside another):"
+curl -X POST $BASE_URL/sphere-sphere-intersection -H "Content-Type: application/json" -d '{"sphere1": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 2.0}, "sphere2": {"center": {"x": 0.5, "y": 0.0, "z": 0.0}, "radius": 0.5}}'
+echo
+
+echo "Testing sphere-sphere intersection (two spheres just touching):"
+curl -X POST $BASE_URL/sphere-sphere-intersection -H "Content-Type: application/json" -d '{"sphere1": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 1.0}, "sphere2": {"center": {"x": 2.0, "y": 0.0, "z": 0.0}, "radius": 1.0}}'
+echo
+
+echo "Testing sphere-sphere intersection error handling (negative radius):"
+curl -X POST $BASE_URL/sphere-sphere-intersection -H "Content-Type: application/json" -d '{"sphere1": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": -1.0}, "sphere2": {"center": {"x": 2.0, "y": 0.0, "z": 0.0}, "radius": 1.0}}'
+echo
+
+echo "Testing cylinder-ray intersection (ray hits cylinder):"
+curl -X POST $BASE_URL/cylinder-ray-intersection -H "Content-Type: application/json" -d '{"cylinder": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "radius": 1.0, "height": 2.0}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing cylinder-ray intersection (ray misses cylinder):"
+curl -X POST $BASE_URL/cylinder-ray-intersection -H "Content-Type: application/json" -d '{"cylinder": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "radius": 1.0, "height": 2.0}, "ray": {"origin": {"x": -2.0, "y": 2.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing cylinder-ray intersection error handling (negative radius):"
+curl -X POST $BASE_URL/cylinder-ray-intersection -H "Content-Type: application/json" -d '{"cylinder": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "axis": {"x": 0.0, "y": 0.0, "z": 1.0}, "radius": -1.0, "height": 2.0}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing ray-AABB intersection (ray hits box):"
+curl -X POST $BASE_URL/ray-aabb-intersection -H "Content-Type: application/json" -d '{"aabb": {"min": {"x": -1.0, "y": -1.0, "z": -1.0}, "max": {"x": 1.0, "y": 1.0, "z": 1.0}}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing ray-AABB intersection (ray misses box):"
+curl -X POST $BASE_URL/ray-aabb-intersection -H "Content-Type: application/json" -d '{"aabb": {"min": {"x": -1.0, "y": -1.0, "z": -1.0}, "max": {"x": 1.0, "y": 1.0, "z": 1.0}}, "ray": {"origin": {"x": -2.0, "y": 2.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing ray-AABB intersection error handling (invalid box):"
+curl -X POST $BASE_URL/ray-aabb-intersection -H "Content-Type: application/json" -d '{"aabb": {"min": {"x": 1.0, "y": 1.0, "z": 1.0}, "max": {"x": -1.0, "y": -1.0, "z": -1.0}}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
 echo "All tests completed!"
