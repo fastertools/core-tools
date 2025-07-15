@@ -1,78 +1,35 @@
-use spin_sdk::http::{Request, Response};
-use spin_sdk::http_component;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct StatisticsInput {
+    /// Array of numerical values to analyze
     pub data: Vec<f64>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct SummaryStatisticsOutput {
+    /// Number of data points
     pub count: usize,
+    /// Arithmetic mean of the data
     pub mean: f64,
+    /// Standard deviation
     pub std_dev: f64,
+    /// Minimum value
     pub min: f64,
+    /// First quartile (25th percentile)
     pub q1: f64,
+    /// Median (50th percentile)
     pub median: f64,
+    /// Third quartile (75th percentile)
     pub q3: f64,
+    /// Maximum value
     pub max: f64,
 }
 
-#[derive(Debug, Serialize)]
-pub struct ErrorResponse {
-    pub error: String,
-}
-
-#[http_component]
-fn handle_summary_statistics(req: Request) -> Response {
-    // Only allow POST requests
-    if req.method() != &spin_sdk::http::Method::Post {
-        return Response::builder()
-            .status(405)
-            .header("content-type", "application/json")
-            .body(serde_json::to_string(&ErrorResponse {
-                error: "Method not allowed. Use POST.".to_string(),
-            }).unwrap())
-            .build();
-    }
-
-    // Parse the JSON body
-    let input: StatisticsInput = match serde_json::from_slice(req.body()) {
-        Ok(data) => data,
-        Err(e) => {
-            return Response::builder()
-                .status(400)
-                .header("content-type", "application/json")
-                .body(serde_json::to_string(&ErrorResponse {
-                    error: format!("Invalid JSON: {}", e),
-                }).unwrap())
-                .build();
-        }
-    };
-
-    // Calculate summary statistics
-    match calculate_summary_statistics(input) {
-        Ok(result) => {
-            Response::builder()
-                .status(200)
-                .header("content-type", "application/json")
-                .body(serde_json::to_string(&result).unwrap())
-                .build()
-        }
-        Err(e) => {
-            Response::builder()
-                .status(400)
-                .header("content-type", "application/json")
-                .body(serde_json::to_string(&ErrorResponse {
-                    error: e,
-                }).unwrap())
-                .build()
-        }
-    }
-}
-
-fn calculate_summary_statistics(input: StatisticsInput) -> Result<SummaryStatisticsOutput, String> {
+#[tool]
+pub fn summary_statistics(input: StatisticsInput) -> Result<SummaryStatisticsOutput, String> {
     if input.data.is_empty() {
         return Err("Input data cannot be empty".to_string());
     }
