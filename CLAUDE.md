@@ -162,6 +162,11 @@ Comprehensive roadmap documented in `TOOL_IDEAS.md`:
 - For API testing: Use ./curl.sh (NEVER use curl directly)
 - For server management: Use ./test_server (NEVER use spin build/up/down directly)
 
+**CRITICAL: ALWAYS establish operational orientation:**
+- Verify location: `pwd` should show `/Users/coreyryan/data/mashh/core-tools`
+- Verify tools exist: `curl.sh`, `test_server`, `spin.toml`
+- Never run operational commands from subdirectories
+
 **CRITICAL: ALWAYS commit major milestones immediately:**
 - When completing segments or major tool groups, commit with detailed messages
 - Include test evidence and completion status in commit messages

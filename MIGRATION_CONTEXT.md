@@ -76,24 +76,85 @@ schemars = "0.8"
 spin-sdk = "4.0"
 ```
 
-### 3. Create src/lib.rs
+### 3. Create src/lib.rs with Testing Pattern
+
+**NEW PATTERN**: Separate business logic from WASM runtime for testability.
+
+Create two files:
+
+#### src/logic.rs (Pure Rust logic, testable)
 ```rust
-use ftl_sdk::tool;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InputType {
+    // fields...
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OutputType {
+    // fields...
+}
+
+pub fn calculate_something(input: InputType) -> Result<OutputType, String> {
+    // Implementation from src/math_3d/[source_file].rs
+    // Convert ErrorResponse to String errors
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_normal_case() {
+        let input = InputType { /* ... */ };
+        let result = calculate_something(input).unwrap();
+        assert_eq!(result.field, expected_value);
+    }
+
+    #[test]
+    fn test_error_case() {
+        let input = InputType { /* ... */ };
+        let result = calculate_something(input);
+        assert!(result.is_err());
+    }
+}
+```
+
+#### src/lib.rs (WASM wrapper)
+```rust
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-// Define input/output types with ALL derives
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::tool;
+
+// Re-export logic types
+pub use logic::{InputType as LogicInput, OutputType as LogicOutput};
+
+// Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct Vector3D {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
+pub struct InputType {
+    // Same fields as logic::InputType
 }
 
-#[tool]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct OutputType {
+    // Same fields as logic::OutputType
+}
+
+#[cfg_attr(not(test), tool)]
 pub fn tool_name(input: InputType) -> Result<OutputType, String> {
-    // Implementation from src/math_3d/[source_file].rs
-    // Convert ErrorResponse to String errors
+    // Convert to logic types
+    let logic_input = LogicInput { /* map fields */ };
+    
+    // Call logic implementation
+    let result = logic::calculate_something(logic_input)?;
+    
+    // Convert back to wrapper types
+    Ok(OutputType { /* map fields */ })
 }
 ```
 
@@ -131,19 +192,39 @@ cargo build --target wasm32-wasip1 --release
 cd ../../..
 ```
 
-### 7. Update curl.sh
-Add test cases for:
+### 7. Run Unit Tests
+```bash
+cd tools/math3d/[tool_name]
+cargo test   # Runs logic module tests
+cd ../../..
+```
+
+### 8. Update curl.sh
+Add test cases for HTTP endpoint verification:
 - Success case (normal operation)
 - Edge case (e.g., ray misses sphere)
 - Error case (e.g., negative radius)
 
-### 8. Test and Commit
+**Note**: Detailed algorithmic testing is done in unit tests. curl.sh only needs basic smoke tests to verify the HTTP endpoint works.
+
+### 9. Test and Commit (CRITICAL: Use project scripts only)
 ```bash
-./test_server restart
+# MANDATORY: Restart server to pick up new tool
+./server.sh restart
+
+# MANDATORY: Test ALL tools using project script (NEVER use curl directly)
 ./curl.sh
+
+# Verify your new tool works in the output above
+# Look for your tool's test cases and ensure they pass
+
+# Commit only after successful testing
 git add [files]
 git commit -m "Descriptive message following pattern"
 ```
+
+**⚠️ CONSTITUTIONAL RULE**: NEVER use `curl` directly. ALWAYS use `./curl.sh`
+**⚠️ CRITICAL**: If you type "curl" at any point, STOP and use `./curl.sh` instead
 
 ## Next Tool to Implement: sphere_sphere_intersection
 
