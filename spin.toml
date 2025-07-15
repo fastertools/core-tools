@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -489,5 +489,17 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/statistics/descriptive_statistics"
 watch = ["tools/statistics/descriptive_statistics/src/**/*.rs", "tools/statistics/descriptive_statistics/Cargo.toml"]
+
+[[trigger.http]]
+route = "/summary-statistics"
+component = "summary-statistics"
+
+[component.summary-statistics]
+source = "tools/statistics/summary_statistics/target/wasm32-wasip1/release/summary_statistics.wasm"
+allowed_outbound_hosts = []
+[component.summary-statistics.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/summary_statistics"
+watch = ["tools/statistics/summary_statistics/src/**/*.rs", "tools/statistics/summary_statistics/Cargo.toml"]
 
 

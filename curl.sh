@@ -258,4 +258,20 @@ echo "Testing descriptive statistics error handling (NaN value):"
 curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": [1.0, 2.0, "NaN", 4.0]}'
 echo
 
+echo "Testing summary statistics (normal data set):"
+curl -X POST $BASE_URL/summary-statistics -H "Content-Type: application/json" -d '{"data": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}'
+echo
+
+echo "Testing summary statistics (small data set):"
+curl -X POST $BASE_URL/summary-statistics -H "Content-Type: application/json" -d '{"data": [1.5, 2.8, 3.2, 4.1, 5.9]}'
+echo
+
+echo "Testing summary statistics (single value):"
+curl -X POST $BASE_URL/summary-statistics -H "Content-Type: application/json" -d '{"data": [42.0]}'
+echo
+
+echo "Testing summary statistics error handling (empty data):"
+curl -X POST $BASE_URL/summary-statistics -H "Content-Type: application/json" -d '{"data": []}'
+echo
+
 echo "All tests completed!"

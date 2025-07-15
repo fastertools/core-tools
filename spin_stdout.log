@@ -42,3 +42,4 @@ Available Routes:
   ray-aabb-intersection: http://127.0.0.1:3000/ray-aabb-intersection
   point-line-distance: http://127.0.0.1:3000/point-line-distance
   descriptive-statistics: http://127.0.0.1:3000/descriptive-statistics
+  summary-statistics: http://127.0.0.1:3000/summary-statistics
