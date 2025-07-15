@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -465,5 +465,17 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/ray_aabb_intersection"
 watch = ["tools/math3d/ray_aabb_intersection/src/**/*.rs", "tools/math3d/ray_aabb_intersection/Cargo.toml"]
+
+[[trigger.http]]
+route = "/point-line-distance"
+component = "point-line-distance"
+
+[component.point-line-distance]
+source = "tools/math3d/point_line_distance/target/wasm32-wasip1/release/point_line_distance_tool.wasm"
+allowed_outbound_hosts = []
+[component.point-line-distance.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/point_line_distance"
+watch = ["tools/math3d/point_line_distance/src/**/*.rs", "tools/math3d/point_line_distance/Cargo.toml"]
 
 

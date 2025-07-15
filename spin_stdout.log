@@ -40,3 +40,4 @@ Available Routes:
   sphere-sphere-intersection: http://127.0.0.1:3000/sphere-sphere-intersection
   cylinder-ray-intersection: http://127.0.0.1:3000/cylinder-ray-intersection
   ray-aabb-intersection: http://127.0.0.1:3000/ray-aabb-intersection
+  point-line-distance: http://127.0.0.1:3000/point-line-distance

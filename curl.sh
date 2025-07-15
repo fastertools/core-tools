@@ -222,4 +222,18 @@ echo "Testing ray-AABB intersection error handling (invalid box):"
 curl -X POST $BASE_URL/ray-aabb-intersection -H "Content-Type: application/json" -d '{"aabb": {"min": {"x": 1.0, "y": 1.0, "z": 1.0}, "max": {"x": -1.0, "y": -1.0, "z": -1.0}}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
 echo
 
+# Test 3D distance operations
+echo "=== 3D Distance Operations ==="
+echo "Testing point-line distance (point not on line):"
+curl -X POST $BASE_URL/point-line-distance -H "Content-Type: application/json" -d '{"point": {"x": 2.0, "y": 3.0, "z": 0.0}, "line": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing point-line distance (point on line):"
+curl -X POST $BASE_URL/point-line-distance -H "Content-Type: application/json" -d '{"point": {"x": 5.0, "y": 0.0, "z": 0.0}, "line": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing point-line distance error handling (zero direction):"
+curl -X POST $BASE_URL/point-line-distance -H "Content-Type: application/json" -d '{"point": {"x": 2.0, "y": 3.0, "z": 0.0}, "line": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 0.0, "y": 0.0, "z": 0.0}}}'
+echo
+
 echo "All tests completed!"
