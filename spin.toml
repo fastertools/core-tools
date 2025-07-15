@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -285,5 +285,17 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/rotation_matrix"
 watch = ["tools/math3d/rotation_matrix/src/**/*.rs", "tools/math3d/rotation_matrix/Cargo.toml"]
+
+[[trigger.http]]
+route = "/arbitrary-rotation"
+component = "arbitrary-rotation"
+
+[component.arbitrary-rotation]
+source = "tools/math3d/arbitrary_rotation/target/wasm32-wasip1/release/arbitrary_rotation_tool.wasm"
+allowed_outbound_hosts = []
+[component.arbitrary-rotation.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/arbitrary_rotation"
+watch = ["tools/math3d/arbitrary_rotation/src/**/*.rs", "tools/math3d/arbitrary_rotation/Cargo.toml"]
 
 

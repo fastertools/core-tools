@@ -19,6 +19,9 @@ This project is a container for building tools and functionality to augment LLMs
 - This project serves as a development container during the planning phase
 - Tools are being built with future integration in mind
 - Standard call patterns ensure compatibility when deployment strategy is determined
+- **Development Pattern**: Don't use curl directly. Add/remove curl commands as necessary to a single curl.sh file
+- **Memory Techniques**:
+  - Use the sequential thinking tool often when planning work
 
 ## Current Implementation Status
 
@@ -67,47 +70,34 @@ This project is a container for building tools and functionality to augment LLMs
 8. **3D Volume Calculations** (`/3d/volume/tetrahedron`, `/3d/volume/sphere`, `/3d/volume/cylinder`, `/3d/volume/aabb`, `/3d/volume/pyramid`, `/3d/volume/convex-hull`)
 
 ### Testing Commands Reference
+
+**IMPORTANT: NEVER use curl directly. Always use the curl.sh script for all API testing.**
+
 ```bash
 # Build project
 spin build
 
-# Run locally  
-spin up --listen 127.0.0.1:3000
+# Start test server
+./test_server
 
-# Test API info
-curl http://127.0.0.1:3000/
+# Run all tests (DO NOT use curl directly - use this script)
+./curl.sh
 
-# Test distance calculation (NYC to LA)
-curl -X POST http://127.0.0.1:3000/distance -H "Content-Type: application/json" -d '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}'
+# Stop test server
+./test_server stop
 
-# Test geofencing (point in polygon)
-curl -X POST http://127.0.0.1:3000/geofence/point-in-polygon -H "Content-Type: application/json" -d '{"point": {"lat": 40.7128, "lon": -74.0060}, "polygon": [{"lat": 40.7, "lon": -74.0}, {"lat": 40.72, "lon": -74.0}, {"lat": 40.72, "lon": -74.01}, {"lat": 40.7, "lon": -74.01}]}'
-
-# Test 3D dot product
-curl -X POST http://127.0.0.1:3000/3d/dot-product -H "Content-Type: application/json" -d '{"vector1": {"x": 1.0, "y": 2.0, "z": 3.0}, "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}}'
-
-# Test 3D line intersection
-curl -X POST http://127.0.0.1:3000/3d/line-intersection -H "Content-Type: application/json" -d '{"line1": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}, "line2": {"point": {"x": 1.0, "y": 0.0, "z": 0.0}, "direction": {"x": 0.0, "y": 1.0, "z": 0.0}}}'
-
-# Test 3D rotation matrix (90 degree Z rotation)
-curl -X POST http://127.0.0.1:3000/3d/rotation-matrix -H "Content-Type: application/json" -d '{"axis": "z", "angle": 1.5707963267948966}'
-
-# Test 3D tetrahedron volume
-curl -X POST http://127.0.0.1:3000/3d/volume/tetrahedron -H "Content-Type: application/json" -d '{"point_a": {"x": 0.0, "y": 0.0, "z": 0.0}, "point_b": {"x": 1.0, "y": 0.0, "z": 0.0}, "point_c": {"x": 0.0, "y": 1.0, "z": 0.0}, "point_d": {"x": 0.0, "y": 0.0, "z": 1.0}}'
-
-# Test quaternion SLERP interpolation
-curl -X POST http://127.0.0.1:3000/3d/quaternion-slerp -H "Content-Type: application/json" -d '{"q1": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, "q2": {"x": 0.0, "y": 0.0, "z": 0.707, "w": 0.707}, "t": 0.5}'
-
-# Test coordinate conversion (cartesian to spherical)
-curl -X POST http://127.0.0.1:3000/3d/coordinate-convert -H "Content-Type: application/json" -d '{"from_type": "cartesian", "to_type": "spherical", "coordinates": {"x": 1.0, "y": 1.0, "z": 1.0}}'
+# View server logs
+tail -f spin_*.log
 ```
+
+All curl commands are centralized in curl.sh. To add new tests, edit curl.sh - never run curl commands directly.
 
 ### Development Patterns Established
 - **New Tool Creation**: Add to appropriate folder, implement standard input/output structs with serde
 - **Coordinate Validation**: Use `common::validate_coordinates()` for all GPS inputs
 - **Error Handling**: Return `ErrorResponse` struct with descriptive messages
 - **Route Addition**: Add endpoint match case in lib.rs `handle_tool()` function
-- **Testing**: Verify with real-world coordinates (NYC, LA, London, Paris used as reference points)
+- **Testing**: NEVER use curl directly - always use ./curl.sh script for all API testing
 - **Parallel Development**: Use git worktrees for implementing multiple features simultaneously
 - **Mathematical Accuracy**: Validate all 3D operations against known mathematical results
 - **API Consistency**: Maintain consistent input/output patterns across all endpoints
@@ -162,3 +152,8 @@ Comprehensive roadmap documented in `TOOL_IDEAS.md`:
 - **Time/Date**: Timezone conversions, calendar operations, duration parsing
 - **Text Analysis**: Advanced tokenization, string algorithms, pattern matching
 - **Network/Web**: URL operations, data validation, encoding/decoding
+
+## Development Reminders
+
+- Stop using spin directly, use the test script
+```
