@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -417,5 +417,17 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/pyramid_volume"
 watch = ["tools/math3d/pyramid_volume/src/**/*.rs", "tools/math3d/pyramid_volume/Cargo.toml"]
+
+[[trigger.http]]
+route = "/sphere-ray-intersection"
+component = "sphere-ray-intersection"
+
+[component.sphere-ray-intersection]
+source = "tools/math3d/sphere_ray_intersection/target/wasm32-wasip1/release/sphere_ray_intersection_tool.wasm"
+allowed_outbound_hosts = []
+[component.sphere-ray-intersection.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/sphere_ray_intersection"
+watch = ["tools/math3d/sphere_ray_intersection/src/**/*.rs", "tools/math3d/sphere_ray_intersection/Cargo.toml"]
 
 

@@ -164,4 +164,18 @@ echo "Testing pyramid volume error handling (insufficient base points):"
 curl -X POST $BASE_URL/pyramid-volume -H "Content-Type: application/json" -d '{"base_points": [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 1.0, "y": 0.0, "z": 0.0}], "apex": {"x": 0.5, "y": 1.0, "z": 2.0}}'
 echo
 
+# Test 3D primitive operations
+echo "=== 3D Primitive Operations ==="
+echo "Testing sphere-ray intersection (ray hits sphere):"
+curl -X POST $BASE_URL/sphere-ray-intersection -H "Content-Type: application/json" -d '{"sphere": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 1.0}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing sphere-ray intersection (ray misses sphere):"
+curl -X POST $BASE_URL/sphere-ray-intersection -H "Content-Type: application/json" -d '{"sphere": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": 1.0}, "ray": {"origin": {"x": -2.0, "y": 2.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
+echo "Testing sphere-ray intersection error handling (negative radius):"
+curl -X POST $BASE_URL/sphere-ray-intersection -H "Content-Type: application/json" -d '{"sphere": {"center": {"x": 0.0, "y": 0.0, "z": 0.0}, "radius": -1.0}, "ray": {"origin": {"x": -2.0, "y": 0.0, "z": 0.0}, "direction": {"x": 1.0, "y": 0.0, "z": 0.0}}}'
+echo
+
 echo "All tests completed!"
