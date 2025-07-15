@@ -236,4 +236,26 @@ echo "Testing point-line distance error handling (zero direction):"
 curl -X POST $BASE_URL/point-line-distance -H "Content-Type: application/json" -d '{"point": {"x": 2.0, "y": 3.0, "z": 0.0}, "line": {"point": {"x": 0.0, "y": 0.0, "z": 0.0}, "direction": {"x": 0.0, "y": 0.0, "z": 0.0}}}'
 echo
 
+# Test statistics tools
+echo "=== Statistics Tools ==="
+echo "Testing descriptive statistics (normal data set):"
+curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": [1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]}'
+echo
+
+echo "Testing descriptive statistics (data with mode):"
+curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": [1.0, 2.0, 2.0, 3.0, 3.0, 3.0, 4.0, 5.0]}'
+echo
+
+echo "Testing descriptive statistics (single value):"
+curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": [42.0]}'
+echo
+
+echo "Testing descriptive statistics error handling (empty data):"
+curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": []}'
+echo
+
+echo "Testing descriptive statistics error handling (NaN value):"
+curl -X POST $BASE_URL/descriptive-statistics -H "Content-Type: application/json" -d '{"data": [1.0, 2.0, "NaN", 4.0]}'
+echo
+
 echo "All tests completed!"
