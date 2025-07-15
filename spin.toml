@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -501,5 +501,111 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/statistics/summary_statistics"
 watch = ["tools/statistics/summary_statistics/src/**/*.rs", "tools/statistics/summary_statistics/Cargo.toml"]
+
+[[trigger.http]]
+route = "/pearson-correlation"
+component = "pearson-correlation"
+
+[component.pearson-correlation]
+source = "tools/statistics/pearson_correlation/target/wasm32-wasip1/release/pearson_correlation.wasm"
+allowed_outbound_hosts = []
+[component.pearson-correlation.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/pearson_correlation"
+watch = ["tools/statistics/pearson_correlation/src/**/*.rs", "tools/statistics/pearson_correlation/Cargo.toml"]
+
+[[trigger.http]]
+route = "/spearman-correlation"
+component = "spearman-correlation"
+
+[component.spearman-correlation]
+source = "tools/statistics/spearman_correlation/target/wasm32-wasip1/release/spearman_correlation.wasm"
+allowed_outbound_hosts = []
+[component.spearman-correlation.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/spearman_correlation"
+watch = ["tools/statistics/spearman_correlation/src/**/*.rs", "tools/statistics/spearman_correlation/Cargo.toml"]
+
+[[trigger.http]]
+route = "/correlation-matrix"
+component = "correlation-matrix"
+
+[component.correlation-matrix]
+source = "tools/statistics/correlation_matrix/target/wasm32-wasip1/release/correlation_matrix.wasm"
+allowed_outbound_hosts = []
+[component.correlation-matrix.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/correlation_matrix"
+watch = ["tools/statistics/correlation_matrix/src/**/*.rs", "tools/statistics/correlation_matrix/Cargo.toml"]
+
+[[trigger.http]]
+route = "/linear-regression"
+component = "linear-regression"
+
+[component.linear-regression]
+source = "tools/statistics/linear_regression/target/wasm32-wasip1/release/linear_regression.wasm"
+allowed_outbound_hosts = []
+[component.linear-regression.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/linear_regression"
+watch = ["tools/statistics/linear_regression/src/**/*.rs", "tools/statistics/linear_regression/Cargo.toml"]
+[[trigger.http]]
+route = "/histogram"
+component = "histogram"
+[component.histogram]
+source = "tools/statistics/histogram/target/wasm32-wasip1/release/histogram.wasm"
+allowed_outbound_hosts = []
+[component.histogram.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/histogram"
+watch = ["tools/statistics/histogram/src/**/*.rs", "tools/statistics/histogram/Cargo.toml"]
+
+[[trigger.http]]
+route = "/predict-values"
+component = "predict-values"
+
+[component.predict-values]
+source = "tools/statistics/predict_values/target/wasm32-wasip1/release/predict_values.wasm"
+allowed_outbound_hosts = []
+[component.predict-values.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/predict_values"
+watch = ["tools/statistics/predict_values/src/**/*.rs", "tools/statistics/predict_values/Cargo.toml"]
+
+[[trigger.http]]
+route = "/polynomial-regression"
+component = "polynomial-regression"
+
+[component.polynomial-regression]
+source = "tools/statistics/polynomial_regression/target/wasm32-wasip1/release/polynomial_regression.wasm"
+allowed_outbound_hosts = []
+[component.polynomial-regression.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/polynomial_regression"
+watch = ["tools/statistics/polynomial_regression/src/**/*.rs", "tools/statistics/polynomial_regression/Cargo.toml"]
+
+[[trigger.http]]
+route = "/test-normality"
+component = "test-normality"
+
+[component.test-normality]
+source = "tools/statistics/test_normality/target/wasm32-wasip1/release/test_normality.wasm"
+allowed_outbound_hosts = []
+[component.test-normality.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/test_normality"
+watch = ["tools/statistics/test_normality/src/**/*.rs", "tools/statistics/test_normality/Cargo.toml"]
+
+[[trigger.http]]
+route = "/analyze-distribution"
+component = "analyze-distribution"
+
+[component.analyze-distribution]
+source = "tools/statistics/analyze_distribution/target/wasm32-wasip1/release/analyze_distribution.wasm"
+allowed_outbound_hosts = ["http://histogram.spin.internal", "http://test-normality.spin.internal"]
+[component.analyze-distribution.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/statistics/analyze_distribution"
+watch = ["tools/statistics/analyze_distribution/src/**/*.rs", "tools/statistics/analyze_distribution/Cargo.toml"]
 
 
