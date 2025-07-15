@@ -1,0 +1,57 @@
+Logging component stdio to "../../../.spin/logs/"
+
+Serving http://127.0.0.1:3000
+Available Routes:
+  ftl-mcp-gateway: http://127.0.0.1:3000/mcp
+  distance: http://127.0.0.1:3000/distance
+  bearing: http://127.0.0.1:3000/bearing
+  dot-product: http://127.0.0.1:3000/dot-product
+  polygon-area: http://127.0.0.1:3000/polygon-area
+  point-in-polygon: http://127.0.0.1:3000/point-in-polygon
+  coordinate-conversion: http://127.0.0.1:3000/coordinate-conversion
+  cross-product: http://127.0.0.1:3000/cross-product
+  vector-magnitude: http://127.0.0.1:3000/vector-magnitude
+  line-intersection: http://127.0.0.1:3000/line-intersection
+  buffer-polygon: http://127.0.0.1:3000/buffer-polygon
+  proximity-search: http://127.0.0.1:3000/proximity-search
+  proximity-zone: http://127.0.0.1:3000/proximity-zone
+  add: http://127.0.0.1:3000/add
+  multiply: http://127.0.0.1:3000/multiply
+  square: http://127.0.0.1:3000/square
+  sqrt: http://127.0.0.1:3000/sqrt
+  pythagorean: http://127.0.0.1:3000/pythagorean
+  distance-two-d: http://127.0.0.1:3000/distance-two-d
+  line-plane-intersection: http://127.0.0.1:3000/line-plane-intersection
+  plane-plane-intersection: http://127.0.0.1:3000/plane-plane-intersection
+  point-plane-distance: http://127.0.0.1:3000/point-plane-distance
+  rotation-matrix: http://127.0.0.1:3000/rotation-matrix
+  arbitrary-rotation: http://127.0.0.1:3000/arbitrary-rotation
+  quaternion-from-axis-angle: http://127.0.0.1:3000/quaternion-from-axis-angle
+  quaternion-multiply: http://127.0.0.1:3000/quaternion-multiply
+  quaternion-slerp: http://127.0.0.1:3000/quaternion-slerp
+  matrix-vector-multiply: http://127.0.0.1:3000/matrix-vector-multiply
+  coordinate-conversion-three-d: http://127.0.0.1:3000/coordinate-conversion-three-d
+  tetrahedron-volume: http://127.0.0.1:3000/tetrahedron-volume
+  sphere-volume: http://127.0.0.1:3000/sphere-volume
+  cylinder-volume: http://127.0.0.1:3000/cylinder-volume
+  aabb-volume: http://127.0.0.1:3000/aabb-volume
+  pyramid-volume: http://127.0.0.1:3000/pyramid-volume
+  sphere-ray-intersection: http://127.0.0.1:3000/sphere-ray-intersection
+  sphere-sphere-intersection: http://127.0.0.1:3000/sphere-sphere-intersection
+  cylinder-ray-intersection: http://127.0.0.1:3000/cylinder-ray-intersection
+  ray-aabb-intersection: http://127.0.0.1:3000/ray-aabb-intersection
+  point-line-distance: http://127.0.0.1:3000/point-line-distance
+  descriptive-statistics: http://127.0.0.1:3000/descriptive-statistics
+  summary-statistics: http://127.0.0.1:3000/summary-statistics
+  pearson-correlation: http://127.0.0.1:3000/pearson-correlation
+  spearman-correlation: http://127.0.0.1:3000/spearman-correlation
+  correlation-matrix: http://127.0.0.1:3000/correlation-matrix
+  linear-regression: http://127.0.0.1:3000/linear-regression
+  histogram: http://127.0.0.1:3000/histogram
+  predict-values: http://127.0.0.1:3000/predict-values
+  polynomial-regression: http://127.0.0.1:3000/polynomial-regression
+  test-normality: http://127.0.0.1:3000/test-normality
+  analyze-distribution: http://127.0.0.1:3000/analyze-distribution
+  polygon-simplification: http://127.0.0.1:3000/polygon-simplification
+  vector-angle: http://127.0.0.1:3000/vector-angle
+  line-segment-intersection: http://127.0.0.1:3000/line-segment-intersection
