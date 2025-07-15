@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -607,5 +607,17 @@ allowed_outbound_hosts = ["http://histogram.spin.internal", "http://test-normali
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/statistics/analyze_distribution"
 watch = ["tools/statistics/analyze_distribution/src/**/*.rs", "tools/statistics/analyze_distribution/Cargo.toml"]
+
+[[trigger.http]]
+route = "/polygon-simplification"
+component = "polygon-simplification"
+
+[component.polygon-simplification]
+source = "tools/geospatial/polygon_simplification/target/wasm32-wasip1/release/polygon_simplification_tool.wasm"
+allowed_outbound_hosts = []
+[component.polygon-simplification.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/geospatial/polygon_simplification"
+watch = ["tools/geospatial/polygon_simplification/src/**/*.rs", "tools/geospatial/polygon_simplification/Cargo.toml"]
 
 
