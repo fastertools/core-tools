@@ -90,4 +90,36 @@ echo "Testing quaternion multiplication (identity * rotation):"
 curl -X POST $BASE_URL/quaternion-multiply -H "Content-Type: application/json" -d '{"q1": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, "q2": {"x": 0.0, "y": 0.0, "z": 0.7071067811865475, "w": 0.7071067811865476}}'
 echo
 
+echo "Testing quaternion SLERP (50% interpolation between identity and Z-rotation):"
+curl -X POST $BASE_URL/quaternion-slerp -H "Content-Type: application/json" -d '{"q1": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, "q2": {"x": 0.0, "y": 0.0, "z": 0.7071067811865475, "w": 0.7071067811865476}, "t": 0.5}'
+echo
+
+echo "Testing quaternion SLERP error handling (t > 1.0):"
+curl -X POST $BASE_URL/quaternion-slerp -H "Content-Type: application/json" -d '{"q1": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}, "q2": {"x": 0.0, "y": 0.0, "z": 0.7071067811865475, "w": 0.7071067811865476}, "t": 1.5}'
+echo
+
+# Test matrix operations
+echo "=== Matrix Operations ===" 
+echo "Testing matrix-vector multiplication (rotation example):"
+curl -X POST $BASE_URL/matrix-vector-multiply -H "Content-Type: application/json" -d '{"matrix": {"m00": 0.0, "m01": -1.0, "m02": 0.0, "m10": 1.0, "m11": 0.0, "m12": 0.0, "m20": 0.0, "m21": 0.0, "m22": 1.0}, "vector": {"x": 1.0, "y": 0.0, "z": 0.0}}'
+echo
+
+# Test coordinate conversions
+echo "=== Coordinate Conversions ==="
+echo "Testing cartesian to spherical (point (1,1,1)):"
+curl -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{"from_type": "cartesian", "to_type": "spherical", "coordinates": {"x": 1.0, "y": 1.0, "z": 1.0}}'
+echo
+
+echo "Testing spherical to cartesian (radius=2, theta=π/4, phi=π/3):"
+curl -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{"from_type": "spherical", "to_type": "cartesian", "coordinates": {"x": 2.0, "y": 0.7853981633974483, "z": 1.0471975511965976}}'
+echo
+
+echo "Testing cartesian to cylindrical (point (3,4,5)):"
+curl -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{"from_type": "cartesian", "to_type": "cylindrical", "coordinates": {"x": 3.0, "y": 4.0, "z": 5.0}}'
+echo
+
+echo "Testing invalid conversion type:"
+curl -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{"from_type": "invalid", "to_type": "spherical", "coordinates": {"x": 1.0, "y": 1.0, "z": 1.0}}'
+echo
+
 echo "All tests completed!"

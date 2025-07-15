@@ -72,25 +72,27 @@ This project is a container for building tools and functionality to augment LLMs
 ### Testing Commands Reference
 
 **IMPORTANT: NEVER use curl directly. Always use the curl.sh script for all API testing.**
+**IMPORTANT: NEVER use spin directly. Always use the test_server script for server management.**
 
 ```bash
-# Build project
-spin build
-
-# Start test server
+# Build and start test server (DO NOT use spin build/up directly)
 ./test_server
 
 # Run all tests (DO NOT use curl directly - use this script)
 ./curl.sh
 
-# Stop test server
+# Stop test server (DO NOT use pkill spin directly)
 ./test_server stop
+
+# Restart test server
+./test_server restart
 
 # View server logs
 tail -f spin_*.log
 ```
 
 All curl commands are centralized in curl.sh. To add new tests, edit curl.sh - never run curl commands directly.
+All server management is done via test_server script. NEVER run spin commands directly.
 
 ### Development Patterns Established
 - **New Tool Creation**: Add to appropriate folder, implement standard input/output structs with serde
@@ -98,6 +100,7 @@ All curl commands are centralized in curl.sh. To add new tests, edit curl.sh - n
 - **Error Handling**: Return `ErrorResponse` struct with descriptive messages
 - **Route Addition**: Add endpoint match case in lib.rs `handle_tool()` function
 - **Testing**: NEVER use curl directly - always use ./curl.sh script for all API testing
+- **Server Management**: NEVER use spin directly - always use ./test_server script for build/start/stop operations
 - **Parallel Development**: Use git worktrees for implementing multiple features simultaneously
 - **Mathematical Accuracy**: Validate all 3D operations against known mathematical results
 - **API Consistency**: Maintain consistent input/output patterns across all endpoints
@@ -155,5 +158,14 @@ Comprehensive roadmap documented in `TOOL_IDEAS.md`:
 
 ## Development Reminders
 
-- Stop using spin directly, use the test script
+**CRITICAL: NEVER use curl or spin commands directly. Always use scripts:**
+- For API testing: Use ./curl.sh (NEVER use curl directly)
+- For server management: Use ./test_server (NEVER use spin build/up/down directly)
+
+**CRITICAL: ALWAYS commit major milestones immediately:**
+- When completing segments or major tool groups, commit with detailed messages
+- Include test evidence and completion status in commit messages
+- Use 🤖 Generated with [Claude Code] tag and Co-Authored-By: Claude
+- Update memory and segments files BEFORE committing
+- Don't forget to commit - major work should be preserved in git history
 ```
