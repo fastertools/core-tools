@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wasm-tools-batch-${{ matrix.batch }}
-          path: tools/*/target/wasm32-wasip1/release/*.wasm
+          path: target/wasm32-wasip1/release/*.wasm
           retention-days: 7
 
   build-container:
@@ -217,6 +217,7 @@ jobs:
       - name: Copy artifacts to expected locations
         run: |
           # Copy WASM files to their expected locations in the tools directory structure
+          # With workspace builds, WASM files are in the workspace target directory
           find artifacts -name "*.wasm" | while read wasm_file; do
             filename=$(basename "$wasm_file")
             echo "Processing WASM file: $filename"
@@ -225,9 +226,9 @@ jobs:
             found=false
             find tools -name "Cargo.toml" | while read cargo_file; do
               tool_dir=$(dirname "$cargo_file")
-              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
               
-              if [[ "$filename" == "${expected_name}"* ]]; then
+              if [[ "$filename" == "${expected_name}.wasm" ]]; then
                 mkdir -p "$tool_dir/target/wasm32-wasip1/release"
                 cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
                 echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
@@ -281,21 +282,27 @@ jobs:
 
       - name: Copy artifacts and test
         run: |
-          # Copy WASM files to expected locations
+          # Copy WASM files to expected locations for testing
           find artifacts -name "*.wasm" | while read wasm_file; do
             filename=$(basename "$wasm_file")
             echo "Processing WASM file for test: $filename"
             
+            found=false
             find tools -name "Cargo.toml" | while read cargo_file; do
               tool_dir=$(dirname "$cargo_file")
-              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
-              if [[ "$filename" == "${expected_name}"* ]]; then
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
+              if [[ "$filename" == "${expected_name}.wasm" ]]; then
                 mkdir -p "$tool_dir/target/wasm32-wasip1/release"
                 cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
                 echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
+                found=true
                 break
               fi
             done
+            
+            if [ "$found" = false ]; then
+              echo "Warning: No matching tool directory found for $filename"
+            fi
           done
           
           # Basic smoke test - check if spin can load the app
