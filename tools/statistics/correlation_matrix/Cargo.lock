@@ -94,6 +94,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
+name = "correlation-matrix"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "dyn-clone"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -584,17 +595,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "summary-statistics"
-version = "0.1.0"
-dependencies = [
- "ftl-sdk",
- "schemars",
- "serde",
- "serde_json",
- "spin-sdk",
-]
 
 [[package]]
 name = "syn"

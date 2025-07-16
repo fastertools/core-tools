@@ -43,3 +43,16 @@ Available Routes:
   point-line-distance: http://127.0.0.1:3000/point-line-distance
   descriptive-statistics: http://127.0.0.1:3000/descriptive-statistics
   summary-statistics: http://127.0.0.1:3000/summary-statistics
+  pearson-correlation: http://127.0.0.1:3000/pearson-correlation
+  spearman-correlation: http://127.0.0.1:3000/spearman-correlation
+  correlation-matrix: http://127.0.0.1:3000/correlation-matrix
+  linear-regression: http://127.0.0.1:3000/linear-regression
+  histogram: http://127.0.0.1:3000/histogram
+  predict-values: http://127.0.0.1:3000/predict-values
+  polynomial-regression: http://127.0.0.1:3000/polynomial-regression
+  test-normality: http://127.0.0.1:3000/test-normality
+  analyze-distribution: http://127.0.0.1:3000/analyze-distribution
+  polygon-simplification: http://127.0.0.1:3000/polygon-simplification
+  vector-angle: http://127.0.0.1:3000/vector-angle
+  line-segment-intersection: http://127.0.0.1:3000/line-segment-intersection
+  multiple-line-intersection: http://127.0.0.1:3000/multiple-line-intersection

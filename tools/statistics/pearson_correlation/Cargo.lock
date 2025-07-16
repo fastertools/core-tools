@@ -354,6 +354,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
+name = "pearson-correlation"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -584,17 +595,6 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
-name = "summary-statistics"
-version = "0.1.0"
-dependencies = [
- "ftl-sdk",
- "schemars",
- "serde",
- "serde_json",
- "spin-sdk",
-]
 
 [[package]]
 name = "syn"
