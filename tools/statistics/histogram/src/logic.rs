@@ -44,7 +44,7 @@ pub fn generate_histogram(input: HistogramInput) -> Result<HistogramOutput, Stri
     // Determine number of bins (use Sturges' rule if not specified)
     let num_bins = input.num_bins.unwrap_or_else(|| {
         let n = data.len() as f64;
-        ((n.ln() / 2.0_f64.ln()).ceil() as usize).max(1).min(50)
+        ((n.ln() / 2.0_f64.ln()).ceil() as usize + 1).max(1).min(50)
     });
     
     let range = max_val - min_val;
@@ -59,12 +59,23 @@ pub fn generate_histogram(input: HistogramInput) -> Result<HistogramOutput, Stri
         let bin_index = if value == max_val {
             num_bins - 1 // Put max value in last bin
         } else {
-            ((value - min_val) / bin_width).floor() as usize
+            let exact_index = (value - min_val) / bin_width;
+            let index = exact_index.floor() as usize;
+            
+            if index >= num_bins {
+                num_bins - 1
+            } else {
+                // Check if value is exactly on a bin boundary
+                if (exact_index.fract()).abs() < 1e-10 && index > 0 {
+                    // Value is exactly on boundary, put in previous bin
+                    index - 1
+                } else {
+                    index
+                }
+            }
         };
         
-        if bin_index < num_bins {
-            counts[bin_index] += 1;
-        }
+        counts[bin_index] += 1;
     }
     
     // Create histogram bins
