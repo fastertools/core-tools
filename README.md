@@ -74,9 +74,26 @@ core-tools/
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- [Rust](https://rustup.rs/) (latest stable)
-- [Spin CLI](https://spin.fermyon.dev/quickstart/) (optional for development)
+### Option 1: Run from Container Registry (Recommended)
+```bash
+# Install Spin CLI if you haven't already
+curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+sudo mv spin /usr/local/bin/
+
+# Run the latest version
+spin up --from ghcr.io/fastertools/core-tools:latest
+
+# Run a specific version
+spin up --from ghcr.io/fastertools/core-tools:feat-core-tools
+```
+
+The server will start on http://127.0.0.1:3000 with all 55+ tools available.
+
+### Option 2: Build and Run Locally
+
+#### Prerequisites
+- [Rust](https://rustup.rs/) (latest stable with wasm32-wasip1 target)
+- [Spin CLI](https://spin.fermyon.dev/quickstart/)
 - FTL SDK (included in tool dependencies)
 
 ### Building Tools
@@ -368,6 +385,30 @@ make dev-setup
 - Update documentation as needed
 - Maintain API consistency across tools
 - Use `make build-changed` for fast iteration during development
+
+## 🚢 CI/CD and Deployment
+
+### Automated Pipeline
+Every push to main triggers our GitHub Actions workflow:
+1. **Parallel Build**: 8 concurrent jobs build all 55+ tools
+2. **Memory Optimization**: Single-threaded builds to stay within 7GB limit
+3. **Artifact Collection**: WASM files collected and merged
+4. **Registry Publishing**: Spin OCI artifacts pushed to GitHub Container Registry
+5. **Multi-tag Support**: Latest, branch names, and commit SHAs
+
+### Registry Tags
+- `ghcr.io/fastertools/core-tools:latest` - Latest main branch build
+- `ghcr.io/fastertools/core-tools:feat-core-tools` - Feature branch builds
+- `ghcr.io/fastertools/core-tools:sha-7191438` - Specific commit builds
+
+### Running Published Images
+```bash
+# Production deployment
+spin up --from ghcr.io/fastertools/core-tools:latest --listen 0.0.0.0:3000
+
+# Test specific version
+spin up --from ghcr.io/fastertools/core-tools:sha-7191438
+```
 
 ## 📄 License
 

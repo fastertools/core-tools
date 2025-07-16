@@ -104,6 +104,9 @@ Each tool is a standalone WebAssembly component using the FTL SDK:
 - ✅ **Zero technical debt** - Clean, modern codebase with no legacy dependencies
 - ✅ **Production-ready APIs** - Comprehensive error handling and validation
 - ✅ **Comprehensive testing** - All tools validated and operational
+- ✅ **CI/CD Pipeline** - Automated build, test, and publish workflow via GitHub Actions
+- ✅ **OCI Registry Integration** - Spin apps published to GitHub Container Registry
+- ✅ **First Successful Merge** - Project merged to main branch with full CI/CD support
 - ✅ **Optimized CI/CD Pipeline** - GitHub Actions builds all 55 tools reliably using memory-optimized batching
 
 ## CI/CD Configuration
@@ -121,6 +124,53 @@ The project uses a memory-optimized build strategy to compile 55+ WebAssembly to
 - **Build Command**: `cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1`
 - **Batch Formula**: `TOOLS_PER_BATCH = (TOTAL_TOOLS + 7) / 8` (rounds up for even distribution)
 
+## Deployment and Usage
+
+### Running from OCI Registry
+The Spin application is automatically published to GitHub Container Registry on every push to main:
+
+```bash
+# Run the latest version
+spin up --from ghcr.io/fastertools/core-tools:latest
+
+# Run a specific branch version
+spin up --from ghcr.io/fastertools/core-tools:feat-core-tools
+
+# Run a specific commit
+spin up --from ghcr.io/fastertools/core-tools:sha-7191438
+```
+
+### Local Development
+```bash
+# Build all tools
+./build_all.sh
+
+# Start the server
+./test_server start
+
+# Test tools
+./curl.sh distance '{"point1": {"lat": 40.7128, "lon": -74.0060}, "point2": {"lat": 34.0522, "lon": -118.2437}}'
+
+# Stop the server
+./test_server stop
+```
+
+## CI/CD Pipeline Details
+
+### GitHub Actions Workflow
+- **Trigger**: Push to main or feat/core-tools branches, PRs to main
+- **Build Strategy**: 8 parallel jobs to handle memory constraints
+- **Memory Optimization**: Single-threaded builds (`--jobs 1`) to stay within 7GB limit
+- **Artifact Management**: WASM files collected and merged for deployment
+- **Registry Publishing**: Spin-native OCI artifacts (not generic Docker containers)
+
+### Key Learnings
+1. **Memory Management**: GitHub Actions runners have 7GB RAM limit requiring build batching
+2. **Spin OCI Format**: Must use `spin registry push` for proper metadata inclusion
+3. **Tag Formatting**: Branch names with slashes need conversion (feat/core-tools → feat-core-tools)
+4. **WASM Path Resolution**: All components reference workspace target directory
+5. **Package Naming**: Consistency between Cargo package names and expected WASM filenames
+
 ## Future Development
 
 See `TOOL_IDEAS.md` for comprehensive roadmap of potential enhancements across:
@@ -129,4 +179,4 @@ See `TOOL_IDEAS.md` for comprehensive roadmap of potential enhancements across:
 - Data processing tools (CSV/JSON parsing, array operations)
 - Network utilities (URL operations, data validation)
 
-This project demonstrates a successful transformation from monolithic architecture to a highly scalable, maintainable microservice suite for LLM augmentation.
+This project demonstrates a successful transformation from monolithic architecture to a highly scalable, maintainable microservice suite for LLM augmentation, now with full CI/CD automation and container registry distribution.
