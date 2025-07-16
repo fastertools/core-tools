@@ -1,0 +1,306 @@
+name: Build and Publish Tools
+
+on:
+  push:
+    branches: [ main, feat/core-tools ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed-tools: ${{ steps.changes.outputs.tools }}
+      has-changes: ${{ steps.changes.outputs.has-changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed tools
+        id: changes
+        run: |
+          # Get the base branch for comparison
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_REF="origin/main"
+          fi
+          
+          echo "Comparing against: $BASE_REF"
+          
+          # Get list of changed files
+          if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
+          else
+            echo "Base ref not found, will build all tools"
+            CHANGED_FILES=$(find tools -name "*.rs" -o -name "Cargo.toml")
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Extract unique tool directories from changed files
+          CHANGED_TOOLS=$(echo "$CHANGED_FILES" | grep "^tools/" | cut -d'/' -f1-3 | sort -u | tr '\n' ' ')
+          
+          if [ -n "$CHANGED_TOOLS" ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "tools=$CHANGED_TOOLS" >> $GITHUB_OUTPUT
+            echo "Changed tools: $CHANGED_TOOLS"
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "tools=" >> $GITHUB_OUTPUT
+            echo "No tool changes detected"
+          fi
+
+  build-tools:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Split tools into batches for parallel processing
+        batch: [1, 2, 3, 4]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/*/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('tools/**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build tools (batch ${{ matrix.batch }})
+        run: |
+          # Get all tools and split into batches
+          ALL_TOOLS=($(./build_all.sh list | grep "^  " | sed 's/^  //'))
+          TOTAL_TOOLS=${#ALL_TOOLS[@]}
+          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 3) / 4 ))  # Round up division by 4
+          
+          START_INDEX=$(( (${{ matrix.batch }} - 1) * TOOLS_PER_BATCH ))
+          END_INDEX=$(( START_INDEX + TOOLS_PER_BATCH ))
+          
+          if [ $END_INDEX -gt $TOTAL_TOOLS ]; then
+            END_INDEX=$TOTAL_TOOLS
+          fi
+          
+          echo "Building batch ${{ matrix.batch }}: tools $START_INDEX to $((END_INDEX-1))"
+          
+          # Build tools in this batch
+          for i in $(seq $START_INDEX $((END_INDEX-1))); do
+            if [ $i -lt $TOTAL_TOOLS ]; then
+              TOOL=${ALL_TOOLS[$i]}
+              echo "Building $TOOL..."
+              cd "tools/$(echo $TOOL | tr '/' '/')"
+              cargo build --target wasm32-wasip1 --release
+              cd - > /dev/null
+            fi
+          done
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-tools-batch-${{ matrix.batch }}
+          path: tools/*/target/wasm32-wasip1/release/*.wasm
+          retention-days: 7
+
+  build-container:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile << 'EOF'
+          FROM scratch
+          
+          # Copy all built WASM files
+          COPY artifacts/ /tools/
+          
+          # Metadata
+          LABEL org.opencontainers.image.title="Core Tools"
+          LABEL org.opencontainers.image.description="WebAssembly computational tools for LLM augmentation"
+          LABEL org.opencontainers.image.source="https://github.com/${{ github.repository }}"
+          LABEL org.opencontainers.image.licenses="MIT"
+          EOF
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publish-spin-app:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Install Spin CLI
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+
+      - name: Copy artifacts to expected locations
+        run: |
+          # Copy WASM files to their expected locations in the tools directory structure
+          find artifacts -name "*.wasm" | while read wasm_file; do
+            filename=$(basename "$wasm_file")
+            # Find the matching tool directory and copy the WASM file there
+            find tools -name "Cargo.toml" | while read cargo_file; do
+              tool_dir=$(dirname "$cargo_file")
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
+              if [[ "$filename" == "${expected_name}"* ]]; then
+                mkdir -p "$tool_dir/target/wasm32-wasip1/release"
+                cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
+                echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
+                break
+              fi
+            done
+          done
+
+      - name: Create Spin app package
+        run: |
+          # Create a deployable package with spin.toml and all WASM artifacts
+          mkdir -p spin-package
+          cp spin.toml spin-package/
+          cp -r tools spin-package/
+          
+          # Create a tarball
+          tar -czf core-tools-spin-app.tar.gz -C spin-package .
+
+      - name: Upload Spin app package
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-tools-spin-app
+          path: core-tools-spin-app.tar.gz
+          retention-days: 30
+
+  test-tools:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Install Spin CLI
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+
+      - name: Copy artifacts and test
+        run: |
+          # Copy WASM files to expected locations
+          find artifacts -name "*.wasm" | while read wasm_file; do
+            filename=$(basename "$wasm_file")
+            find tools -name "Cargo.toml" | while read cargo_file; do
+              tool_dir=$(dirname "$cargo_file")
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
+              if [[ "$filename" == "${expected_name}"* ]]; then
+                mkdir -p "$tool_dir/target/wasm32-wasip1/release"
+                cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
+                break
+              fi
+            done
+          done
+          
+          # Basic smoke test - check if spin can load the app
+          timeout 30s spin up --listen 127.0.0.1:3000 &
+          SPIN_PID=$!
+          
+          # Wait for spin to start
+          sleep 5
+          
+          # Test a simple endpoint
+          curl -f http://127.0.0.1:3000/distance -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}' || exit 1
+          
+          # Clean up
+          kill $SPIN_PID || true
+
+  cleanup:
+    needs: [build-container, publish-spin-app, test-tools]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clean up artifacts
+        run: |
+          echo "Build and publish workflow completed"
+          echo "Container images and packages are available in GitHub Container Registry"

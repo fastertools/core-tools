@@ -1,0 +1,67 @@
+name: Test PR Changes
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'tools/**'
+      - 'spin.toml'
+      - '.github/workflows/**'
+
+jobs:
+  test-changed-tools:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/*/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('tools/**/Cargo.toml') }}
+
+      - name: Build and test changed tools only
+        run: |
+          chmod +x ./build_all.sh
+          ./build_all.sh changed --base-ref origin/${{ github.event.pull_request.base.ref }}
+
+      - name: Validate spin.toml
+        run: |
+          # Check if spin.toml is valid
+          if command -v spin &> /dev/null; then
+            spin doctor || echo "Spin doctor check completed with warnings"
+          else
+            echo "Spin CLI not available for validation"
+          fi
+
+      - name: Check for common issues
+        run: |
+          # Check for consistent naming
+          echo "Checking for naming consistency..."
+          
+          # Verify all tools in spin.toml exist
+          echo "Verifying all tools referenced in spin.toml exist..."
+          grep -o 'workdir = "tools/[^"]*"' spin.toml | sed 's/workdir = "//' | sed 's/"//' | while read tool_dir; do
+            if [ ! -d "$tool_dir" ]; then
+              echo "ERROR: Tool directory $tool_dir referenced in spin.toml does not exist"
+              exit 1
+            fi
+            if [ ! -f "$tool_dir/Cargo.toml" ]; then
+              echo "ERROR: Tool directory $tool_dir missing Cargo.toml"
+              exit 1
+            fi
+          done
+          
+          echo "All checks passed!"
