@@ -1,15 +1,18 @@
 use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::Deserialize;
 
-#[derive(Deserialize, Serialize, JsonSchema, Clone, Debug)]
+mod logic;
+use logic::{point_plane_distance_logic, PointPlaneInput as LogicInput, Vector3D as LogicVector3D, Plane3D as LogicPlane3D};
+
+#[derive(Deserialize, JsonSchema, Clone, Debug)]
 struct Vector3D {
     x: f64,
     y: f64,
     z: f64,
 }
 
-#[derive(Deserialize, Serialize, JsonSchema, Clone, Debug)]
+#[derive(Deserialize, JsonSchema, Clone, Debug)]
 struct Plane3D {
     /// A point on the plane
     point: Vector3D,
@@ -25,133 +28,38 @@ struct PointPlaneInput {
     plane: Plane3D,
 }
 
-#[derive(Serialize)]
-struct PointPlaneResult {
-    /// Absolute distance from point to plane
-    distance: f64,
-    /// Signed distance (positive if point is on the side of normal, negative otherwise)
-    signed_distance: f64,
-    /// Closest point on the plane to the given point
-    closest_point_on_plane: Vector3D,
-    /// Whether the point lies exactly on the plane
-    is_on_plane: bool,
-    /// Which side of the plane the point is on
-    side_of_plane: String,
-}
-
-const EPSILON: f64 = 1e-10;
-
-impl Vector3D {
-    fn dot(&self, other: &Vector3D) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-
-    fn subtract(&self, other: &Vector3D) -> Vector3D {
-        Vector3D {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-
-    fn add(&self, other: &Vector3D) -> Vector3D {
-        Vector3D {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-
-    fn scale(&self, scalar: f64) -> Vector3D {
-        Vector3D {
-            x: self.x * scalar,
-            y: self.y * scalar,
-            z: self.z * scalar,
-        }
-    }
-
-    fn magnitude(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    fn normalize(&self) -> Result<Vector3D, String> {
-        let mag = self.magnitude();
-        if mag < EPSILON {
-            return Err("Cannot normalize zero vector".to_string());
-        }
-        Ok(self.scale(1.0 / mag))
-    }
-
-    fn is_zero(&self) -> bool {
-        self.magnitude() < EPSILON
+impl From<Vector3D> for LogicVector3D {
+    fn from(v: Vector3D) -> Self {
+        LogicVector3D { x: v.x, y: v.y, z: v.z }
     }
 }
 
-impl Plane3D {
-    fn distance_to_point(&self, point: &Vector3D) -> f64 {
-        let normal_unit = match self.normal.normalize() {
-            Ok(n) => n,
-            Err(_) => return 0.0,
-        };
-        
-        let to_point = point.subtract(&self.point);
-        to_point.dot(&normal_unit).abs()
+impl From<Plane3D> for LogicPlane3D {
+    fn from(p: Plane3D) -> Self {
+        LogicPlane3D {
+            point: p.point.into(),
+            normal: p.normal.into(),
+        }
     }
+}
 
-    fn signed_distance_to_point(&self, point: &Vector3D) -> f64 {
-        let normal_unit = match self.normal.normalize() {
-            Ok(n) => n,
-            Err(_) => return 0.0,
-        };
-        
-        let to_point = point.subtract(&self.point);
-        to_point.dot(&normal_unit)
-    }
-
-    fn project_point(&self, point: &Vector3D) -> Vector3D {
-        let normal_unit = match self.normal.normalize() {
-            Ok(n) => n,
-            Err(_) => return point.clone(),
-        };
-        
-        let signed_dist = self.signed_distance_to_point(point);
-        point.subtract(&normal_unit.scale(signed_dist))
+impl From<PointPlaneInput> for LogicInput {
+    fn from(input: PointPlaneInput) -> Self {
+        LogicInput {
+            point: input.point.into(),
+            plane: input.plane.into(),
+        }
     }
 }
 
 /// Calculate the distance from a point to a plane in 3D space
 /// Returns both signed and unsigned distance, the closest point on the plane, and which side of the plane the point is on
-#[tool]
+#[cfg_attr(not(test), tool)]
 fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
-    let point = &input.point;
-    let plane = &input.plane;
-
-    if plane.normal.is_zero() {
-        return ToolResponse::text(serde_json::to_string(&serde_json::json!({
-            "error": "Plane normal vector cannot be zero"
-        })).unwrap());
+    match point_plane_distance_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(error) => ToolResponse::text(serde_json::to_string(&serde_json::json!({
+            "error": error
+        })).unwrap()),
     }
-
-    let distance = plane.distance_to_point(point);
-    let signed_distance = plane.signed_distance_to_point(point);
-    let closest_point_on_plane = plane.project_point(point);
-    let is_on_plane = distance < EPSILON;
-    
-    let side_of_plane = if is_on_plane {
-        "on_plane".to_string()
-    } else if signed_distance > 0.0 {
-        "positive".to_string()
-    } else {
-        "negative".to_string()
-    };
-
-    let result = PointPlaneResult {
-        distance,
-        signed_distance,
-        closest_point_on_plane,
-        is_on_plane,
-        side_of_plane,
-    };
-
-    ToolResponse::text(serde_json::to_string(&result).unwrap())
 }
