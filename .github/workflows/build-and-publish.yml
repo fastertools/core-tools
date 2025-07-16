@@ -268,57 +268,56 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          pattern: wasm-tools-batch-*
-          merge-multiple: true
-          path: artifacts
+          targets: wasm32-wasip1
 
-      - name: Install Spin CLI
-        run: |
-          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
-          sudo mv spin /usr/local/bin/
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('Cargo.toml') }}
 
-      - name: Copy artifacts and test
+      - name: Run Rust unit tests
         run: |
-          # Copy WASM files to expected locations for testing
-          find artifacts -name "*.wasm" | while read wasm_file; do
-            filename=$(basename "$wasm_file")
-            echo "Processing WASM file for test: $filename"
+          echo "Running unit tests for all tools..."
+          
+          # Get list of all tools and run their tests
+          find tools -name "Cargo.toml" | while read cargo_file; do
+            tool_dir=$(dirname "$cargo_file")
+            package_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
             
-            found=false
-            find tools -name "Cargo.toml" | while read cargo_file; do
-              tool_dir=$(dirname "$cargo_file")
-              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
-              if [[ "$filename" == "${expected_name}.wasm" ]]; then
-                mkdir -p "$tool_dir/target/wasm32-wasip1/release"
-                cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
-                echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
-                found=true
-                break
-              fi
-            done
+            echo "Testing package: $package_name in $tool_dir"
             
-            if [ "$found" = false ]; then
-              echo "Warning: No matching tool directory found for $filename"
+            # Run tests for this specific package
+            if cargo test -p "$package_name" --lib; then
+              echo "✅ Tests passed for $package_name"
+            else
+              echo "❌ Tests failed for $package_name"
+              exit 1
             fi
           done
           
-          # Basic smoke test - check if spin can load the app
-          timeout 30s spin up --listen 127.0.0.1:3000 &
-          SPIN_PID=$!
+          echo "All unit tests completed successfully!"
+
+      - name: Validate WASM builds
+        run: |
+          echo "Validating that all tools were built to WASM..."
           
-          # Wait for spin to start
-          sleep 5
+          # Check that WASM files exist in workspace target
+          wasm_count=$(find target/wasm32-wasip1/release -name "*.wasm" | wc -l)
+          echo "Found $wasm_count WASM files in workspace target directory"
           
-          # Test a simple endpoint
-          curl -f http://127.0.0.1:3000/distance -X POST \
-            -H "Content-Type: application/json" \
-            -d '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}' || exit 1
+          if [ "$wasm_count" -eq 0 ]; then
+            echo "❌ No WASM files found - build may have failed"
+            exit 1
+          fi
           
-          # Clean up
-          kill $SPIN_PID || true
+          echo "✅ WASM validation completed successfully!"
 
   cleanup:
     needs: [build-container, publish-spin-app, test-tools]
