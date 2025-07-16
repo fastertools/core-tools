@@ -132,6 +132,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "spin-sdk",
 ]
 
 [[package]]
@@ -571,6 +572,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "spin-sdk",
 ]
 
 [[package]]
@@ -1055,6 +1057,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "spin-sdk",
 ]
 
 [[package]]
