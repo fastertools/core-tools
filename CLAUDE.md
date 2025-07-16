@@ -104,6 +104,22 @@ Each tool is a standalone WebAssembly component using the FTL SDK:
 - ✅ **Zero technical debt** - Clean, modern codebase with no legacy dependencies
 - ✅ **Production-ready APIs** - Comprehensive error handling and validation
 - ✅ **Comprehensive testing** - All tools validated and operational
+- ✅ **Optimized CI/CD Pipeline** - GitHub Actions builds all 55 tools reliably using memory-optimized batching
+
+## CI/CD Configuration
+
+### GitHub Actions Build Optimization
+The project uses a memory-optimized build strategy to compile 55+ WebAssembly tools:
+
+- **8 Parallel Build Batches**: Splits tools into 8 jobs (~7 tools each) to avoid OOM on 7GB runners
+- **Single-threaded Compilation**: Uses `--jobs 1` flag to prevent memory exhaustion
+- **Artifact-based Testing**: Build jobs upload WASM artifacts for centralized validation
+- **Dependency Caching**: Shares Cargo cache between matrix jobs for faster builds
+
+### Key Build Parameters
+- **Memory Limit**: GitHub Actions ubuntu-latest runners have 7GB RAM
+- **Build Command**: `cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1`
+- **Batch Formula**: `TOOLS_PER_BATCH = (TOTAL_TOOLS + 7) / 8` (rounds up for even distribution)
 
 ## Future Development
 
