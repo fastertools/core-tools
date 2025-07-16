@@ -108,9 +108,15 @@ jobs:
             if [ $i -lt $TOTAL_TOOLS ]; then
               TOOL=${ALL_TOOLS[$i]}
               echo "Building $TOOL..."
-              cd "tools/$(echo $TOOL | tr '/' '/')"
-              cargo build --target wasm32-wasip1 --release
-              cd - > /dev/null
+              TOOL_PATH="tools/${TOOL}"
+              if [ -d "$TOOL_PATH" ] && [ -f "$TOOL_PATH/Cargo.toml" ]; then
+                cd "$TOOL_PATH"
+                cargo build --target wasm32-wasip1 --release
+                cd - > /dev/null
+              else
+                echo "ERROR: Tool directory $TOOL_PATH not found or missing Cargo.toml"
+                exit 1
+              fi
             fi
           done
 
@@ -212,17 +218,26 @@ jobs:
           # Copy WASM files to their expected locations in the tools directory structure
           find artifacts -name "*.wasm" | while read wasm_file; do
             filename=$(basename "$wasm_file")
+            echo "Processing WASM file: $filename"
+            
             # Find the matching tool directory and copy the WASM file there
+            found=false
             find tools -name "Cargo.toml" | while read cargo_file; do
               tool_dir=$(dirname "$cargo_file")
               expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
+              
               if [[ "$filename" == "${expected_name}"* ]]; then
                 mkdir -p "$tool_dir/target/wasm32-wasip1/release"
                 cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
                 echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
+                found=true
                 break
               fi
             done
+            
+            if [ "$found" = false ]; then
+              echo "Warning: No matching tool directory found for $filename"
+            fi
           done
 
       - name: Create Spin app package
@@ -268,12 +283,15 @@ jobs:
           # Copy WASM files to expected locations
           find artifacts -name "*.wasm" | while read wasm_file; do
             filename=$(basename "$wasm_file")
+            echo "Processing WASM file for test: $filename"
+            
             find tools -name "Cargo.toml" | while read cargo_file; do
               tool_dir=$(dirname "$cargo_file")
               expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2 | sed 's/-/_/g')
               if [[ "$filename" == "${expected_name}"* ]]; then
                 mkdir -p "$tool_dir/target/wasm32-wasip1/release"
                 cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
+                echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
                 break
               fi
             done
