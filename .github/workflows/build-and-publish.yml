@@ -64,8 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Split tools into batches for parallel processing
-        batch: [1, 2, 3, 4]
+        # Split tools into smaller batches to avoid memory issues on 7GB runners
+        batch: [1, 2, 3, 4, 5, 6, 7, 8]
     
     steps:
       - name: Checkout repository
@@ -92,7 +92,7 @@ jobs:
           # Get all tools and split into batches
           ALL_TOOLS=($(./build_all.sh list | grep "^  " | sed 's/^  //'))
           TOTAL_TOOLS=${#ALL_TOOLS[@]}
-          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 3) / 4 ))  # Round up division by 4
+          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 7) / 8 ))  # Round up division by 8
           
           START_INDEX=$(( (${{ matrix.batch }} - 1) * TOOLS_PER_BATCH ))
           END_INDEX=$(( START_INDEX + TOOLS_PER_BATCH ))
@@ -113,7 +113,8 @@ jobs:
                 # Get the package name from Cargo.toml
                 PACKAGE_NAME=$(grep '^name = ' "$TOOL_PATH/Cargo.toml" | cut -d'"' -f2)
                 echo "Building package $PACKAGE_NAME in $TOOL_PATH"
-                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release
+                # Use single-threaded builds to avoid OOM on 7GB runners
+                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1
               else
                 echo "ERROR: Tool directory $TOOL_PATH not found or missing Cargo.toml"
                 exit 1
