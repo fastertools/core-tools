@@ -305,13 +305,20 @@ jobs:
           
           echo "All unit tests completed successfully!"
 
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
       - name: Validate WASM builds
         run: |
           echo "Validating that all tools were built to WASM..."
           
-          # Check that WASM files exist in workspace target
-          wasm_count=$(find target/wasm32-wasip1/release -name "*.wasm" | wc -l)
-          echo "Found $wasm_count WASM files in workspace target directory"
+          # Check that WASM files exist in artifacts
+          wasm_count=$(find artifacts -name "*.wasm" | wc -l)
+          echo "Found $wasm_count WASM files in artifacts directory"
           
           if [ "$wasm_count" -eq 0 ]; then
             echo "❌ No WASM files found - build may have failed"
