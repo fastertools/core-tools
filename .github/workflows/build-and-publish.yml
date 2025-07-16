@@ -159,7 +159,10 @@ jobs:
           # Spin registry push expects WASM files in the workspace target directory
           mkdir -p target/wasm32-wasip1/release
           cp artifacts/*.wasm target/wasm32-wasip1/release/
+          echo "=== Listing WASM files in target directory ==="
           ls -la target/wasm32-wasip1/release/
+          echo "=== Checking for vector_magnitude files ==="
+          ls -la target/wasm32-wasip1/release/ | grep vector_magnitude || true
 
       - name: Log in to Container Registry
         run: |
@@ -177,7 +180,13 @@ jobs:
             TAG="sha-$(echo "${{ github.sha }}" | cut -c1-7)"
           fi
           
-          # Push with multiple tags
+          # Debug: Show current directory and spin.toml content
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Checking spin.toml exists ==="
+          ls -la spin.toml
+          
+          # Push with multiple tags (without --build since we already have the WASM files)
           spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${TAG}"
           spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
           
