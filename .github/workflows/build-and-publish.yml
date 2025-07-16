@@ -172,7 +172,7 @@ jobs:
         run: |
           # Extract version info for tagging
           if [[ "${{ github.ref }}" == "refs/heads/"* ]]; then
-            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///' | sed 's/\//-/g')
             TAG="${BRANCH_NAME}"
           elif [[ "${{ github.ref }}" == "refs/pull/"* ]]; then
             TAG="pr-${{ github.event.pull_request.number }}"
