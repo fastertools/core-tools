@@ -129,7 +129,7 @@ jobs:
           path: target/wasm32-wasip1/release/*.wasm
           retention-days: 7
 
-  build-container:
+  publish-spin-oci:
     needs: [detect-changes, build-tools]
     if: needs.detect-changes.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
@@ -148,52 +148,43 @@ jobs:
           merge-multiple: true
           path: artifacts
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Install Spin CLI
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+          spin --version
+
+      - name: Copy WASM files to target directory
+        run: |
+          # Spin registry push expects WASM files in the workspace target directory
+          mkdir -p target/wasm32-wasip1/release
+          cp artifacts/*.wasm target/wasm32-wasip1/release/
+          ls -la target/wasm32-wasip1/release/
 
       - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Create Dockerfile
         run: |
-          cat > Dockerfile << 'EOF'
-          FROM scratch
-          
-          # Copy all built WASM files
-          COPY artifacts/ /tools/
-          
-          # Metadata
-          LABEL org.opencontainers.image.title="Core Tools"
-          LABEL org.opencontainers.image.description="WebAssembly computational tools for LLM augmentation"
-          LABEL org.opencontainers.image.source="https://github.com/${{ github.repository }}"
-          LABEL org.opencontainers.image.licenses="MIT"
-          EOF
+          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Push Spin app to registry
+        run: |
+          # Extract version info for tagging
+          if [[ "${{ github.ref }}" == "refs/heads/"* ]]; then
+            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///')
+            TAG="${BRANCH_NAME}"
+          elif [[ "${{ github.ref }}" == "refs/pull/"* ]]; then
+            TAG="pr-${{ github.event.pull_request.number }}"
+          else
+            TAG="sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+          fi
+          
+          # Push with multiple tags
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${TAG}"
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+          
+          # Push latest tag only for main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+          fi
 
   publish-spin-app:
     needs: [detect-changes, build-tools]
@@ -329,7 +320,7 @@ jobs:
           echo "✅ WASM validation completed successfully!"
 
   cleanup:
-    needs: [build-container, publish-spin-app, test-tools]
+    needs: [publish-spin-oci, publish-spin-app, test-tools]
     if: always()
     runs-on: ubuntu-latest
     
