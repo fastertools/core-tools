@@ -1,0 +1,8 @@
+target/
+.spin/
+
+.agent
+
+spin.pid
+
+*.log

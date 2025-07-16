@@ -1,0 +1,340 @@
+name: Build and Publish Tools
+
+on:
+  push:
+    branches: [ main, feat/core-tools ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changed-tools: ${{ steps.changes.outputs.tools }}
+      has-changes: ${{ steps.changes.outputs.has-changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed tools
+        id: changes
+        run: |
+          # Get the base branch for comparison
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_REF="origin/main"
+          fi
+          
+          echo "Comparing against: $BASE_REF"
+          
+          # Get list of changed files
+          if git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only "$BASE_REF"...HEAD)
+          else
+            echo "Base ref not found, will build all tools"
+            CHANGED_FILES=$(find tools -name "*.rs" -o -name "Cargo.toml")
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Extract unique tool directories from changed files
+          CHANGED_TOOLS=$(echo "$CHANGED_FILES" | grep "^tools/" | cut -d'/' -f1-3 | sort -u | tr '\n' ' ')
+          
+          if [ -n "$CHANGED_TOOLS" ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "tools=$CHANGED_TOOLS" >> $GITHUB_OUTPUT
+            echo "Changed tools: $CHANGED_TOOLS"
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "tools=" >> $GITHUB_OUTPUT
+            echo "No tool changes detected"
+          fi
+
+  build-tools:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Split tools into smaller batches to avoid memory issues on 7GB runners
+        batch: [1, 2, 3, 4, 5, 6, 7, 8]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/*/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('tools/**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build tools (batch ${{ matrix.batch }})
+        run: |
+          # Get all tools and split into batches
+          ALL_TOOLS=($(./build_all.sh list | grep "^  " | sed 's/^  //'))
+          TOTAL_TOOLS=${#ALL_TOOLS[@]}
+          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 7) / 8 ))  # Round up division by 8
+          
+          START_INDEX=$(( (${{ matrix.batch }} - 1) * TOOLS_PER_BATCH ))
+          END_INDEX=$(( START_INDEX + TOOLS_PER_BATCH ))
+          
+          if [ $END_INDEX -gt $TOTAL_TOOLS ]; then
+            END_INDEX=$TOTAL_TOOLS
+          fi
+          
+          echo "Building batch ${{ matrix.batch }}: tools $START_INDEX to $((END_INDEX-1))"
+          
+          # Build tools in this batch
+          for i in $(seq $START_INDEX $((END_INDEX-1))); do
+            if [ $i -lt $TOTAL_TOOLS ]; then
+              TOOL=${ALL_TOOLS[$i]}
+              echo "Building $TOOL..."
+              TOOL_PATH="tools/${TOOL}"
+              if [ -d "$TOOL_PATH" ] && [ -f "$TOOL_PATH/Cargo.toml" ]; then
+                # Get the package name from Cargo.toml
+                PACKAGE_NAME=$(grep '^name = ' "$TOOL_PATH/Cargo.toml" | cut -d'"' -f2)
+                echo "Building package $PACKAGE_NAME in $TOOL_PATH"
+                # Use single-threaded builds to avoid OOM on 7GB runners
+                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1
+              else
+                echo "ERROR: Tool directory $TOOL_PATH not found or missing Cargo.toml"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-tools-batch-${{ matrix.batch }}
+          path: target/wasm32-wasip1/release/*.wasm
+          retention-days: 7
+
+  publish-spin-oci:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Install Spin CLI
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+          spin --version
+
+      - name: Copy WASM files to target directory
+        run: |
+          # Spin registry push expects WASM files in the workspace target directory
+          mkdir -p target/wasm32-wasip1/release
+          cp artifacts/*.wasm target/wasm32-wasip1/release/
+          echo "=== Listing WASM files in target directory ==="
+          ls -la target/wasm32-wasip1/release/
+          echo "=== Checking for vector_magnitude files ==="
+          ls -la target/wasm32-wasip1/release/ | grep vector_magnitude || true
+
+      - name: Log in to Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push Spin app to registry
+        run: |
+          # Extract version info for tagging
+          if [[ "${{ github.ref }}" == "refs/heads/"* ]]; then
+            BRANCH_NAME=$(echo "${{ github.ref }}" | sed 's/refs\/heads\///' | sed 's/\//-/g')
+            TAG="${BRANCH_NAME}"
+          elif [[ "${{ github.ref }}" == "refs/pull/"* ]]; then
+            TAG="pr-${{ github.event.pull_request.number }}"
+          else
+            TAG="sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+          fi
+          
+          # Debug: Show current directory and spin.toml content
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Checking spin.toml exists ==="
+          ls -la spin.toml
+          
+          # Push with multiple tags (without --build since we already have the WASM files)
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${TAG}"
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+          
+          # Push latest tag only for main branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+          fi
+
+  publish-spin-app:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Install Spin CLI
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+
+      - name: Copy artifacts to expected locations
+        run: |
+          # Copy WASM files to their expected locations in the tools directory structure
+          # With workspace builds, WASM files are in the workspace target directory
+          find artifacts -name "*.wasm" | while read wasm_file; do
+            filename=$(basename "$wasm_file")
+            echo "Processing WASM file: $filename"
+            
+            # Find the matching tool directory and copy the WASM file there
+            found=false
+            find tools -name "Cargo.toml" | while read cargo_file; do
+              tool_dir=$(dirname "$cargo_file")
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
+              
+              if [[ "$filename" == "${expected_name}.wasm" ]]; then
+                mkdir -p "$tool_dir/target/wasm32-wasip1/release"
+                cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
+                echo "Copied $filename to $tool_dir/target/wasm32-wasip1/release/"
+                found=true
+                break
+              fi
+            done
+            
+            if [ "$found" = false ]; then
+              echo "Warning: No matching tool directory found for $filename"
+            fi
+          done
+
+      - name: Create Spin app package
+        run: |
+          # Create a deployable package with spin.toml and all WASM artifacts
+          mkdir -p spin-package
+          cp spin.toml spin-package/
+          cp -r tools spin-package/
+          
+          # Create a tarball
+          tar -czf core-tools-spin-app.tar.gz -C spin-package .
+
+      - name: Upload Spin app package
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-tools-spin-app
+          path: core-tools-spin-app.tar.gz
+          retention-days: 30
+
+  test-tools:
+    needs: [detect-changes, build-tools]
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('Cargo.toml') }}
+
+      - name: Run Rust unit tests
+        run: |
+          echo "Running unit tests for all tools..."
+          
+          # Get list of all tools and run their tests
+          find tools -name "Cargo.toml" | while read cargo_file; do
+            tool_dir=$(dirname "$cargo_file")
+            package_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
+            
+            echo "Testing package: $package_name in $tool_dir"
+            
+            # Run tests for this specific package
+            if cargo test -p "$package_name" --lib; then
+              echo "✅ Tests passed for $package_name"
+            else
+              echo "❌ Tests failed for $package_name"
+              exit 1
+            fi
+          done
+          
+          echo "All unit tests completed successfully!"
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+
+      - name: Validate WASM builds
+        run: |
+          echo "Validating that all tools were built to WASM..."
+          
+          # Check that WASM files exist in artifacts
+          wasm_count=$(find artifacts -name "*.wasm" | wc -l)
+          echo "Found $wasm_count WASM files in artifacts directory"
+          
+          if [ "$wasm_count" -eq 0 ]; then
+            echo "❌ No WASM files found - build may have failed"
+            exit 1
+          fi
+          
+          echo "✅ WASM validation completed successfully!"
+
+  cleanup:
+    needs: [publish-spin-oci, publish-spin-app, test-tools]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clean up artifacts
+        run: |
+          echo "Build and publish workflow completed"
+          echo "Container images and packages are available in GitHub Container Registry"

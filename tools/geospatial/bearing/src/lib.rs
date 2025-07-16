@@ -1,0 +1,51 @@
+use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
+
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::tool;
+
+// Re-export types from logic module
+pub use logic::{BearingInput as LogicInput, BearingResult as LogicOutput};
+
+// Define wrapper types with JsonSchema for FTL-SDK
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct BearingInput {
+    /// Latitude of the starting point
+    pub lat1: f64,
+    /// Longitude of the starting point
+    pub lon1: f64,
+    /// Latitude of the destination point
+    pub lat2: f64,
+    /// Longitude of the destination point
+    pub lon2: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct BearingResult {
+    pub bearing_degrees: f64,
+    pub bearing_radians: f64,
+    pub compass_direction: String,
+}
+
+#[cfg_attr(not(test), tool)]
+pub fn bearing(input: BearingInput) -> Result<BearingResult, String> {
+    // Convert to logic types
+    let logic_input = LogicInput {
+        lat1: input.lat1,
+        lon1: input.lon1,
+        lat2: input.lat2,
+        lon2: input.lon2,
+    };
+    
+    // Call logic implementation
+    let result = logic::calculate_bearing_between_points(logic_input)?;
+    
+    // Convert back to wrapper types
+    Ok(BearingResult {
+        bearing_degrees: result.bearing_degrees,
+        bearing_radians: result.bearing_radians,
+        compass_direction: result.compass_direction,
+    })
+}
