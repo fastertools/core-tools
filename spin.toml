@@ -87,7 +87,7 @@ route = "/coordinate-conversion"
 component = "coordinate-conversion"
 
 [component.coordinate-conversion]
-source = "tools/geospatial/coordinate_conversion/target/wasm32-wasip1/release/coordinate_conversion_tool.wasm"
+source = "tools/geospatial/coordinate_conversion/target/wasm32-wasip1/release/geospatial_coordinate_conversion_tool.wasm"
 allowed_outbound_hosts = []
 [component.coordinate-conversion.build]
 command = "cargo build --target wasm32-wasip1 --release"
@@ -351,7 +351,7 @@ route = "/coordinate-conversion-three-d"
 component = "coordinate-conversion-three-d"
 
 [component.coordinate-conversion-three-d]
-source = "tools/math3d/coordinate_conversion/target/wasm32-wasip1/release/coordinate_conversion_tool.wasm"
+source = "tools/math3d/coordinate_conversion/target/wasm32-wasip1/release/math3d_coordinate_conversion_tool.wasm"
 allowed_outbound_hosts = []
 [component.coordinate-conversion-three-d.build]
 command = "cargo build --target wasm32-wasip1 --release"

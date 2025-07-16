@@ -110,9 +110,10 @@ jobs:
               echo "Building $TOOL..."
               TOOL_PATH="tools/${TOOL}"
               if [ -d "$TOOL_PATH" ] && [ -f "$TOOL_PATH/Cargo.toml" ]; then
-                cd "$TOOL_PATH"
-                cargo build --target wasm32-wasip1 --release
-                cd - > /dev/null
+                # Get the package name from Cargo.toml
+                PACKAGE_NAME=$(grep '^name = ' "$TOOL_PATH/Cargo.toml" | cut -d'"' -f2)
+                echo "Building package $PACKAGE_NAME in $TOOL_PATH"
+                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release
               else
                 echo "ERROR: Tool directory $TOOL_PATH not found or missing Cargo.toml"
                 exit 1

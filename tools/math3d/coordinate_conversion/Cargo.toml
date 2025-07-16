@@ -1,5 +1,5 @@
 [package]
-name = "coordinate_conversion_tool"
+name = "math3d_coordinate_conversion_tool"
 version = "0.1.0"
 edition = "2024"
 

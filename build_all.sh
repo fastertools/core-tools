@@ -43,13 +43,14 @@ build_tool() {
     
     log_info "Building $category/$tool_name..."
     
-    cd "$tool_path"
+    # Get package name from Cargo.toml
+    local package_name=$(grep '^name = ' "$tool_path/Cargo.toml" | cut -d'"' -f2)
     
-    if cargo build --target "$TARGET" --"$BUILD_TYPE" 2>/dev/null; then
-        log_success "Built $category/$tool_name"
+    if cargo build -p "$package_name" --target "$TARGET" --"$BUILD_TYPE" 2>/dev/null; then
+        log_success "Built $category/$tool_name (package: $package_name)"
         return 0
     else
-        log_error "Failed to build $category/$tool_name"
+        log_error "Failed to build $category/$tool_name (package: $package_name)"
         return 1
     fi
 }
