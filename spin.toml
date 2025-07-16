@@ -111,7 +111,7 @@ route = "/vector-magnitude"
 component = "vector-magnitude"
 
 [component.vector-magnitude]
-source = "target/wasm32-wasip1/release/vector_magnitude_tool.wasm"
+source = "target/wasm32-wasip1/release/vector_magnitude.wasm"
 allowed_outbound_hosts = []
 [component.vector-magnitude.build]
 command = "cargo build --target wasm32-wasip1 --release"
