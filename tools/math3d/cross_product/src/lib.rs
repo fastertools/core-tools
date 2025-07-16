@@ -1,6 +1,9 @@
 use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+mod logic;
+use logic::{cross_product_logic, CrossProductInput as LogicInput, CrossProductResult, Vector3D as LogicVector3D};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug, PartialEq)]
 struct Vector3D {
@@ -20,51 +23,28 @@ struct CrossProductInput {
     vector2: Vector3D,
 }
 
-#[derive(Serialize)]
-struct CrossProductResult {
-    cross_product: Vector3D,
-    magnitude: f64,
-    area_parallelogram: f64,
-    are_parallel: bool,
+impl From<Vector3D> for LogicVector3D {
+    fn from(v: Vector3D) -> Self {
+        LogicVector3D { x: v.x, y: v.y, z: v.z }
+    }
 }
 
-impl Vector3D {
-    fn magnitude(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    fn cross(&self, other: &Vector3D) -> Vector3D {
-        Vector3D {
-            x: self.y * other.z - self.z * other.y,
-            y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x,
+impl From<CrossProductInput> for LogicInput {
+    fn from(input: CrossProductInput) -> Self {
+        LogicInput {
+            vector1: input.vector1.into(),
+            vector2: input.vector2.into(),
         }
-    }
-
-    fn are_parallel(&self, other: &Vector3D) -> bool {
-        const EPSILON: f64 = 1e-10;
-        let cross = self.cross(other);
-        cross.magnitude() < EPSILON
-    }
-}
-
-fn compute_cross_product(vector1: Vector3D, vector2: Vector3D) -> CrossProductResult {
-    let cross_product = vector1.cross(&vector2);
-    let magnitude = cross_product.magnitude();
-    let area_parallelogram = magnitude;
-    let are_parallel = vector1.are_parallel(&vector2);
-    
-    CrossProductResult {
-        cross_product,
-        magnitude,
-        area_parallelogram,
-        are_parallel,
     }
 }
 
 /// Calculate cross product of two 3D vectors
-#[tool]
+#[cfg_attr(not(test), tool)]
 fn cross_product(input: CrossProductInput) -> ToolResponse {
-    let result = compute_cross_product(input.vector1, input.vector2);
-    ToolResponse::text(serde_json::to_string(&result).unwrap())
+    match cross_product_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(error) => ToolResponse::text(serde_json::to_string(&serde_json::json!({
+            "error": error
+        })).unwrap()),
+    }
 }
