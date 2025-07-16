@@ -1,2 +1,8 @@
 Loading Wasm components is taking a few seconds...
 
+Error: failed to resolve dependencies for component "distance"
+
+Caused by:
+   0: an error occurred when preparing dependencies
+   1: failed to read component source from disk at path "/Users/coreyryan/data/mashh/core-tools/tools/geospatial/distance/target/wasm32-wasip1/release/distance_tool.wasm"
+   2: No such file or directory (os error 2)

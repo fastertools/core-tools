@@ -1,8 +1,0 @@
-No 'spin.toml' in current directory. Using 'spin.toml' from great-grandparent directory (../../../spin.toml)
-Loading Wasm components is taking a few seconds...
-
-2025-07-15T22:59:34.002326Z ERROR spin_trigger::cli: Trigger executor failed
-Error: Unable to listen on 127.0.0.1:3000
-
-Caused by:
-      Address already in use (os error 48)
