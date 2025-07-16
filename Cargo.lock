@@ -132,7 +132,6 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "spin-sdk",
 ]
 
 [[package]]
@@ -572,7 +571,6 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "spin-sdk",
 ]
 
 [[package]]
@@ -1057,7 +1055,6 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "spin-sdk",
 ]
 
 [[package]]
@@ -1230,7 +1227,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
-name = "vector_angle_tool"
+name = "vector-magnitude"
 version = "0.1.0"
 dependencies = [
  "ftl-sdk",
@@ -1241,7 +1238,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vector_magnitude_tool"
+name = "vector_angle_tool"
 version = "0.1.0"
 dependencies = [
  "ftl-sdk",

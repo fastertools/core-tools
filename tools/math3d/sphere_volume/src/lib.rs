@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::tool;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+mod logic;
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Vector3D {
@@ -10,44 +12,43 @@ pub struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct SphereVolumeInput {
-    center: Vector3D,
-    radius: f64,
+pub struct SphereVolumeInput {
+    pub center: Vector3D,
+    pub radius: f64,
 }
 
-#[derive(Serialize)]
-struct SphereVolumeResponse {
-    volume: f64,
-    calculation_method: String,
-    center: Vector3D,
-    radius: f64,
+#[derive(Serialize, JsonSchema)]
+pub struct SphereVolumeResponse {
+    pub volume: f64,
+    pub calculation_method: String,
+    pub center: Vector3D,
+    pub radius: f64,
 }
 
-fn calculate_sphere_volume(input: &SphereVolumeInput) -> Result<SphereVolumeResponse, String> {
-    if input.radius < 0.0 {
-        return Err("Radius cannot be negative".to_string());
-    }
-    
-    // Volume = (4/3) * π * r³
-    let volume = (4.0 / 3.0) * std::f64::consts::PI * input.radius.powi(3);
-    
-    Ok(SphereVolumeResponse {
-        volume,
-        calculation_method: "Sphere formula: (4/3)πr³".to_string(),
-        center: input.center.clone(),
+#[cfg_attr(not(test), tool)]
+pub fn sphere_volume(input: SphereVolumeInput) -> Result<SphereVolumeResponse, String> {
+    // Convert API types to logic types
+    let logic_input = logic::SphereVolumeInput {
+        center: logic::Vector3D {
+            x: input.center.x,
+            y: input.center.y,
+            z: input.center.z,
+        },
         radius: input.radius,
+    };
+    
+    // Call business logic
+    let logic_result = logic::compute_sphere_volume(logic_input)?;
+    
+    // Convert logic types back to API types
+    Ok(SphereVolumeResponse {
+        volume: logic_result.volume,
+        calculation_method: logic_result.calculation_method,
+        center: Vector3D {
+            x: logic_result.center.x,
+            y: logic_result.center.y,
+            z: logic_result.center.z,
+        },
+        radius: logic_result.radius,
     })
-}
-
-#[tool]
-fn sphere_volume(input: SphereVolumeInput) -> ToolResponse {
-    match calculate_sphere_volume(&input) {
-        Ok(result) => {
-            match serde_json::to_string(&result) {
-                Ok(json) => ToolResponse::text(json),
-                Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-            }
-        }
-        Err(e) => ToolResponse::error(&e),
-    }
 }

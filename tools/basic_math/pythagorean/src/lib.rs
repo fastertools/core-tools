@@ -1,6 +1,21 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::{tool, ToolResponse};
+
+// For testing, we need a dummy ToolResponse
+#[cfg(test)]
+pub struct ToolResponse;
+#[cfg(test)]
+impl ToolResponse {
+    pub fn text(_text: String) -> Self { ToolResponse }
+}
+
+// Re-export types from logic module
+pub use logic::{PythagoreanInput as LogicInput, PythagoreanResult as LogicOutput};
 
 #[derive(Deserialize, JsonSchema)]
 struct PythagoreanInput {
@@ -64,7 +79,7 @@ struct ContentItem {
 
 /// Calculate the hypotenuse of a right triangle using the Pythagorean theorem: c = sqrt(a² + b²)
 /// This demonstrates tool composition by calling other tools via Spin's local chaining pattern
-#[tool]
+#[cfg_attr(not(test), tool)]
 async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
     

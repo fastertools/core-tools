@@ -2,6 +2,8 @@ use ftl_sdk::tool;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
+mod logic;
+
 #[derive(Deserialize, Serialize, JsonSchema)]
 pub struct Vector3D {
     pub x: f64,
@@ -23,43 +25,38 @@ pub struct BoundingBoxResponse {
     pub dimensions: Vector3D,
 }
 
-#[tool]
+#[cfg_attr(not(test), tool)]
 pub fn aabb_volume(input: BoundingBoxInput) -> Result<BoundingBoxResponse, String> {
-    if input.points.is_empty() {
-        return Err("At least one point is required".to_string());
-    }
-    
-    let first_point = &input.points[0];
-    let mut min_x = first_point.x;
-    let mut max_x = first_point.x;
-    let mut min_y = first_point.y;
-    let mut max_y = first_point.y;
-    let mut min_z = first_point.z;
-    let mut max_z = first_point.z;
-    
-    // Find the minimum and maximum coordinates
-    for point in &input.points {
-        min_x = min_x.min(point.x);
-        max_x = max_x.max(point.x);
-        min_y = min_y.min(point.y);
-        max_y = max_y.max(point.y);
-        min_z = min_z.min(point.z);
-        max_z = max_z.max(point.z);
-    }
-    
-    let dimensions = Vector3D {
-        x: max_x - min_x,
-        y: max_y - min_y,
-        z: max_z - min_z,
+    // Convert API types to logic types
+    let logic_input = logic::BoundingBoxInput {
+        points: input.points.into_iter().map(|p| logic::Vector3D {
+            x: p.x,
+            y: p.y,
+            z: p.z,
+        }).collect(),
     };
     
-    let volume = dimensions.x * dimensions.y * dimensions.z;
+    // Call business logic
+    let logic_result = logic::compute_aabb_volume(logic_input)?;
     
+    // Convert logic types back to API types
     Ok(BoundingBoxResponse {
-        volume,
-        box_type: "AABB (Axis-Aligned Bounding Box)".to_string(),
-        min_point: Vector3D { x: min_x, y: min_y, z: min_z },
-        max_point: Vector3D { x: max_x, y: max_y, z: max_z },
-        dimensions,
+        volume: logic_result.volume,
+        box_type: logic_result.box_type,
+        min_point: Vector3D {
+            x: logic_result.min_point.x,
+            y: logic_result.min_point.y,
+            z: logic_result.min_point.z,
+        },
+        max_point: Vector3D {
+            x: logic_result.max_point.x,
+            y: logic_result.max_point.y,
+            z: logic_result.max_point.z,
+        },
+        dimensions: Vector3D {
+            x: logic_result.dimensions.x,
+            y: logic_result.dimensions.y,
+            z: logic_result.dimensions.z,
+        },
     })
 }

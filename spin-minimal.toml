@@ -1,0 +1,38 @@
+spin_manifest_version = 2
+
+[application]
+name = "coretools-minimal"
+version = "0.1.0"
+authors = ["Corey Ryan <corey@coreyr.com>"]
+description = "Core computational tools MCP server - minimal for testing"
+
+[variables]
+tool_components = { default = "vector-magnitude" }
+
+[[trigger.http]]
+route = "/mcp"
+component = "ftl-mcp-gateway"
+
+[component.ftl-mcp-gateway]
+source = "ftl-mcp-gateway.wasm"
+allowed_outbound_hosts = ["http://vector-magnitude.spin.internal"]
+
+[variables.tool_components]
+default = "vector-magnitude"
+
+[component.ftl-mcp-gateway.variables]
+tool_components = "{{ tool_components }}"
+validate_arguments = "true"
+
+[[trigger.http]]
+route = "/vector-magnitude"
+component = "vector-magnitude"
+
+[component.vector-magnitude]
+source = "tools/math3d/vector_magnitude/target/wasm32-wasip1/release/vector_magnitude_tool.wasm"
+allowed_outbound_hosts = []
+
+[component.vector-magnitude.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/vector_magnitude"
+watch = ["tools/math3d/vector_magnitude/src/**/*.rs", "tools/math3d/vector_magnitude/Cargo.toml"]

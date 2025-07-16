@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::tool;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+mod logic;
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Vector3D {
@@ -10,54 +12,59 @@ pub struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct CylinderVolumeInput {
-    base_center: Vector3D,
-    axis: Vector3D,
-    radius: f64,
-    height: f64,
+pub struct CylinderVolumeInput {
+    pub base_center: Vector3D,
+    pub axis: Vector3D,
+    pub radius: f64,
+    pub height: f64,
 }
 
-#[derive(Serialize)]
-struct CylinderVolumeResponse {
-    volume: f64,
-    calculation_method: String,
-    base_center: Vector3D,
-    axis: Vector3D,
-    radius: f64,
-    height: f64,
+#[derive(Serialize, JsonSchema)]
+pub struct CylinderVolumeResponse {
+    pub volume: f64,
+    pub calculation_method: String,
+    pub base_center: Vector3D,
+    pub axis: Vector3D,
+    pub radius: f64,
+    pub height: f64,
 }
 
-fn calculate_cylinder_volume(input: &CylinderVolumeInput) -> Result<CylinderVolumeResponse, String> {
-    if input.radius < 0.0 {
-        return Err("Radius cannot be negative".to_string());
-    }
-    
-    if input.height < 0.0 {
-        return Err("Height cannot be negative".to_string());
-    }
-    
-    // Volume = π * r² * h
-    let volume = std::f64::consts::PI * input.radius.powi(2) * input.height;
-    
-    Ok(CylinderVolumeResponse {
-        volume,
-        calculation_method: "Cylinder formula: πr²h".to_string(),
-        base_center: input.base_center.clone(),
-        axis: input.axis.clone(),
+#[cfg_attr(not(test), tool)]
+pub fn cylinder_volume(input: CylinderVolumeInput) -> Result<CylinderVolumeResponse, String> {
+    // Convert API types to logic types
+    let logic_input = logic::CylinderVolumeInput {
+        base_center: logic::Vector3D {
+            x: input.base_center.x,
+            y: input.base_center.y,
+            z: input.base_center.z,
+        },
+        axis: logic::Vector3D {
+            x: input.axis.x,
+            y: input.axis.y,
+            z: input.axis.z,
+        },
         radius: input.radius,
         height: input.height,
+    };
+    
+    // Call business logic
+    let logic_result = logic::compute_cylinder_volume(logic_input)?;
+    
+    // Convert logic types back to API types
+    Ok(CylinderVolumeResponse {
+        volume: logic_result.volume,
+        calculation_method: logic_result.calculation_method,
+        base_center: Vector3D {
+            x: logic_result.base_center.x,
+            y: logic_result.base_center.y,
+            z: logic_result.base_center.z,
+        },
+        axis: Vector3D {
+            x: logic_result.axis.x,
+            y: logic_result.axis.y,
+            z: logic_result.axis.z,
+        },
+        radius: logic_result.radius,
+        height: logic_result.height,
     })
-}
-
-#[tool]
-fn cylinder_volume(input: CylinderVolumeInput) -> ToolResponse {
-    match calculate_cylinder_volume(&input) {
-        Ok(result) => {
-            match serde_json::to_string(&result) {
-                Ok(json) => ToolResponse::text(json),
-                Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-            }
-        }
-        Err(e) => ToolResponse::error(&e),
-    }
 }

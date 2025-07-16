@@ -1,39 +1,44 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-#[derive(Deserialize, JsonSchema)]
-struct SingleNumberInput {
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::tool;
+
+// Re-export types from logic module
+pub use logic::{SingleNumberInput as LogicInput, SquareRootResult as LogicOutput};
+
+// Define wrapper types with JsonSchema for FTL-SDK
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct SingleNumberInput {
     /// Number to calculate square root of
-    value: f64,
+    pub value: f64,
 }
 
-#[derive(Serialize)]
-struct SquareRootResult {
-    result: f64,
-    input: f64,
-    is_valid: bool,
-    error: Option<String>,
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct SquareRootResult {
+    pub result: f64,
+    pub input: f64,
+    pub is_valid: bool,
+    pub error: Option<String>,
 }
 
-/// Calculate the square root of a number with error handling for negative inputs
-#[tool]
-fn sqrt(input: SingleNumberInput) -> ToolResponse {
-    let response = if input.value < 0.0 {
-        SquareRootResult {
-            result: f64::NAN,
-            input: input.value,
-            is_valid: false,
-            error: Some("Cannot compute square root of negative number".to_string()),
-        }
-    } else {
-        SquareRootResult {
-            result: input.value.sqrt(),
-            input: input.value,
-            is_valid: true,
-            error: None,
-        }
+#[cfg_attr(not(test), tool)]
+pub fn sqrt(input: SingleNumberInput) -> Result<SquareRootResult, String> {
+    // Convert to logic types
+    let logic_input = LogicInput {
+        value: input.value,
     };
     
-    ToolResponse::text(serde_json::to_string(&response).unwrap())
+    // Call logic implementation
+    let result = logic::calculate_sqrt(logic_input)?;
+    
+    // Convert back to wrapper types
+    Ok(SquareRootResult {
+        result: result.result,
+        input: result.input,
+        is_valid: result.is_valid,
+        error: result.error,
+    })
 }

@@ -2,7 +2,8 @@ use ftl_sdk::tool;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-const EPSILON: f64 = 1e-10;
+mod logic;
+use logic::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Vector3D {
@@ -13,8 +14,8 @@ pub struct Vector3D {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Line3D {
-    pub point: Vector3D,     // A point on the line
-    pub direction: Vector3D, // Direction vector of the line
+    pub point: Vector3D,
+    pub direction: Vector3D,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
@@ -32,86 +33,46 @@ pub struct PointLineDistanceResult {
     pub point_is_on_line: bool,
 }
 
-impl Vector3D {
-    pub fn dot(&self, other: &Vector3D) -> f64 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-
-    pub fn magnitude(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    pub fn magnitude_squared(&self) -> f64 {
-        self.x * self.x + self.y * self.y + self.z * self.z
-    }
-
-    pub fn subtract(&self, other: &Vector3D) -> Vector3D {
-        Vector3D {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z,
-        }
-    }
-
-    pub fn add(&self, other: &Vector3D) -> Vector3D {
-        Vector3D {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z,
-        }
-    }
-
-    pub fn scale(&self, scalar: f64) -> Vector3D {
-        Vector3D {
-            x: self.x * scalar,
-            y: self.y * scalar,
-            z: self.z * scalar,
-        }
-    }
-
-    pub fn is_zero(&self) -> bool {
-        self.magnitude_squared() < EPSILON * EPSILON
-    }
-}
-
-impl Line3D {
-    pub fn point_at_parameter(&self, t: f64) -> Vector3D {
-        self.point.add(&self.direction.scale(t))
-    }
-}
-
-#[tool]
+#[cfg_attr(not(test), tool)]
 pub fn point_line_distance(input: PointLineInput) -> Result<PointLineDistanceResult, String> {
-    let point = &input.point;
-    let line = &input.line;
+    // Convert JsonSchema types to logic types
+    let logic_input = logic::PointLineInput {
+        point: logic::Vector3D {
+            x: input.point.x,
+            y: input.point.y,
+            z: input.point.z,
+        },
+        line: logic::Line3D {
+            point: logic::Vector3D {
+                x: input.line.point.x,
+                y: input.line.point.y,
+                z: input.line.point.z,
+            },
+            direction: logic::Vector3D {
+                x: input.line.direction.x,
+                y: input.line.direction.y,
+                z: input.line.direction.z,
+            },
+        },
+    };
 
-    // Validate line direction
-    if line.direction.is_zero() {
-        return Err("Line direction vector cannot be zero".to_string());
-    }
+    // Call business logic
+    let logic_result = point_line_distance_logic(logic_input)?;
 
-    // Vector from line point to query point
-    let to_point = point.subtract(&line.point);
-    
-    // Project this vector onto the line direction to find the closest point
-    let line_dir_mag_sq = line.direction.magnitude_squared();
-    let t = to_point.dot(&line.direction) / line_dir_mag_sq;
-    
-    // Find closest point on line
-    let closest_point_on_line = line.point_at_parameter(t);
-    
-    // Calculate distance and perpendicular vector
-    let perpendicular_vector = point.subtract(&closest_point_on_line);
-    let distance = perpendicular_vector.magnitude();
-    
-    // Check if point is on line
-    let point_is_on_line = distance < EPSILON;
-
+    // Convert logic types back to JsonSchema types
     Ok(PointLineDistanceResult {
-        distance,
-        closest_point_on_line,
-        parameter_on_line: t,
-        perpendicular_vector,
-        point_is_on_line,
+        distance: logic_result.distance,
+        closest_point_on_line: Vector3D {
+            x: logic_result.closest_point_on_line.x,
+            y: logic_result.closest_point_on_line.y,
+            z: logic_result.closest_point_on_line.z,
+        },
+        parameter_on_line: logic_result.parameter_on_line,
+        perpendicular_vector: Vector3D {
+            x: logic_result.perpendicular_vector.x,
+            y: logic_result.perpendicular_vector.y,
+            z: logic_result.perpendicular_vector.z,
+        },
+        point_is_on_line: logic_result.point_is_on_line,
     })
 }

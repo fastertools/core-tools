@@ -1,30 +1,42 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-#[derive(Deserialize, JsonSchema)]
-struct SingleNumberInput {
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::tool;
+
+// Re-export types from logic module
+pub use logic::{SingleNumberInput as LogicInput, ArithmeticResult as LogicOutput};
+
+// Define wrapper types with JsonSchema for FTL-SDK
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct SingleNumberInput {
     /// Number to square
-    value: f64,
+    pub value: f64,
 }
 
-#[derive(Serialize)]
-struct ArithmeticResult {
-    result: f64,
-    operation: String,
-    inputs: Vec<f64>,
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct ArithmeticResult {
+    pub result: f64,
+    pub operation: String,
+    pub inputs: Vec<f64>,
 }
 
-/// Calculate the square of a number
-#[tool]
-fn square(input: SingleNumberInput) -> ToolResponse {
-    let result = input.value * input.value;
-    
-    let response = ArithmeticResult {
-        result,
-        operation: "square".to_string(),
-        inputs: vec![input.value],
+#[cfg_attr(not(test), tool)]
+pub fn square(input: SingleNumberInput) -> Result<ArithmeticResult, String> {
+    // Convert to logic types
+    let logic_input = LogicInput {
+        value: input.value,
     };
     
-    ToolResponse::text(serde_json::to_string(&response).unwrap())
+    // Call logic implementation
+    let result = logic::square_number(logic_input)?;
+    
+    // Convert back to wrapper types
+    Ok(ArithmeticResult {
+        result: result.result,
+        operation: result.operation,
+        inputs: result.inputs,
+    })
 }

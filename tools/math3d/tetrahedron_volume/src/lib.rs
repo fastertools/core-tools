@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::tool;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+mod logic;
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Vector3D {
@@ -10,70 +12,74 @@ pub struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct TetrahedronVolumeInput {
-    point_a: Vector3D,
-    point_b: Vector3D,
-    point_c: Vector3D,
-    point_d: Vector3D,
+pub struct TetrahedronVolumeInput {
+    pub point_a: Vector3D,
+    pub point_b: Vector3D,
+    pub point_c: Vector3D,
+    pub point_d: Vector3D,
 }
 
-#[derive(Serialize)]
-struct TetrahedronVolumeResponse {
-    volume: f64,
-    calculation_method: String,
-    points: [Vector3D; 4],
+#[derive(Serialize, JsonSchema)]
+pub struct TetrahedronVolumeResponse {
+    pub volume: f64,
+    pub calculation_method: String,
+    pub points: [Vector3D; 4],
 }
 
-fn calculate_tetrahedron_volume(input: &TetrahedronVolumeInput) -> TetrahedronVolumeResponse {
-    let a = &input.point_a;
-    let b = &input.point_b;
-    let c = &input.point_c;
-    let d = &input.point_d;
-    
-    // Calculate vectors from point A to the other three points
-    let ab = Vector3D {
-        x: b.x - a.x,
-        y: b.y - a.y,
-        z: b.z - a.z,
+#[cfg_attr(not(test), tool)]
+pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> Result<TetrahedronVolumeResponse, String> {
+    // Convert API types to logic types
+    let logic_input = logic::TetrahedronVolumeInput {
+        point_a: logic::Vector3D {
+            x: input.point_a.x,
+            y: input.point_a.y,
+            z: input.point_a.z,
+        },
+        point_b: logic::Vector3D {
+            x: input.point_b.x,
+            y: input.point_b.y,
+            z: input.point_b.z,
+        },
+        point_c: logic::Vector3D {
+            x: input.point_c.x,
+            y: input.point_c.y,
+            z: input.point_c.z,
+        },
+        point_d: logic::Vector3D {
+            x: input.point_d.x,
+            y: input.point_d.y,
+            z: input.point_d.z,
+        },
     };
     
-    let ac = Vector3D {
-        x: c.x - a.x,
-        y: c.y - a.y,
-        z: c.z - a.z,
-    };
+    // Call business logic
+    let logic_result = logic::compute_tetrahedron_volume(logic_input)?;
     
-    let ad = Vector3D {
-        x: d.x - a.x,
-        y: d.y - a.y,
-        z: d.z - a.z,
-    };
-    
-    // Calculate the scalar triple product: AB · (AC × AD)
-    let cross_ac_ad = Vector3D {
-        x: ac.y * ad.z - ac.z * ad.y,
-        y: ac.z * ad.x - ac.x * ad.z,
-        z: ac.x * ad.y - ac.y * ad.x,
-    };
-    
-    let scalar_triple_product = ab.x * cross_ac_ad.x + ab.y * cross_ac_ad.y + ab.z * cross_ac_ad.z;
-    
-    // Volume = |scalar triple product| / 6
-    let volume = scalar_triple_product.abs() / 6.0;
-    
-    TetrahedronVolumeResponse {
-        volume,
-        calculation_method: "Scalar triple product".to_string(),
-        points: [input.point_a.clone(), input.point_b.clone(), input.point_c.clone(), input.point_d.clone()],
-    }
-}
-
-#[tool]
-fn tetrahedron_volume(input: TetrahedronVolumeInput) -> ToolResponse {
-    let result = calculate_tetrahedron_volume(&input);
-    
-    match serde_json::to_string(&result) {
-        Ok(json) => ToolResponse::text(json),
-        Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-    }
+    // Convert logic types back to API types
+    Ok(TetrahedronVolumeResponse {
+        volume: logic_result.volume,
+        calculation_method: logic_result.calculation_method,
+        points: [
+            Vector3D {
+                x: logic_result.points[0].x,
+                y: logic_result.points[0].y,
+                z: logic_result.points[0].z,
+            },
+            Vector3D {
+                x: logic_result.points[1].x,
+                y: logic_result.points[1].y,
+                z: logic_result.points[1].z,
+            },
+            Vector3D {
+                x: logic_result.points[2].x,
+                y: logic_result.points[2].y,
+                z: logic_result.points[2].z,
+            },
+            Vector3D {
+                x: logic_result.points[3].x,
+                y: logic_result.points[3].y,
+                z: logic_result.points[3].z,
+            },
+        ],
+    })
 }

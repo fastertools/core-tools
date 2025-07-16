@@ -1,6 +1,21 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::{tool, ToolResponse};
+
+// For testing, we need a dummy ToolResponse
+#[cfg(test)]
+pub struct ToolResponse;
+#[cfg(test)]
+impl ToolResponse {
+    pub fn text(_text: String) -> Self { ToolResponse }
+}
+
+// Re-export types from logic module
+pub use logic::{TwoPointInput as LogicInput, DistanceResult as LogicOutput, Point2D as LogicPoint2D};
 
 #[derive(Deserialize, Serialize, JsonSchema)]
 struct Point2D {
@@ -64,7 +79,7 @@ struct ContentItem {
 
 /// Calculate the distance between two 2D points using the Pythagorean theorem
 /// This demonstrates tool composition by calling the pythagorean tool via Spin's local chaining pattern
-#[tool]
+#[cfg_attr(not(test), tool)]
 async fn distance_2d(input: TwoPointInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
     

@@ -1,32 +1,45 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-#[derive(Deserialize, JsonSchema)]
-struct TwoNumberInput {
+mod logic;
+
+#[cfg(not(test))]
+use ftl_sdk::tool;
+
+// Re-export types from logic module
+pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
+
+// Define wrapper types with JsonSchema for FTL-SDK
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct TwoNumberInput {
     /// First number to add
-    a: f64,
+    pub a: f64,
     /// Second number to add
-    b: f64,
+    pub b: f64,
 }
 
-#[derive(Serialize)]
-struct ArithmeticResult {
-    result: f64,
-    operation: String,
-    inputs: Vec<f64>,
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct ArithmeticResult {
+    pub result: f64,
+    pub operation: String,
+    pub inputs: Vec<f64>,
 }
 
-/// Add two numbers together
-#[tool]
-fn add(input: TwoNumberInput) -> ToolResponse {
-    let result = input.a + input.b;
-    
-    let response = ArithmeticResult {
-        result,
-        operation: "addition".to_string(),
-        inputs: vec![input.a, input.b],
+#[cfg_attr(not(test), tool)]
+pub fn add(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
+    // Convert to logic types
+    let logic_input = LogicInput {
+        a: input.a,
+        b: input.b,
     };
     
-    ToolResponse::text(serde_json::to_string(&response).unwrap())
+    // Call logic implementation
+    let result = logic::add_numbers(logic_input)?;
+    
+    // Convert back to wrapper types
+    Ok(ArithmeticResult {
+        result: result.result,
+        operation: result.operation,
+        inputs: result.inputs,
+    })
 }
