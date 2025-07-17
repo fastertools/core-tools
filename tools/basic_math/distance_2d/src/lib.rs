@@ -20,10 +20,14 @@ pub struct Point2D {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct TwoPointInput {
-    /// First point
-    pub point1: Point2D,
-    /// Second point
-    pub point2: Point2D,
+    /// X coordinate of first point
+    pub x1: f64,
+    /// Y coordinate of first point
+    pub y1: f64,
+    /// X coordinate of second point
+    pub x2: f64,
+    /// Y coordinate of second point
+    pub y2: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -50,11 +54,7 @@ struct PythagoreanInput {
 #[derive(Deserialize)]
 struct PythagoreanResult {
     hypotenuse: f64,
-    leg_a: f64,
-    leg_b: f64,
-    a_squared: f64,
-    b_squared: f64,
-    sum_of_squares: f64,
+    // Only parse the field we need to avoid deserialization issues
 }
 
 #[derive(Deserialize)]
@@ -70,13 +70,13 @@ pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String>
     use spin_sdk::http::{Method, Request};
     
     // Step 1: Calculate differences
-    let delta_x = input.point2.x - input.point1.x;
-    let delta_y = input.point2.y - input.point1.y;
+    let delta_x = input.x2 - input.x1;
+    let delta_y = input.y2 - input.y1;
     
     // Step 2: Call pythagorean tool via HTTP
     let pyth_input = PythagoreanInput { a: delta_x, b: delta_y };
     let request_body = serde_json::to_string(&pyth_input)
-        .map_err(|e| format!("Failed to serialize pythagorean input: {}", e))?;
+        .map_err(|e| format!("Failed to serialize pythagorean input: {}. Input: a={}, b={}", e, delta_x, delta_y))?;
     
     let request = Request::builder()
         .method(Method::Post)
@@ -93,14 +93,14 @@ pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String>
         .map_err(|e| format!("Failed to parse response body: {}", e))?;
     
     let pyth_response: OkResponse<PythagoreanResult> = serde_json::from_str(&body)
-        .map_err(|e| format!("Failed to parse pythagorean result: {}", e))?;
+        .map_err(|e| format!("Failed to parse pythagorean result: {}. Response body: {}", e, body))?;
     
     let distance = pyth_response.ok.hypotenuse;
     
     Ok(DistanceResult {
         distance,
-        point1: input.point1,
-        point2: input.point2,
+        point1: Point2D { x: input.x1, y: input.y1 },
+        point2: Point2D { x: input.x2, y: input.y2 },
         delta_x,
         delta_y,
     })
