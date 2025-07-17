@@ -458,4 +458,84 @@ response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
 echo
 
+# === URL VALIDATOR TOOL ===
+echo "=== URL VALIDATOR TOOL ==="
+echo
+
+# Test valid URL
+echo "--- Test: Valid URL ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-validator -H "Content-Type: application/json" -d '{"url": "https://example.com/path?query=value"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test invalid URL
+echo "--- Test: Invalid URL ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-validator -H "Content-Type: application/json" -d '{"url": "not a url"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === REGEX MATCHER TOOL ===
+echo "=== REGEX MATCHER TOOL ==="
+echo
+
+# Test regex match
+echo "--- Test: Regex match ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/regex-matcher -H "Content-Type: application/json" -d '{"text": "The quick brown fox", "pattern": "\\\\b\\\\w{5}\\\\b", "find_all": true}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test no match
+echo "--- Test: No match ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/regex-matcher -H "Content-Type: application/json" -d '{"text": "hello world", "pattern": "xyz"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === CSV PARSER TOOL ===
+echo "=== CSV PARSER TOOL ==="
+echo
+
+# Test CSV parsing
+echo "--- Test: CSV parsing ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/csv-parser -H "Content-Type: application/json" -d '{"content": "Name,Age,City\\nJohn,30,New York\\nJane,25,Boston", "has_headers": true}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test CSV with custom delimiter
+echo "--- Test: CSV custom delimiter ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/csv-parser -H "Content-Type: application/json" -d '{"content": "Name|Age|City\\nJohn|30|New York", "has_headers": true, "delimiter": "|"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === YAML FORMATTER TOOL ===
+echo "=== YAML FORMATTER TOOL ==="
+echo
+
+# Test YAML formatting
+echo "--- Test: YAML formatting ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/yaml-formatter -H "Content-Type: application/json" -d '{"content": "name: John\\nage: 30\\ncity: New York", "sort_keys": true}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test YAML validation
+echo "--- Test: YAML validation ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/yaml-formatter -H "Content-Type: application/json" -d '{"content": "invalid: yaml: content:", "validate_only": true}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
 echo "=== Test Suite Complete ==="

@@ -83,6 +83,10 @@ members = [
     "tools/data_formats/json_validator",
     "tools/validation/email_validator",
     "tools/crypto/hash_generator",
+    "tools/validation/url_validator",
+    "tools/validation/regex_matcher",
+    "tools/data_formats/csv_parser",
+    "tools/data_formats/yaml_formatter",
 ]
 
 # This workspace doesn't have a default member package

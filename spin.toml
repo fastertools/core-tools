@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator,url-validator,regex-matcher,csv-parser,yaml-formatter" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -919,5 +919,53 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/crypto/hash_generator"
 watch = ["tools/crypto/hash_generator/src/**/*.rs", "tools/crypto/hash_generator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/url-validator"
+component = "url-validator"
+
+[component.url-validator]
+source = "target/wasm32-wasip1/release/url_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.url-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/url_validator"
+watch = ["tools/validation/url_validator/src/**/*.rs", "tools/validation/url_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/regex-matcher"
+component = "regex-matcher"
+
+[component.regex-matcher]
+source = "target/wasm32-wasip1/release/regex_matcher_tool.wasm"
+allowed_outbound_hosts = []
+[component.regex-matcher.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/regex_matcher"
+watch = ["tools/validation/regex_matcher/src/**/*.rs", "tools/validation/regex_matcher/Cargo.toml"]
+
+[[trigger.http]]
+route = "/csv-parser"
+component = "csv-parser"
+
+[component.csv-parser]
+source = "target/wasm32-wasip1/release/csv_parser_tool.wasm"
+allowed_outbound_hosts = []
+[component.csv-parser.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/csv_parser"
+watch = ["tools/data_formats/csv_parser/src/**/*.rs", "tools/data_formats/csv_parser/Cargo.toml"]
+
+[[trigger.http]]
+route = "/yaml-formatter"
+component = "yaml-formatter"
+
+[component.yaml-formatter]
+source = "target/wasm32-wasip1/release/yaml_formatter_tool.wasm"
+allowed_outbound_hosts = []
+[component.yaml-formatter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/yaml_formatter"
+watch = ["tools/data_formats/yaml_formatter/src/**/*.rs", "tools/data_formats/yaml_formatter/Cargo.toml"]
 
 
