@@ -1,9 +1,15 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
+mod logic;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
+// Re-export types from logic module
+pub use logic::{TwoPointInput as LogicInput, DistanceResult as LogicOutput, Point2D as LogicPoint2D};
+
+// Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Point2D {
     /// X coordinate
@@ -86,7 +92,7 @@ pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String>
     let body = String::from_utf8(body_bytes)
         .map_err(|e| format!("Failed to parse response body: {}", e))?;
     
-    // Parse the response with Ok wrapper
+    // First, let's try to parse the direct response without Ok wrapper
     let pyth_result: PythagoreanResult = if let Ok(ok_response) = serde_json::from_str::<OkResponse<PythagoreanResult>>(&body) {
         ok_response.ok
     } else {

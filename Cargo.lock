@@ -173,6 +173,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
+name = "cartesian_to_cylindrical_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "cartesian_to_spherical_tool"
 version = "0.1.0"
 dependencies = [
@@ -318,6 +329,17 @@ dependencies = [
 
 [[package]]
 name = "cylinder_volume_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
+name = "cylindrical_to_cartesian_tool"
 version = "0.1.0"
 dependencies = [
  "ftl-sdk",

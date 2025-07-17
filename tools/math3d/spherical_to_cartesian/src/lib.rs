@@ -1,39 +1,63 @@
-use ftl_sdk::ToolResponse;
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{SphericalToCartesianInput, spherical_to_cartesian_logic};
 
-#[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
-    coordinates: logic::SphericalCoord,
+#[derive(Deserialize, Serialize, JsonSchema)]
+pub struct SphericalCoordinates {
+    /// Radial distance (radius)
+    pub radius: f64,
+    /// Polar angle (theta) in radians
+    pub theta: f64,
+    /// Azimuthal angle (phi) in radians
+    pub phi: f64,
 }
 
-#[derive(serde::Serialize)]
-struct ToolResponse_ {
-    original_spherical: logic::SphericalCoord,
-    cartesian_coordinates: logic::Vector3D,
-    conversion_notes: String,
+#[derive(Serialize, JsonSchema)]
+pub struct CartesianCoordinates {
+    /// X coordinate
+    pub x: f64,
+    /// Y coordinate
+    pub y: f64,
+    /// Z coordinate
+    pub z: f64,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
-pub fn spherical_to_cartesian_conversion(input: ToolInput) -> ToolResponse {
+#[derive(Serialize, JsonSchema)]
+pub struct SphericalToCartesianResult {
+    /// Original spherical coordinates
+    pub original_spherical: SphericalCoordinates,
+    /// Converted cartesian coordinates
+    pub cartesian_coordinates: CartesianCoordinates,
+    /// Conversion notes
+    pub conversion_notes: String,
+}
+
+/// Convert spherical coordinates (r, theta, phi) to Cartesian coordinates (x, y, z)
+#[cfg_attr(not(test), tool)]
+pub fn spherical_to_cartesian(input: SphericalCoordinates) -> Result<SphericalToCartesianResult, String> {
     let logic_input = SphericalToCartesianInput {
-        coordinates: input.coordinates,
+        coordinates: logic::SphericalCoord { radius: input.radius, theta: input.theta, phi: input.phi },
     };
     
     match spherical_to_cartesian_logic(logic_input) {
         Ok(output) => {
-            let response = ToolResponse_ {
-                original_spherical: output.original_spherical,
-                cartesian_coordinates: output.cartesian_coordinates,
+            Ok(SphericalToCartesianResult {
+                original_spherical: SphericalCoordinates {
+                    radius: output.original_spherical.radius,
+                    theta: output.original_spherical.theta,
+                    phi: output.original_spherical.phi,
+                },
+                cartesian_coordinates: CartesianCoordinates {
+                    x: output.cartesian_coordinates.x,
+                    y: output.cartesian_coordinates.y,
+                    z: output.cartesian_coordinates.z,
+                },
                 conversion_notes: output.conversion_notes,
-            };
-            match serde_json::to_string(&response) {
-                Ok(json) => ToolResponse::text(json),
-                Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-            }
+            })
         }
-        Err(e) => ToolResponse::error(&e),
+        Err(e) => Err(e),
     }
 }

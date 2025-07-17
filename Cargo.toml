@@ -62,6 +62,8 @@ members = [
     "tools/math3d/sphere_sphere_intersection",
     "tools/math3d/sphere_volume",
     "tools/math3d/spherical_to_cartesian",
+    "tools/math3d/cartesian_to_cylindrical",
+    "tools/math3d/cylindrical_to_cartesian",
     "tools/math3d/tetrahedron_volume",
     "tools/math3d/vector_angle",
     "tools/math3d/vector_magnitude",
