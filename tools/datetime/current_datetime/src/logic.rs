@@ -103,14 +103,24 @@ pub fn get_current_datetime(input: CurrentDatetimeInput) -> Result<CurrentDateti
 }
 
 fn parse_timezone_offset(offset_str: &str) -> Result<FixedOffset, String> {
-    // Remove the sign for parsing
+    // Validate that offset starts with + or -
+    if !offset_str.starts_with('+') && !offset_str.starts_with('-') {
+        return Err("Timezone offset must start with + or -".to_string());
+    }
+    
+    // Parse the sign
     let sign = if offset_str.starts_with('-') { -1 } else { 1 };
-    let offset_str = offset_str.trim_start_matches(&['+', '-'][..]);
+    let offset_str = &offset_str[1..]; // Remove the sign
     
     // Split hours and minutes
     let parts: Vec<&str> = offset_str.split(':').collect();
     if parts.len() != 2 {
         return Err("Timezone offset must be in format '+HH:MM' or '-HH:MM'".to_string());
+    }
+    
+    // Validate format: hours must be 2 digits, minutes must be 2 digits
+    if parts[0].len() != 2 || parts[1].len() != 2 {
+        return Err("Timezone offset must use 2-digit format for hours and minutes".to_string());
     }
     
     let hours: i32 = parts[0].parse()

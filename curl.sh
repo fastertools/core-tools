@@ -14,9 +14,25 @@ echo
 echo "=== BASIC MATH TOOLS ==="
 echo
 
+# Test Add
+echo "--- Test: Add (10 + 3) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/add -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
 # Test Subtract
 echo "--- Test: Subtract (10 - 3) ---"
 response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/subtract -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Multiply
+echo "--- Test: Multiply (10 * 3) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/multiply -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
@@ -30,9 +46,31 @@ response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
 echo
 
-# Test Modulo
-echo "--- Test: Modulo (10 % 3) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/modulo -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
+# Test Remainder (was Modulo)
+echo "--- Test: Remainder (10 % 3) - Rust % operator ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/remainder -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Modulus (mathematical modulus)
+echo "--- Test: Modulus (10 mod 3) - Mathematical modulus ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/modulus -H "Content-Type: application/json" -d '{"a": 10, "b": 3}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test negative numbers to show difference
+echo "--- Test: Remainder vs Modulus (-21, 4) ---"
+echo "Remainder (should be -1):"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/remainder -H "Content-Type: application/json" -d '{"a": -21, "b": 4}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo "Modulus (should be 3):"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/modulus -H "Content-Type: application/json" -d '{"a": -21, "b": 4}')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
@@ -41,6 +79,38 @@ echo
 # Test Power
 echo "--- Test: Power (2^3) ---"
 response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/power -H "Content-Type: application/json" -d '{"a": 2, "b": 3}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Square Root
+echo "--- Test: Square Root (sqrt(16)) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/sqrt -H "Content-Type: application/json" -d '{"value": 16}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Square
+echo "--- Test: Square (4^2) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/square -H "Content-Type: application/json" -d '{"value": 4}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Pythagorean
+echo "--- Test: Pythagorean (3, 4) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/pythagorean -H "Content-Type: application/json" -d '{"a": 3, "b": 4}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test Distance 2D
+echo "--- Test: Distance 2D (0,0) to (3,4) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/distance-2d -H "Content-Type: application/json" -d '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
@@ -135,6 +205,150 @@ echo
 
 echo "--- Test: Random String (hex charset, 32 chars, count 2) ---"
 response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/random-string -H "Content-Type: application/json" -d '{"length": 32, "charset": "hex", "count": 2}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === URL ENCODING ===
+echo "=== URL ENCODING ==="
+echo
+
+# Test URL encoder
+echo "--- Test: URL Encode 'hello world' (component mode) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-encoder -H "Content-Type: application/json" -d '{"data": "hello world"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+echo "--- Test: URL Encode with special chars (query mode) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-encoder -H "Content-Type: application/json" -d '{"data": "name=John Doe&age=30", "mode": "query"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test URL decoder
+echo "--- Test: URL Decode 'hello%20world' ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-decoder -H "Content-Type: application/json" -d '{"encoded": "hello%20world"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+echo "--- Test: URL Decode with plus signs ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/url-decoder -H "Content-Type: application/json" -d '{"encoded": "hello+world", "decode_plus": true}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === HEX ENCODING ===
+echo "=== HEX ENCODING ==="
+echo
+
+# Test hex encoder
+echo "--- Test: Hex Encode 'Hello' ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hex-encoder -H "Content-Type: application/json" -d '{"data": "Hello"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+echo "--- Test: Hex Encode uppercase ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hex-encoder -H "Content-Type: application/json" -d '{"data": "Test", "case": "uppercase"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test hex decoder
+echo "--- Test: Hex Decode '48656c6c6f' ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hex-decoder -H "Content-Type: application/json" -d '{"encoded": "48656c6c6f"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === STRING OPERATIONS ===
+echo "=== STRING OPERATIONS ==="
+echo
+
+# Test string case converter
+echo "--- Test: Convert to snake_case ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-case-converter -H "Content-Type: application/json" -d '{"text": "HelloWorldFromRust", "target_case": "snake_case"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+echo "--- Test: Convert to camelCase ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-case-converter -H "Content-Type: application/json" -d '{"text": "hello_world_from_rust", "target_case": "camelCase"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === STRING TRIMMER ===
+echo "=== STRING TRIMMER ==="
+echo
+
+# Test basic trim
+echo "--- Test: Basic trim whitespace ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-trimmer -H "Content-Type: application/json" -d '{"text": "  hello world  "}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test trim character
+echo "--- Test: Trim specific character ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-trimmer -H "Content-Type: application/json" -d '{"text": "---hello---", "operation": "trim_char", "char_to_trim": "-"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test padding
+echo "--- Test: Pad right with asterisks ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-trimmer -H "Content-Type: application/json" -d '{"text": "hello", "operation": "pad_right", "pad_length": 10, "pad_char": "*"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === STRING SPLITTER ===
+echo "=== STRING SPLITTER ==="
+echo
+
+# Test basic string split
+echo "--- Test: Split comma-separated values ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-splitter -H "Content-Type: application/json" -d '{"text": "apple,banana,cherry", "delimiter": ","}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test whitespace split
+echo "--- Test: Split by whitespace ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-splitter -H "Content-Type: application/json" -d '{"text": "hello   world  from    rust", "split_type": "whitespace"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test regex split
+echo "--- Test: Split by regex (digits) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-splitter -H "Content-Type: application/json" -d '{"text": "one1two2three3four", "delimiter": "\\d+", "split_type": "regex"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test split with limit
+echo "--- Test: Split with limit ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/string-splitter -H "Content-Type: application/json" -d '{"text": "a-b-c-d-e", "delimiter": "-", "limit": 3}')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"

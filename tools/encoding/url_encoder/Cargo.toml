@@ -1,5 +1,5 @@
 [package]
-name = "modulo_tool"
+name = "url_encoder_tool"
 version = "0.1.0"
 edition = "2024"
 
@@ -11,6 +11,6 @@ ftl-sdk = { version = "0.2.3", features = ["macros"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 schemars = "0.8"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
+percent-encoding = "2.3"
 spin-sdk = "4.0"
+

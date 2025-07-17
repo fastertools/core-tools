@@ -9,7 +9,8 @@ members = [
     "tools/basic_math/add",
     "tools/basic_math/distance_2d",
     "tools/basic_math/divide",
-    "tools/basic_math/modulo",
+    "tools/basic_math/remainder",
+    "tools/basic_math/modulus",
     "tools/basic_math/multiply",
     "tools/basic_math/power",
     "tools/basic_math/pythagorean",
@@ -19,6 +20,10 @@ members = [
     "tools/datetime/current_datetime",
     "tools/encoding/base64_decoder",
     "tools/encoding/base64_encoder",
+    "tools/encoding/hex_decoder",
+    "tools/encoding/hex_encoder",
+    "tools/encoding/url_decoder",
+    "tools/encoding/url_encoder",
     "tools/identifiers/random_integer",
     "tools/identifiers/random_string",
     "tools/identifiers/uuid_generator",
@@ -71,6 +76,9 @@ members = [
     "tools/statistics/spearman_correlation",
     "tools/statistics/summary_statistics",
     "tools/statistics/test_normality",
+    "tools/string/string_case_converter",
+    "tools/string/string_trimmer",
+    "tools/string/string_splitter",
 ]
 
 # This workspace doesn't have a default member package

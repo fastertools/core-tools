@@ -12,7 +12,7 @@ pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct TwoNumberInput {
-    /// Number to be divided (dividend)
+    /// Number to find modulus of (dividend)
     pub a: f64,
     /// Number to divide by (divisor)
     pub b: f64,
@@ -26,7 +26,7 @@ pub struct ArithmeticResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn modulo(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
+pub fn modulus(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     // Convert to logic types
     let logic_input = LogicInput {
         a: input.a,
@@ -34,7 +34,7 @@ pub fn modulo(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     };
     
     // Call logic implementation
-    let result = logic::modulo_numbers(logic_input)?;
+    let result = logic::modulus_numbers(logic_input)?;
     
     // Convert back to wrapper types
     Ok(ArithmeticResult {

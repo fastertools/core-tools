@@ -25,6 +25,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "1.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e60d3430d3a69478ad0993f19238d2df97c507009a52b3c10addcd7f6bcb916"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "analyze_distribution"
 version = "0.1.0"
 dependencies = [
@@ -501,6 +510,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hex_decoder_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "hex",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
+name = "hex_encoder_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "hex",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "histogram"
 version = "0.1.0"
 dependencies = [
@@ -670,7 +709,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a282da65faaf38286cf3be983213fcf1d2e2a58700e808f83f4ea9a4804bc0"
 
 [[package]]
-name = "modulo_tool"
+name = "modulus_tool"
 version = "0.1.0"
 dependencies = [
  "ftl-sdk",
@@ -1021,6 +1060,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "regex"
+version = "1.11.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b544ef1b4eac5dc2db33ea63606ae9ffcfac26c1416a2806ae0bf5f56b201191"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "809e8dc61f6de73b46c85f4c96486310fe304c434cfa43669d7b40f711150908"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
+
+[[package]]
+name = "remainder_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "rotation_matrix_tool"
 version = "0.1.0"
 dependencies = [
@@ -1305,6 +1384,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "string_case_converter_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "heck",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
+name = "string_splitter_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "regex",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
+name = "string_trimmer_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
 name = "subtract_tool"
 version = "0.1.0"
 dependencies = [
@@ -1407,6 +1521,30 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "url_decoder_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "percent-encoding",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
+
+[[package]]
+name = "url_encoder_tool"
+version = "0.1.0"
+dependencies = [
+ "ftl-sdk",
+ "percent-encoding",
+ "schemars",
+ "serde",
+ "serde_json",
+ "spin-sdk",
+]
 
 [[package]]
 name = "uuid"

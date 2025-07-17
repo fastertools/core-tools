@@ -147,7 +147,7 @@ mod tests {
         };
         
         let result = decode_base64(input).unwrap();
-        assert_eq!(result.decoded, "??>>>");
+        assert_eq!(result.decoded, "??>>");
         assert_eq!(result.variant, "url_safe_no_pad");
     }
     
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_decode_unicode() {
         let input = Base64DecoderInput {
-            encoded: "SGVsbG8g5LiW55WMION0jI0N".to_string(),
+            encoded: "SGVsbG8g5LiW55WMIPCfjI0=".to_string(),
             variant: None,
         };
         
@@ -210,9 +210,9 @@ mod tests {
             variant: Some("standard_no_pad".to_string()),
         };
         
-        // This should still work as base64 decoders are often lenient
+        // This should fail because we're using no_pad variant with padded data
         let result = decode_base64(input);
-        assert!(result.is_ok());
+        assert!(result.is_err());
     }
     
     #[test]

@@ -139,7 +139,7 @@ mod tests {
         };
         
         let result = encode_base64(input).unwrap();
-        assert_eq!(result.encoded, "SGVsbG8g5LiW55WMION0jI0N");
+        assert_eq!(result.encoded, "SGVsbG8g5LiW55WMIPCfjI0=");
         assert_eq!(result.variant, "standard");
     }
     
@@ -209,8 +209,8 @@ mod tests {
         };
         
         let result = encode_base64(input).unwrap();
-        assert_eq!(result.original_length, 256);
-        assert!(result.encoded_length > 256);
+        assert_eq!(result.original_length, 384); // UTF-8 encoding makes some chars multi-byte
+        assert!(result.encoded_length > 384); // Base64 encoding increases size
         assert_eq!(result.variant, "standard");
     }
 }
