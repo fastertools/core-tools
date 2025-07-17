@@ -79,6 +79,10 @@ members = [
     "tools/string/string_case_converter",
     "tools/string/string_trimmer",
     "tools/string/string_splitter",
+    "tools/data_formats/json_formatter",
+    "tools/data_formats/json_validator",
+    "tools/validation/email_validator",
+    "tools/crypto/hash_generator",
 ]
 
 # This workspace doesn't have a default member package

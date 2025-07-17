@@ -354,4 +354,108 @@ response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
 echo "Response: $response_body"
 echo
 
+# === JSON FORMATTER ===
+echo "=== JSON FORMATTER ==="
+echo
+
+# Test basic formatting
+echo "--- Test: Pretty format JSON ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/json-formatter -H "Content-Type: application/json" -d '{"json_string": "{\"name\":\"John\",\"age\":30,\"city\":\"New York\"}"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test compact formatting
+echo "--- Test: Compact format JSON ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/json-formatter -H "Content-Type: application/json" -d '{"json_string": "{\n  \"name\": \"John\",\n  \"age\": 30\n}", "indent": 0}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test invalid JSON
+echo "--- Test: Invalid JSON ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/json-formatter -H "Content-Type: application/json" -d '{"json_string": "{\"name\": \"John\", \"age\": }"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === JSON VALIDATOR ===
+echo "=== JSON VALIDATOR ==="
+echo
+
+# Test valid JSON
+echo "--- Test: Valid JSON ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/json-validator -H "Content-Type: application/json" -d '{"json_string": "{\"name\":\"John\",\"age\":30}"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test invalid JSON
+echo "--- Test: Invalid JSON ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/json-validator -H "Content-Type: application/json" -d '{"json_string": "{\"name\": \"John\", \"age\": }"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === EMAIL VALIDATOR ===
+echo "=== EMAIL VALIDATOR ==="
+echo
+
+# Test valid email
+echo "--- Test: Valid email ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/email-validator -H "Content-Type: application/json" -d '{"email": "test@example.com"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test invalid email (no @)
+echo "--- Test: Invalid email (no @) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/email-validator -H "Content-Type: application/json" -d '{"email": "testexample.com"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test email with subdomain
+echo "--- Test: Email with subdomain ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/email-validator -H "Content-Type: application/json" -d '{"email": "user@mail.example.com"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# === HASH GENERATOR ===
+echo "=== HASH GENERATOR ==="
+echo
+
+# Test SHA256 hex
+echo "--- Test: SHA256 hex ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hash-generator -H "Content-Type: application/json" -d '{"text": "hello world", "algorithm": "sha256"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test MD5 base64
+echo "--- Test: MD5 base64 ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hash-generator -H "Content-Type: application/json" -d '{"text": "hello world", "algorithm": "md5", "format": "base64"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
+# Test invalid algorithm
+echo "--- Test: Invalid algorithm ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/hash-generator -H "Content-Type: application/json" -d '{"text": "test", "algorithm": "sha1"}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "Response: $response_body"
+echo
+
 echo "=== Test Suite Complete ==="

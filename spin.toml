@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -871,5 +871,53 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/string/string_splitter"
 watch = ["tools/string/string_splitter/src/**/*.rs", "tools/string/string_splitter/Cargo.toml"]
+
+[[trigger.http]]
+route = "/json-formatter"
+component = "json-formatter"
+
+[component.json-formatter]
+source = "target/wasm32-wasip1/release/json_formatter_tool.wasm"
+allowed_outbound_hosts = []
+[component.json-formatter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/json_formatter"
+watch = ["tools/data_formats/json_formatter/src/**/*.rs", "tools/data_formats/json_formatter/Cargo.toml"]
+
+[[trigger.http]]
+route = "/json-validator"
+component = "json-validator"
+
+[component.json-validator]
+source = "target/wasm32-wasip1/release/json_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.json-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/json_validator"
+watch = ["tools/data_formats/json_validator/src/**/*.rs", "tools/data_formats/json_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/email-validator"
+component = "email-validator"
+
+[component.email-validator]
+source = "target/wasm32-wasip1/release/email_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.email-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/email_validator"
+watch = ["tools/validation/email_validator/src/**/*.rs", "tools/validation/email_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/hash-generator"
+component = "hash-generator"
+
+[component.hash-generator]
+source = "target/wasm32-wasip1/release/hash_generator_tool.wasm"
+allowed_outbound_hosts = []
+[component.hash-generator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/crypto/hash_generator"
+watch = ["tools/crypto/hash_generator/src/**/*.rs", "tools/crypto/hash_generator/Cargo.toml"]
 
 
