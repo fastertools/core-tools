@@ -656,4 +656,124 @@ command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/multiple_line_intersection"
 watch = ["tools/math3d/multiple_line_intersection/src/**/*.rs", "tools/math3d/multiple_line_intersection/Cargo.toml"]
 
+[[trigger.http]]
+route = "/subtract"
+component = "subtract"
+
+[component.subtract]
+source = "target/wasm32-wasip1/release/subtract_tool.wasm"
+allowed_outbound_hosts = []
+[component.subtract.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/subtract"
+watch = ["tools/basic_math/subtract/src/**/*.rs", "tools/basic_math/subtract/Cargo.toml"]
+
+[[trigger.http]]
+route = "/divide"
+component = "divide"
+
+[component.divide]
+source = "target/wasm32-wasip1/release/divide_tool.wasm"
+allowed_outbound_hosts = []
+[component.divide.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/divide"
+watch = ["tools/basic_math/divide/src/**/*.rs", "tools/basic_math/divide/Cargo.toml"]
+
+[[trigger.http]]
+route = "/modulo"
+component = "modulo"
+
+[component.modulo]
+source = "target/wasm32-wasip1/release/modulo_tool.wasm"
+allowed_outbound_hosts = []
+[component.modulo.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/modulo"
+watch = ["tools/basic_math/modulo/src/**/*.rs", "tools/basic_math/modulo/Cargo.toml"]
+
+[[trigger.http]]
+route = "/power"
+component = "power"
+
+[component.power]
+source = "target/wasm32-wasip1/release/power_tool.wasm"
+allowed_outbound_hosts = []
+[component.power.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/power"
+watch = ["tools/basic_math/power/src/**/*.rs", "tools/basic_math/power/Cargo.toml"]
+
+[[trigger.http]]
+route = "/uuid-generator"
+component = "uuid-generator"
+
+[component.uuid-generator]
+source = "target/wasm32-wasip1/release/uuid_generator_tool.wasm"
+allowed_outbound_hosts = []
+[component.uuid-generator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/uuid_generator"
+watch = ["tools/identifiers/uuid_generator/src/**/*.rs", "tools/identifiers/uuid_generator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/current-datetime"
+component = "current-datetime"
+
+[component.current-datetime]
+source = "target/wasm32-wasip1/release/current_datetime_tool.wasm"
+allowed_outbound_hosts = []
+[component.current-datetime.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/datetime/current_datetime"
+watch = ["tools/datetime/current_datetime/src/**/*.rs", "tools/datetime/current_datetime/Cargo.toml"]
+
+[[trigger.http]]
+route = "/base64-encoder"
+component = "base64-encoder"
+
+[component.base64-encoder]
+source = "target/wasm32-wasip1/release/base64_encoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.base64-encoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/base64_encoder"
+watch = ["tools/encoding/base64_encoder/src/**/*.rs", "tools/encoding/base64_encoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/base64-decoder"
+component = "base64-decoder"
+
+[component.base64-decoder]
+source = "target/wasm32-wasip1/release/base64_decoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.base64-decoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/base64_decoder"
+watch = ["tools/encoding/base64_decoder/src/**/*.rs", "tools/encoding/base64_decoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/random-integer"
+component = "random-integer"
+
+[component.random-integer]
+source = "target/wasm32-wasip1/release/random_integer_tool.wasm"
+allowed_outbound_hosts = []
+[component.random-integer.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/random_integer"
+watch = ["tools/identifiers/random_integer/src/**/*.rs", "tools/identifiers/random_integer/Cargo.toml"]
+
+[[trigger.http]]
+route = "/random-string"
+component = "random-string"
+
+[component.random-string]
+source = "target/wasm32-wasip1/release/random_string_tool.wasm"
+allowed_outbound_hosts = []
+[component.random-string.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/random_string"
+watch = ["tools/identifiers/random_string/src/**/*.rs", "tools/identifiers/random_string/Cargo.toml"]
+
 
