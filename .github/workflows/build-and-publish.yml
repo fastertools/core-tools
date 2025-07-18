@@ -385,8 +385,8 @@ jobs:
           
           echo "Distance 2D response: $RESPONSE"
           
-          # Check if response contains expected distance of 5.0
-          if echo "$RESPONSE" | grep -q '"distance":5'; then
+          # Check if response contains expected distance of 5.0 in ToolResponse format
+          if echo "$RESPONSE" | grep -q '\\"distance\\":5'; then
             echo "✅ Tool composition working correctly"
           else
             echo "❌ Tool composition failed - unexpected response"
@@ -401,7 +401,7 @@ jobs:
             -d '{"a": 3, "b": 4}')
           echo "Pythagorean response: $PYTH_RESPONSE"
           
-          if echo "$PYTH_RESPONSE" | grep -q '"hypotenuse":5'; then
+          if echo "$PYTH_RESPONSE" | grep -q '\\"hypotenuse\\":5'; then
             echo "✅ Pythagorean tool working correctly"
           else
             echo "❌ Pythagorean tool failed"
