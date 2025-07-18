@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{dot_product_logic, DotProductInput as LogicInput, DotProductResult, Vector3D as LogicVector3D};
+use logic::{dot_product_logic, DotProductInput as LogicInput, DotProductResult as LogicDotProductResult, Vector3D as LogicVector3D};
 
 #[derive(Deserialize, JsonSchema, Clone, Debug, PartialEq)]
 struct Vector3D {
@@ -21,6 +21,20 @@ struct DotProductInput {
     vector1: Vector3D,
     /// Second 3D vector
     vector2: Vector3D,
+}
+
+#[derive(Serialize, JsonSchema)]
+struct DotProductResult {
+    /// The calculated dot product value
+    pub dot_product: f64,
+    /// Angle between vectors in radians
+    pub angle_radians: f64,
+    /// Angle between vectors in degrees
+    pub angle_degrees: f64,
+    /// Whether the vectors are perpendicular (dot product ≈ 0)
+    pub are_perpendicular: bool,
+    /// Whether the vectors are parallel (angle ≈ 0° or 180°)
+    pub are_parallel: bool,
 }
 
 impl From<Vector3D> for LogicVector3D {
@@ -42,9 +56,16 @@ impl From<DotProductInput> for LogicInput {
 #[cfg_attr(not(test), tool)]
 fn dot_product(input: DotProductInput) -> ToolResponse {
     match dot_product_logic(input.into()) {
-        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(error) => ToolResponse::text(serde_json::to_string(&serde_json::json!({
-            "error": error
-        })).unwrap()),
+        Ok(logic_result) => {
+            let result = DotProductResult {
+                dot_product: logic_result.dot_product,
+                angle_radians: logic_result.angle_radians,
+                angle_degrees: logic_result.angle_degrees,
+                are_perpendicular: logic_result.are_perpendicular,
+                are_parallel: logic_result.are_parallel,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

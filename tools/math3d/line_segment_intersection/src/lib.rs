@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -38,6 +38,9 @@ impl From<LineSegmentInput> for LogicInput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn line_segment_intersection(input: LineSegmentInput) -> Result<LineSegmentIntersectionResult, String> {
-    line_segment_intersection_logic(input.into())
+pub fn line_segment_intersection(input: LineSegmentInput) -> ToolResponse {
+    match line_segment_intersection_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

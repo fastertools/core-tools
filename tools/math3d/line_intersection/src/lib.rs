@@ -3,32 +3,33 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
+
 use logic::{line_intersection_logic, LineIntersectionInput as LogicInput, LineIntersectionResult, Line3D as LogicLine3D, Vector3D as LogicVector3D};
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
-struct Vector3D {
+pub struct Vector3D {
     /// X component of the vector
-    x: f64,
+    pub x: f64,
     /// Y component of the vector
-    y: f64,
+    pub y: f64,
     /// Z component of the vector
-    z: f64,
+    pub z: f64,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, JsonSchema)]
-struct Line3D {
+pub struct Line3D {
     /// A point on the line
-    point: Vector3D,
+    pub point: Vector3D,
     /// Direction vector of the line
-    direction: Vector3D,
+    pub direction: Vector3D,
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct LineIntersectionInput {
+pub struct LineIntersectionInput {
     /// First 3D line
-    line1: Line3D,
+    pub line1: Line3D,
     /// Second 3D line
-    line2: Line3D,
+    pub line2: Line3D,
 }
 
 impl From<Vector3D> for LogicVector3D {
@@ -57,13 +58,9 @@ impl From<LineIntersectionInput> for LogicInput {
 
 /// Find intersection of two 3D lines
 #[cfg_attr(not(test), tool)]
-fn line_intersection(input: LineIntersectionInput) -> ToolResponse {
+pub fn line_intersection(input: LineIntersectionInput) -> ToolResponse {
     match line_intersection_logic(input.into()) {
-        Ok(result) => {
-            ToolResponse::text(serde_json::to_string(&result).unwrap())
-        }
-        Err(e) => {
-            ToolResponse::text(serde_json::to_string(&serde_json::json!({"error": e})).unwrap())
-        }
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -34,7 +34,7 @@ pub struct PointLineDistanceResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn point_line_distance(input: PointLineInput) -> Result<PointLineDistanceResult, String> {
+pub fn point_line_distance(input: PointLineInput) -> ToolResponse {
     // Convert JsonSchema types to logic types
     let logic_input = logic::PointLineInput {
         point: logic::Vector3D {
@@ -57,22 +57,26 @@ pub fn point_line_distance(input: PointLineInput) -> Result<PointLineDistanceRes
     };
 
     // Call business logic
-    let logic_result = point_line_distance_logic(logic_input)?;
-
-    // Convert logic types back to JsonSchema types
-    Ok(PointLineDistanceResult {
-        distance: logic_result.distance,
-        closest_point_on_line: Vector3D {
-            x: logic_result.closest_point_on_line.x,
-            y: logic_result.closest_point_on_line.y,
-            z: logic_result.closest_point_on_line.z,
-        },
-        parameter_on_line: logic_result.parameter_on_line,
-        perpendicular_vector: Vector3D {
-            x: logic_result.perpendicular_vector.x,
-            y: logic_result.perpendicular_vector.y,
-            z: logic_result.perpendicular_vector.z,
-        },
-        point_is_on_line: logic_result.point_is_on_line,
-    })
+    match point_line_distance_logic(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to JsonSchema types
+            let result = PointLineDistanceResult {
+                distance: logic_result.distance,
+                closest_point_on_line: Vector3D {
+                    x: logic_result.closest_point_on_line.x,
+                    y: logic_result.closest_point_on_line.y,
+                    z: logic_result.closest_point_on_line.z,
+                },
+                parameter_on_line: logic_result.parameter_on_line,
+                perpendicular_vector: Vector3D {
+                    x: logic_result.perpendicular_vector.x,
+                    y: logic_result.perpendicular_vector.y,
+                    z: logic_result.perpendicular_vector.z,
+                },
+                point_is_on_line: logic_result.point_is_on_line,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

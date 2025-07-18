@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -18,6 +18,9 @@ impl From<StatisticsInput> for LogicInput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn summary_statistics(input: StatisticsInput) -> Result<SummaryStatisticsOutput, String> {
-    summary_statistics_logic(input.into())
+pub fn summary_statistics(input: StatisticsInput) -> ToolResponse {
+    match summary_statistics_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

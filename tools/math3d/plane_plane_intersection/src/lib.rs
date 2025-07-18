@@ -1,4 +1,4 @@
-use ftl_sdk::ToolResponse;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 
 mod logic;
@@ -12,8 +12,8 @@ struct ToolInput {
     plane2: logic::Plane3D,
 }
 
-#[derive(serde::Serialize)]
-struct ToolResponse_ {
+#[derive(serde::Serialize, JsonSchema)]
+struct ToolOutput {
     /// Type of intersection: "intersecting", "parallel", or "coincident"
     intersection_type: String,
     /// Whether the planes intersect
@@ -33,7 +33,7 @@ struct ToolResponse_ {
 /// Calculate the intersection between two 3D planes
 /// Returns detailed information about the intersection including the line of intersection if it exists
 #[cfg_attr(not(test), ftl_sdk::tool)]
-fn plane_plane_intersection(input: ToolInput) -> ToolResponse {
+fn plane_plane_intersection(input: ToolInput) -> ftl_sdk::ToolResponse {
     let logic_input = PlanePlaneIntersectionInput {
         plane1: input.plane1,
         plane2: input.plane2,
@@ -41,7 +41,7 @@ fn plane_plane_intersection(input: ToolInput) -> ToolResponse {
     
     match plane_plane_intersection_logic(logic_input) {
         Ok(output) => {
-            let response = ToolResponse_ {
+            let result = ToolOutput {
                 intersection_type: output.intersection_type,
                 intersects: output.intersects,
                 intersection_line: output.intersection_line,
@@ -50,11 +50,8 @@ fn plane_plane_intersection(input: ToolInput) -> ToolResponse {
                 angle_radians: output.angle_radians,
                 angle_degrees: output.angle_degrees,
             };
-            match serde_json::to_string(&response) {
-                Ok(json) => ToolResponse::text(json),
-                Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-            }
+            ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::error(&e),
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
     }
 }

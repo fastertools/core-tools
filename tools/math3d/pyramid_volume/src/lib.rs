@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -28,7 +28,7 @@ pub struct PyramidResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn pyramid_volume(input: PyramidInput) -> Result<PyramidResponse, String> {
+pub fn pyramid_volume(input: PyramidInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::PyramidInput {
         base_points: input.base_points.into_iter().map(|p| logic::Vector3D {
@@ -44,23 +44,27 @@ pub fn pyramid_volume(input: PyramidInput) -> Result<PyramidResponse, String> {
     };
     
     // Call business logic
-    let logic_result = logic::compute_pyramid_volume(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(PyramidResponse {
-        volume: logic_result.volume,
-        calculation_method: logic_result.calculation_method,
-        base_area: logic_result.base_area,
-        height: logic_result.height,
-        base_points: logic_result.base_points.into_iter().map(|p| Vector3D {
-            x: p.x,
-            y: p.y,
-            z: p.z,
-        }).collect(),
-        apex: Vector3D {
-            x: logic_result.apex.x,
-            y: logic_result.apex.y,
-            z: logic_result.apex.z,
-        },
-    })
+    match logic::compute_pyramid_volume(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = PyramidResponse {
+                volume: logic_result.volume,
+                calculation_method: logic_result.calculation_method,
+                base_area: logic_result.base_area,
+                height: logic_result.height,
+                base_points: logic_result.base_points.into_iter().map(|p| Vector3D {
+                    x: p.x,
+                    y: p.y,
+                    z: p.z,
+                }).collect(),
+                apex: Vector3D {
+                    x: logic_result.apex.x,
+                    y: logic_result.apex.y,
+                    z: logic_result.apex.z,
+                },
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

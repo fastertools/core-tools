@@ -3,8 +3,7 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{HistogramInput as LogicInput, HistogramOutput as LogicOutput, HistogramBin as LogicBin};
@@ -45,7 +44,7 @@ pub struct HistogramBin {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn histogram(input: HistogramInput) -> Result<HistogramOutput, String> {
+pub fn histogram(input: HistogramInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         data: input.data,
@@ -53,19 +52,23 @@ pub fn histogram(input: HistogramInput) -> Result<HistogramOutput, String> {
     };
     
     // Call logic implementation
-    let result = logic::generate_histogram(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(HistogramOutput {
-        bins: result.bins.into_iter().map(|bin| HistogramBin {
-            lower_bound: bin.lower_bound,
-            upper_bound: bin.upper_bound,
-            count: bin.count,
-            frequency: bin.frequency,
-            density: bin.density,
-        }).collect(),
-        total_count: result.total_count,
-        bin_width: result.bin_width,
-        range: result.range,
-    })
+    match logic::generate_histogram(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = HistogramOutput {
+                bins: result.bins.into_iter().map(|bin| HistogramBin {
+                    lower_bound: bin.lower_bound,
+                    upper_bound: bin.upper_bound,
+                    count: bin.count,
+                    frequency: bin.frequency,
+                    density: bin.density,
+                }).collect(),
+                total_count: result.total_count,
+                bin_width: result.bin_width,
+                range: result.range,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

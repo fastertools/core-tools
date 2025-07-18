@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -27,7 +27,7 @@ pub struct TetrahedronVolumeResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> Result<TetrahedronVolumeResponse, String> {
+pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::TetrahedronVolumeInput {
         point_a: logic::Vector3D {
@@ -53,33 +53,37 @@ pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> Result<TetrahedronVo
     };
     
     // Call business logic
-    let logic_result = logic::compute_tetrahedron_volume(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(TetrahedronVolumeResponse {
-        volume: logic_result.volume,
-        calculation_method: logic_result.calculation_method,
-        points: [
-            Vector3D {
-                x: logic_result.points[0].x,
-                y: logic_result.points[0].y,
-                z: logic_result.points[0].z,
-            },
-            Vector3D {
-                x: logic_result.points[1].x,
-                y: logic_result.points[1].y,
-                z: logic_result.points[1].z,
-            },
-            Vector3D {
-                x: logic_result.points[2].x,
-                y: logic_result.points[2].y,
-                z: logic_result.points[2].z,
-            },
-            Vector3D {
-                x: logic_result.points[3].x,
-                y: logic_result.points[3].y,
-                z: logic_result.points[3].z,
-            },
-        ],
-    })
+    match logic::compute_tetrahedron_volume(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = TetrahedronVolumeResponse {
+                volume: logic_result.volume,
+                calculation_method: logic_result.calculation_method,
+                points: [
+                    Vector3D {
+                        x: logic_result.points[0].x,
+                        y: logic_result.points[0].y,
+                        z: logic_result.points[0].z,
+                    },
+                    Vector3D {
+                        x: logic_result.points[1].x,
+                        y: logic_result.points[1].y,
+                        z: logic_result.points[1].z,
+                    },
+                    Vector3D {
+                        x: logic_result.points[2].x,
+                        y: logic_result.points[2].y,
+                        z: logic_result.points[2].z,
+                    },
+                    Vector3D {
+                        x: logic_result.points[3].x,
+                        y: logic_result.points[3].y,
+                        z: logic_result.points[3].z,
+                    },
+                ],
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

@@ -1,4 +1,4 @@
-use ftl_sdk::ToolResponse;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 
 mod logic;
@@ -10,12 +10,13 @@ struct ToolInput {
     angle: f64,
 }
 
-#[derive(serde::Serialize)]
-struct ToolResponse_ {
+#[derive(serde::Serialize, JsonSchema)]
+struct ToolOutput {
+    /// The 3x3 rotation matrix representing the rotation
     matrix: logic::Matrix3x3,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
+#[cfg_attr(not(test), tool)]
 fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
     let logic_input = ArbitraryRotationInput {
         axis: input.axis,
@@ -24,14 +25,11 @@ fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
     
     match arbitrary_rotation_logic(logic_input) {
         Ok(output) => {
-            let response = ToolResponse_ {
+            let result = ToolOutput {
                 matrix: output.matrix,
             };
-            match serde_json::to_string(&response) {
-                Ok(json) => ToolResponse::text(json),
-                Err(e) => ToolResponse::error(&format!("Serialization error: {}", e)),
-            }
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::error(&e),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

@@ -3,8 +3,7 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{
@@ -32,7 +31,7 @@ pub struct CorrelationMatrixOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn correlation_matrix(input: MultiSeriesInput) -> Result<CorrelationMatrixOutput, String> {
+pub fn correlation_matrix(input: MultiSeriesInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicMultiSeriesInput {
         data: input.data,
@@ -40,12 +39,16 @@ pub fn correlation_matrix(input: MultiSeriesInput) -> Result<CorrelationMatrixOu
     };
     
     // Call logic implementation
-    let result = logic::calculate_correlation_matrix(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(CorrelationMatrixOutput {
-        variables: result.variables,
-        correlation_matrix: result.correlation_matrix,
-        sample_size: result.sample_size,
-    })
+    match logic::calculate_correlation_matrix(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = CorrelationMatrixOutput {
+                variables: result.variables,
+                correlation_matrix: result.correlation_matrix,
+                sample_size: result.sample_size,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

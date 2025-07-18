@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use ftl_sdk::ToolResponse;
 
 mod logic;
 
@@ -30,7 +31,7 @@ pub struct DistanceResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn distance(input: DistanceInput) -> Result<DistanceResult, String> {
+pub fn distance(input: DistanceInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         lat1: input.lat1,
@@ -40,12 +41,17 @@ pub fn distance(input: DistanceInput) -> Result<DistanceResult, String> {
     };
     
     // Call logic implementation
-    let result = logic::calculate_distance_between_points(logic_input)?;
+    let result = match logic::calculate_distance_between_points(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error calculating distance: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(DistanceResult {
+    let output = DistanceResult {
         distance_km: result.distance_km,
         distance_miles: result.distance_miles,
         distance_nautical_miles: result.distance_nautical_miles,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&output).unwrap_or_else(|_| "Error serializing result".to_string()))
 }

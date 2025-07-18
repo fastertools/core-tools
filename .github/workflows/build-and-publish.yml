@@ -2,7 +2,7 @@ name: Build and Publish Tools
 
 on:
   push:
-    branches: [ main, feat/core-tools ]
+    branches: [ main, feat/core-tools, feat/llm-standard-library ]
   pull_request:
     branches: [ main ]
 
@@ -327,6 +327,92 @@ jobs:
           fi
           
           echo "✅ WASM validation completed successfully!"
+
+      - name: Install Spin CLI for integration tests
+        run: |
+          curl -fsSL https://developer.fermyon.com/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+          spin --version
+
+      - name: Copy WASM files to target directory for testing
+        run: |
+          mkdir -p target/wasm32-wasip1/release
+          cp artifacts/*.wasm target/wasm32-wasip1/release/
+          echo "=== Available WASM files ==="
+          ls -la target/wasm32-wasip1/release/
+
+      - name: Run integration tests with Spin server
+        run: |
+          echo "Starting Spin server for integration testing..."
+          
+          # Start Spin server in background
+          spin up --listen 127.0.0.1:3000 > spin_test.log 2>&1 &
+          SPIN_PID=$!
+          
+          # Wait for server to start (extended timeout for 84 tools)
+          echo "Waiting for Spin server to start..."
+          for i in {1..90}; do
+            if curl -s http://127.0.0.1:3000/mcp >/dev/null 2>&1; then
+              echo "✅ Spin server is ready after $i seconds"
+              break
+            fi
+            if [ $i -eq 90 ]; then
+              echo "❌ Spin server failed to start within 90 seconds"
+              echo "=== Spin server logs ==="
+              cat spin_test.log
+              exit 1
+            fi
+            # Show progress every 10 seconds
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "⏳ Still waiting for Spin server... (${i}s elapsed)"
+            fi
+            sleep 1
+          done
+          
+          # Test basic connectivity
+          echo "Testing MCP gateway connectivity..."
+          curl -s http://127.0.0.1:3000/mcp || {
+            echo "❌ MCP gateway not responding"
+            cat spin_test.log
+            exit 1
+          }
+          
+          # Test tool composition: distance_2d → pythagorean → [square, add, sqrt]
+          echo "Testing tool composition chain: distance_2d → pythagorean → [square, add, sqrt]"
+          RESPONSE=$(curl -s -X POST http://127.0.0.1:3000/distance-two-d \
+            -H "Content-Type: application/json" \
+            -d '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}')
+          
+          echo "Distance 2D response: $RESPONSE"
+          
+          # Check if response contains expected distance of 5.0 in ToolResponse format
+          if echo "$RESPONSE" | grep -q '\\"distance\\":5'; then
+            echo "✅ Tool composition working correctly"
+          else
+            echo "❌ Tool composition failed - unexpected response"
+            cat spin_test.log
+            exit 1
+          fi
+          
+          # Test individual tools work
+          echo "Testing individual pythagorean tool..."
+          PYTH_RESPONSE=$(curl -s -X POST http://127.0.0.1:3000/pythagorean \
+            -H "Content-Type: application/json" \
+            -d '{"a": 3, "b": 4}')
+          echo "Pythagorean response: $PYTH_RESPONSE"
+          
+          if echo "$PYTH_RESPONSE" | grep -q '\\"hypotenuse\\":5'; then
+            echo "✅ Pythagorean tool working correctly"
+          else
+            echo "❌ Pythagorean tool failed"
+            exit 1
+          fi
+          
+          # Cleanup
+          kill $SPIN_PID || true
+          wait $SPIN_PID 2>/dev/null || true
+          
+          echo "✅ Integration tests completed successfully!"
 
   cleanup:
     needs: [publish-spin-oci, publish-spin-app, test-tools]

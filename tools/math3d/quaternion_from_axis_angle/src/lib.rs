@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -31,7 +31,7 @@ pub struct QuaternionFromAxisAngleResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn quaternion_from_axis_angle(input: QuaternionFromAxisAngleInput) -> Result<QuaternionFromAxisAngleResponse, String> {
+pub fn quaternion_from_axis_angle(input: QuaternionFromAxisAngleInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::QuaternionFromAxisAngleInput {
         axis: logic::Vector3D {
@@ -43,15 +43,19 @@ pub fn quaternion_from_axis_angle(input: QuaternionFromAxisAngleInput) -> Result
     };
     
     // Call business logic
-    let logic_result = logic::compute_quaternion_from_axis_angle(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(QuaternionFromAxisAngleResponse {
-        quaternion: Quaternion {
-            x: logic_result.quaternion.x,
-            y: logic_result.quaternion.y,
-            z: logic_result.quaternion.z,
-            w: logic_result.quaternion.w,
-        },
-    })
+    match logic::compute_quaternion_from_axis_angle(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = QuaternionFromAxisAngleResponse {
+                quaternion: Quaternion {
+                    x: logic_result.quaternion.x,
+                    y: logic_result.quaternion.y,
+                    z: logic_result.quaternion.z,
+                    w: logic_result.quaternion.w,
+                },
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,line-segment-intersection,multiple-line-intersection" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,cartesian-to-spherical,spherical-to-cartesian,cartesian-to-cylindrical,cylindrical-to-cartesian,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,vector-analysis,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator,url-validator,regex-matcher,csv-parser,yaml-formatter" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -352,11 +352,35 @@ component = "coordinate-conversion-three-d"
 
 [component.coordinate-conversion-three-d]
 source = "target/wasm32-wasip1/release/math3d_coordinate_conversion_tool.wasm"
-allowed_outbound_hosts = []
+allowed_outbound_hosts = ["http://cartesian-to-spherical.spin.internal", "http://spherical-to-cartesian.spin.internal", "http://cartesian-to-cylindrical.spin.internal", "http://cylindrical-to-cartesian.spin.internal"]
 [component.coordinate-conversion-three-d.build]
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/coordinate_conversion"
 watch = ["tools/math3d/coordinate_conversion/src/**/*.rs", "tools/math3d/coordinate_conversion/Cargo.toml"]
+
+[[trigger.http]]
+route = "/cartesian-to-spherical"
+component = "cartesian-to-spherical"
+
+[component.cartesian-to-spherical]
+source = "target/wasm32-wasip1/release/cartesian_to_spherical_tool.wasm"
+allowed_outbound_hosts = []
+[component.cartesian-to-spherical.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/cartesian_to_spherical"
+watch = ["tools/math3d/cartesian_to_spherical/src/**/*.rs", "tools/math3d/cartesian_to_spherical/Cargo.toml"]
+
+[[trigger.http]]
+route = "/spherical-to-cartesian"
+component = "spherical-to-cartesian"
+
+[component.spherical-to-cartesian]
+source = "target/wasm32-wasip1/release/spherical_to_cartesian_tool.wasm"
+allowed_outbound_hosts = []
+[component.spherical-to-cartesian.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/spherical_to_cartesian"
+watch = ["tools/math3d/spherical_to_cartesian/src/**/*.rs", "tools/math3d/spherical_to_cartesian/Cargo.toml"]
 
 [[trigger.http]]
 route = "/tetrahedron-volume"
@@ -633,6 +657,18 @@ workdir = "tools/math3d/vector_angle"
 watch = ["tools/math3d/vector_angle/src/**/*.rs", "tools/math3d/vector_angle/Cargo.toml"]
 
 [[trigger.http]]
+route = "/vector-analysis"
+component = "vector-analysis"
+
+[component.vector-analysis]
+source = "target/wasm32-wasip1/release/vector_analysis.wasm"
+allowed_outbound_hosts = ["http://*.spin.internal"]
+[component.vector-analysis.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/vector_analysis"
+watch = ["tools/math3d/vector_analysis/src/**/*.rs", "tools/math3d/vector_analysis/Cargo.toml"]
+
+[[trigger.http]]
 route = "/line-segment-intersection"
 component = "line-segment-intersection"
 
@@ -655,5 +691,340 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/multiple_line_intersection"
 watch = ["tools/math3d/multiple_line_intersection/src/**/*.rs", "tools/math3d/multiple_line_intersection/Cargo.toml"]
+
+[[trigger.http]]
+route = "/subtract"
+component = "subtract"
+
+[component.subtract]
+source = "target/wasm32-wasip1/release/subtract_tool.wasm"
+allowed_outbound_hosts = []
+[component.subtract.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/subtract"
+watch = ["tools/basic_math/subtract/src/**/*.rs", "tools/basic_math/subtract/Cargo.toml"]
+
+[[trigger.http]]
+route = "/divide"
+component = "divide"
+
+[component.divide]
+source = "target/wasm32-wasip1/release/divide_tool.wasm"
+allowed_outbound_hosts = []
+[component.divide.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/divide"
+watch = ["tools/basic_math/divide/src/**/*.rs", "tools/basic_math/divide/Cargo.toml"]
+
+[[trigger.http]]
+route = "/remainder"
+component = "remainder"
+
+[component.remainder]
+source = "target/wasm32-wasip1/release/remainder_tool.wasm"
+allowed_outbound_hosts = []
+[component.remainder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/remainder"
+watch = ["tools/basic_math/remainder/src/**/*.rs", "tools/basic_math/remainder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/modulus"
+component = "modulus"
+
+[component.modulus]
+source = "target/wasm32-wasip1/release/modulus_tool.wasm"
+allowed_outbound_hosts = []
+[component.modulus.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/modulus"
+watch = ["tools/basic_math/modulus/src/**/*.rs", "tools/basic_math/modulus/Cargo.toml"]
+
+[[trigger.http]]
+route = "/power"
+component = "power"
+
+[component.power]
+source = "target/wasm32-wasip1/release/power_tool.wasm"
+allowed_outbound_hosts = []
+[component.power.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/basic_math/power"
+watch = ["tools/basic_math/power/src/**/*.rs", "tools/basic_math/power/Cargo.toml"]
+
+[[trigger.http]]
+route = "/uuid-generator"
+component = "uuid-generator"
+
+[component.uuid-generator]
+source = "target/wasm32-wasip1/release/uuid_generator_tool.wasm"
+allowed_outbound_hosts = []
+[component.uuid-generator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/uuid_generator"
+watch = ["tools/identifiers/uuid_generator/src/**/*.rs", "tools/identifiers/uuid_generator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/current-datetime"
+component = "current-datetime"
+
+[component.current-datetime]
+source = "target/wasm32-wasip1/release/current_datetime_tool.wasm"
+allowed_outbound_hosts = []
+[component.current-datetime.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/datetime/current_datetime"
+watch = ["tools/datetime/current_datetime/src/**/*.rs", "tools/datetime/current_datetime/Cargo.toml"]
+
+[[trigger.http]]
+route = "/base64-encoder"
+component = "base64-encoder"
+
+[component.base64-encoder]
+source = "target/wasm32-wasip1/release/base64_encoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.base64-encoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/base64_encoder"
+watch = ["tools/encoding/base64_encoder/src/**/*.rs", "tools/encoding/base64_encoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/base64-decoder"
+component = "base64-decoder"
+
+[component.base64-decoder]
+source = "target/wasm32-wasip1/release/base64_decoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.base64-decoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/base64_decoder"
+watch = ["tools/encoding/base64_decoder/src/**/*.rs", "tools/encoding/base64_decoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/random-integer"
+component = "random-integer"
+
+[component.random-integer]
+source = "target/wasm32-wasip1/release/random_integer_tool.wasm"
+allowed_outbound_hosts = []
+[component.random-integer.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/random_integer"
+watch = ["tools/identifiers/random_integer/src/**/*.rs", "tools/identifiers/random_integer/Cargo.toml"]
+
+[[trigger.http]]
+route = "/random-string"
+component = "random-string"
+
+[component.random-string]
+source = "target/wasm32-wasip1/release/random_string_tool.wasm"
+allowed_outbound_hosts = []
+[component.random-string.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/identifiers/random_string"
+watch = ["tools/identifiers/random_string/src/**/*.rs", "tools/identifiers/random_string/Cargo.toml"]
+
+[[trigger.http]]
+route = "/url-encoder"
+component = "url-encoder"
+
+[component.url-encoder]
+source = "target/wasm32-wasip1/release/url_encoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.url-encoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/url_encoder"
+watch = ["tools/encoding/url_encoder/src/**/*.rs", "tools/encoding/url_encoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/url-decoder"
+component = "url-decoder"
+
+[component.url-decoder]
+source = "target/wasm32-wasip1/release/url_decoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.url-decoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/url_decoder"
+watch = ["tools/encoding/url_decoder/src/**/*.rs", "tools/encoding/url_decoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/hex-encoder"
+component = "hex-encoder"
+
+[component.hex-encoder]
+source = "target/wasm32-wasip1/release/hex_encoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.hex-encoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/hex_encoder"
+watch = ["tools/encoding/hex_encoder/src/**/*.rs", "tools/encoding/hex_encoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/hex-decoder"
+component = "hex-decoder"
+
+[component.hex-decoder]
+source = "target/wasm32-wasip1/release/hex_decoder_tool.wasm"
+allowed_outbound_hosts = []
+[component.hex-decoder.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/encoding/hex_decoder"
+watch = ["tools/encoding/hex_decoder/src/**/*.rs", "tools/encoding/hex_decoder/Cargo.toml"]
+
+[[trigger.http]]
+route = "/string-case-converter"
+component = "string-case-converter"
+
+[component.string-case-converter]
+source = "target/wasm32-wasip1/release/string_case_converter_tool.wasm"
+allowed_outbound_hosts = []
+[component.string-case-converter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/string/string_case_converter"
+watch = ["tools/string/string_case_converter/src/**/*.rs", "tools/string/string_case_converter/Cargo.toml"]
+
+[[trigger.http]]
+route = "/string-trimmer"
+component = "string-trimmer"
+
+[component.string-trimmer]
+source = "target/wasm32-wasip1/release/string_trimmer_tool.wasm"
+allowed_outbound_hosts = []
+[component.string-trimmer.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/string/string_trimmer"
+watch = ["tools/string/string_trimmer/src/**/*.rs", "tools/string/string_trimmer/Cargo.toml"]
+
+[[trigger.http]]
+route = "/string-splitter"
+component = "string-splitter"
+
+[component.string-splitter]
+source = "target/wasm32-wasip1/release/string_splitter_tool.wasm"
+allowed_outbound_hosts = []
+[component.string-splitter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/string/string_splitter"
+watch = ["tools/string/string_splitter/src/**/*.rs", "tools/string/string_splitter/Cargo.toml"]
+
+[[trigger.http]]
+route = "/json-formatter"
+component = "json-formatter"
+
+[component.json-formatter]
+source = "target/wasm32-wasip1/release/json_formatter_tool.wasm"
+allowed_outbound_hosts = []
+[component.json-formatter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/json_formatter"
+watch = ["tools/data_formats/json_formatter/src/**/*.rs", "tools/data_formats/json_formatter/Cargo.toml"]
+
+[[trigger.http]]
+route = "/json-validator"
+component = "json-validator"
+
+[component.json-validator]
+source = "target/wasm32-wasip1/release/json_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.json-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/json_validator"
+watch = ["tools/data_formats/json_validator/src/**/*.rs", "tools/data_formats/json_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/email-validator"
+component = "email-validator"
+
+[component.email-validator]
+source = "target/wasm32-wasip1/release/email_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.email-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/email_validator"
+watch = ["tools/validation/email_validator/src/**/*.rs", "tools/validation/email_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/hash-generator"
+component = "hash-generator"
+
+[component.hash-generator]
+source = "target/wasm32-wasip1/release/hash_generator_tool.wasm"
+allowed_outbound_hosts = []
+[component.hash-generator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/crypto/hash_generator"
+watch = ["tools/crypto/hash_generator/src/**/*.rs", "tools/crypto/hash_generator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/url-validator"
+component = "url-validator"
+
+[component.url-validator]
+source = "target/wasm32-wasip1/release/url_validator_tool.wasm"
+allowed_outbound_hosts = []
+[component.url-validator.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/url_validator"
+watch = ["tools/validation/url_validator/src/**/*.rs", "tools/validation/url_validator/Cargo.toml"]
+
+[[trigger.http]]
+route = "/regex-matcher"
+component = "regex-matcher"
+
+[component.regex-matcher]
+source = "target/wasm32-wasip1/release/regex_matcher_tool.wasm"
+allowed_outbound_hosts = []
+[component.regex-matcher.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/validation/regex_matcher"
+watch = ["tools/validation/regex_matcher/src/**/*.rs", "tools/validation/regex_matcher/Cargo.toml"]
+
+[[trigger.http]]
+route = "/csv-parser"
+component = "csv-parser"
+
+[component.csv-parser]
+source = "target/wasm32-wasip1/release/csv_parser_tool.wasm"
+allowed_outbound_hosts = []
+[component.csv-parser.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/csv_parser"
+watch = ["tools/data_formats/csv_parser/src/**/*.rs", "tools/data_formats/csv_parser/Cargo.toml"]
+
+[[trigger.http]]
+route = "/yaml-formatter"
+component = "yaml-formatter"
+
+[component.yaml-formatter]
+source = "target/wasm32-wasip1/release/yaml_formatter_tool.wasm"
+allowed_outbound_hosts = []
+[component.yaml-formatter.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/data_formats/yaml_formatter"
+watch = ["tools/data_formats/yaml_formatter/src/**/*.rs", "tools/data_formats/yaml_formatter/Cargo.toml"]
+
+# Cylindrical Coordinate Conversion Tools
+[[trigger.http]]
+route = "/cartesian-to-cylindrical"
+component = "cartesian-to-cylindrical"
+[component.cartesian-to-cylindrical]
+source = "target/wasm32-wasip1/release/cartesian_to_cylindrical_tool.wasm"
+allowed_outbound_hosts = []
+[component.cartesian-to-cylindrical.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/cartesian_to_cylindrical"
+watch = ["tools/math3d/cartesian_to_cylindrical/src/**/*.rs", "tools/math3d/cartesian_to_cylindrical/Cargo.toml"]
+
+[[trigger.http]]
+route = "/cylindrical-to-cartesian"
+component = "cylindrical-to-cartesian"
+[component.cylindrical-to-cartesian]
+source = "target/wasm32-wasip1/release/cylindrical_to_cartesian_tool.wasm"
+allowed_outbound_hosts = []
+[component.cylindrical-to-cartesian.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "tools/math3d/cylindrical_to_cartesian"
+watch = ["tools/math3d/cylindrical_to_cartesian/src/**/*.rs", "tools/math3d/cylindrical_to_cartesian/Cargo.toml"]
 
 

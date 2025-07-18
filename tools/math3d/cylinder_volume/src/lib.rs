@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -30,7 +30,7 @@ pub struct CylinderVolumeResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn cylinder_volume(input: CylinderVolumeInput) -> Result<CylinderVolumeResponse, String> {
+pub fn cylinder_volume(input: CylinderVolumeInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::CylinderVolumeInput {
         base_center: logic::Vector3D {
@@ -48,23 +48,27 @@ pub fn cylinder_volume(input: CylinderVolumeInput) -> Result<CylinderVolumeRespo
     };
     
     // Call business logic
-    let logic_result = logic::compute_cylinder_volume(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(CylinderVolumeResponse {
-        volume: logic_result.volume,
-        calculation_method: logic_result.calculation_method,
-        base_center: Vector3D {
-            x: logic_result.base_center.x,
-            y: logic_result.base_center.y,
-            z: logic_result.base_center.z,
-        },
-        axis: Vector3D {
-            x: logic_result.axis.x,
-            y: logic_result.axis.y,
-            z: logic_result.axis.z,
-        },
-        radius: logic_result.radius,
-        height: logic_result.height,
-    })
+    match logic::compute_cylinder_volume(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = CylinderVolumeResponse {
+                volume: logic_result.volume,
+                calculation_method: logic_result.calculation_method,
+                base_center: Vector3D {
+                    x: logic_result.base_center.x,
+                    y: logic_result.base_center.y,
+                    z: logic_result.base_center.z,
+                },
+                axis: Vector3D {
+                    x: logic_result.axis.x,
+                    y: logic_result.axis.y,
+                    z: logic_result.axis.z,
+                },
+                radius: logic_result.radius,
+                height: logic_result.height,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

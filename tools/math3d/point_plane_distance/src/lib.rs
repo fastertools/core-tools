@@ -1,11 +1,11 @@
-use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use ftl_sdk::{tool, ToolResponse};
 
 mod logic;
 use logic::{point_plane_distance_logic, PointPlaneInput as LogicInput, Vector3D as LogicVector3D, Plane3D as LogicPlane3D};
 
-#[derive(Deserialize, JsonSchema, Clone, Debug)]
+#[derive(Deserialize, Serialize, JsonSchema, Clone, Debug)]
 struct Vector3D {
     x: f64,
     y: f64,
@@ -52,14 +52,39 @@ impl From<PointPlaneInput> for LogicInput {
     }
 }
 
+#[derive(Serialize, JsonSchema)]
+struct PointPlaneResult {
+    /// Absolute distance from point to plane
+    distance: f64,
+    /// Signed distance (positive if point is on the side of normal, negative otherwise)
+    signed_distance: f64,
+    /// Closest point on the plane to the given point
+    closest_point_on_plane: Vector3D,
+    /// Whether the point lies exactly on the plane
+    is_on_plane: bool,
+    /// Which side of the plane the point is on
+    side_of_plane: String,
+}
+
 /// Calculate the distance from a point to a plane in 3D space
 /// Returns both signed and unsigned distance, the closest point on the plane, and which side of the plane the point is on
-#[cfg_attr(not(test), tool)]
+#[cfg_attr(not(test), ftl_sdk::tool)]
 fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
     match point_plane_distance_logic(input.into()) {
-        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(error) => ToolResponse::text(serde_json::to_string(&serde_json::json!({
-            "error": error
-        })).unwrap()),
+        Ok(logic_result) => {
+            let result = PointPlaneResult {
+                distance: logic_result.distance,
+                signed_distance: logic_result.signed_distance,
+                closest_point_on_plane: Vector3D {
+                    x: logic_result.closest_point_on_plane.x,
+                    y: logic_result.closest_point_on_plane.y,
+                    z: logic_result.closest_point_on_plane.z,
+                },
+                is_on_plane: logic_result.is_on_plane,
+                side_of_plane: logic_result.side_of_plane,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

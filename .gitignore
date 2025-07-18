@@ -6,3 +6,4 @@ target/
 spin.pid
 
 *.log
+.spin-aka/

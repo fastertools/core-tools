@@ -1,10 +1,8 @@
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
 mod logic;
-
-#[cfg(not(test))]
-use ftl_sdk::tool;
 
 // Re-export types from logic module
 pub use logic::{RegressionInput as LogicInput, LinearRegressionOutput as LogicOutput};
@@ -53,7 +51,7 @@ pub struct LinearRegressionOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn linear_regression(input: RegressionInput) -> Result<LinearRegressionOutput, String> {
+pub fn linear_regression(input: RegressionInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         x: input.x,
@@ -61,24 +59,28 @@ pub fn linear_regression(input: RegressionInput) -> Result<LinearRegressionOutpu
     };
     
     // Call logic implementation
-    let result = logic::calculate_linear_regression(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(LinearRegressionOutput {
-        slope: result.slope,
-        intercept: result.intercept,
-        r_squared: result.r_squared,
-        correlation_coefficient: result.correlation_coefficient,
-        standard_error: result.standard_error,
-        slope_std_error: result.slope_std_error,
-        intercept_std_error: result.intercept_std_error,
-        t_statistic_slope: result.t_statistic_slope,
-        t_statistic_intercept: result.t_statistic_intercept,
-        p_value_slope: result.p_value_slope,
-        p_value_intercept: result.p_value_intercept,
-        equation: result.equation,
-        residuals: result.residuals,
-        predicted_values: result.predicted_values,
-        sample_size: result.sample_size,
-    })
+    match logic::calculate_linear_regression(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = LinearRegressionOutput {
+                slope: result.slope,
+                intercept: result.intercept,
+                r_squared: result.r_squared,
+                correlation_coefficient: result.correlation_coefficient,
+                standard_error: result.standard_error,
+                slope_std_error: result.slope_std_error,
+                intercept_std_error: result.intercept_std_error,
+                t_statistic_slope: result.t_statistic_slope,
+                t_statistic_intercept: result.t_statistic_intercept,
+                p_value_slope: result.p_value_slope,
+                p_value_intercept: result.p_value_intercept,
+                equation: result.equation,
+                residuals: result.residuals,
+                predicted_values: result.predicted_values,
+                sample_size: result.sample_size,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

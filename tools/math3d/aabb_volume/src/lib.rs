@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -26,7 +26,7 @@ pub struct BoundingBoxResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn aabb_volume(input: BoundingBoxInput) -> Result<BoundingBoxResponse, String> {
+pub fn aabb_volume(input: BoundingBoxInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::BoundingBoxInput {
         points: input.points.into_iter().map(|p| logic::Vector3D {
@@ -37,26 +37,29 @@ pub fn aabb_volume(input: BoundingBoxInput) -> Result<BoundingBoxResponse, Strin
     };
     
     // Call business logic
-    let logic_result = logic::compute_aabb_volume(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(BoundingBoxResponse {
-        volume: logic_result.volume,
-        box_type: logic_result.box_type,
-        min_point: Vector3D {
-            x: logic_result.min_point.x,
-            y: logic_result.min_point.y,
-            z: logic_result.min_point.z,
-        },
-        max_point: Vector3D {
-            x: logic_result.max_point.x,
-            y: logic_result.max_point.y,
-            z: logic_result.max_point.z,
-        },
-        dimensions: Vector3D {
-            x: logic_result.dimensions.x,
-            y: logic_result.dimensions.y,
-            z: logic_result.dimensions.z,
-        },
-    })
+    match logic::compute_aabb_volume(logic_input) {
+        Ok(logic_result) => {
+            let result = BoundingBoxResponse {
+                volume: logic_result.volume,
+                box_type: logic_result.box_type,
+                min_point: Vector3D {
+                    x: logic_result.min_point.x,
+                    y: logic_result.min_point.y,
+                    z: logic_result.min_point.z,
+                },
+                max_point: Vector3D {
+                    x: logic_result.max_point.x,
+                    y: logic_result.max_point.y,
+                    z: logic_result.max_point.z,
+                },
+                dimensions: Vector3D {
+                    x: logic_result.dimensions.x,
+                    y: logic_result.dimensions.y,
+                    z: logic_result.dimensions.z,
+                },
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

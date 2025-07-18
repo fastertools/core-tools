@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -24,7 +24,7 @@ pub struct QuaternionMultiplyResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn quaternion_multiply(input: QuaternionMultiplyInput) -> Result<QuaternionMultiplyResponse, String> {
+pub fn quaternion_multiply(input: QuaternionMultiplyInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::QuaternionMultiplyInput {
         q1: logic::Quaternion {
@@ -42,15 +42,19 @@ pub fn quaternion_multiply(input: QuaternionMultiplyInput) -> Result<QuaternionM
     };
     
     // Call business logic
-    let logic_result = logic::compute_quaternion_multiply(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(QuaternionMultiplyResponse {
-        result: Quaternion {
-            x: logic_result.result.x,
-            y: logic_result.result.y,
-            z: logic_result.result.z,
-            w: logic_result.result.w,
-        },
-    })
+    match logic::compute_quaternion_multiply(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = QuaternionMultiplyResponse {
+                result: Quaternion {
+                    x: logic_result.result.x,
+                    y: logic_result.result.y,
+                    z: logic_result.result.z,
+                    w: logic_result.result.w,
+                },
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

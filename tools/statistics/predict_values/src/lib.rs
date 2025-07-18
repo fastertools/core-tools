@@ -1,10 +1,8 @@
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
 mod logic;
-
-#[cfg(not(test))]
-use ftl_sdk::tool;
 
 // Re-export types from logic module
 pub use logic::{PredictionInput as LogicInput, PredictionOutput as LogicOutput, RegressionPrediction as LogicPrediction};
@@ -37,7 +35,7 @@ pub struct RegressionPrediction {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn predict_values(input: PredictionInput) -> Result<PredictionOutput, String> {
+pub fn predict_values(input: PredictionInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         slope: input.slope,
@@ -46,14 +44,18 @@ pub fn predict_values(input: PredictionInput) -> Result<PredictionOutput, String
     };
     
     // Call logic implementation
-    let result = logic::predict_values(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(PredictionOutput {
-        predictions: result.predictions.into_iter().map(|p| RegressionPrediction {
-            x: p.x,
-            y_predicted: p.y_predicted,
-            confidence_interval: p.confidence_interval,
-        }).collect(),
-    })
+    match logic::predict_values(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = PredictionOutput {
+                predictions: result.predictions.into_iter().map(|p| RegressionPrediction {
+                    x: p.x,
+                    y_predicted: p.y_predicted,
+                    confidence_interval: p.confidence_interval,
+                }).collect(),
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

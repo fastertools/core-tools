@@ -6,6 +6,8 @@ mod logic;
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
+use ftl_sdk::ToolResponse;
+
 // Re-export types from logic module
 pub use logic::{SingleNumberInput as LogicInput, SquareRootResult as LogicOutput};
 
@@ -25,20 +27,23 @@ pub struct SquareRootResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn sqrt(input: SingleNumberInput) -> Result<SquareRootResult, String> {
+pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         value: input.value,
     };
     
     // Call logic implementation
-    let result = logic::calculate_sqrt(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(SquareRootResult {
-        result: result.result,
-        input: result.input,
-        is_valid: result.is_valid,
-        error: result.error,
-    })
+    match logic::calculate_sqrt(logic_input) {
+        Ok(result) => {
+            let response = SquareRootResult {
+                result: result.result,
+                input: result.input,
+                is_valid: result.is_valid,
+                error: result.error,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }
