@@ -1,7 +1,6 @@
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-#[cfg(not(test))]
-use ftl_sdk::ToolResponse;
 
 mod logic;
 use logic::{Point as LogicPoint, NearestPointsInput as LogicInput, find_nearest_points};

@@ -1,3 +1,4 @@
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 

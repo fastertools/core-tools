@@ -1,22 +1,29 @@
 # Core Tools - LLM Augmentation API Suite
 
-A comprehensive suite of 70+ computational tools built with Rust and FTL SDK, designed to augment Large Language Model capabilities with precise mathematical, geospatial, and statistical computations.
+A comprehensive suite of 84+ computational tools built with Rust and FTL SDK, designed to augment Large Language Model capabilities with precise mathematical, geospatial, and statistical computations.
 
 ## 🌟 Overview
 
 This project provides production-ready APIs across multiple computational domains, designed to fill gaps in LLM capabilities for mathematical computation, spatial analysis, and data processing.
 
 ### 📊 Current Statistics
-- **Total Tools**: 70+ individual microservice tools
-- **Categories**: Geospatial, 3D Mathematics, Statistics, Basic Math
-- **Architecture**: Pure FTL SDK microservice pattern
-- **Performance**: Sub-millisecond to ~100ms response times
+- **Total Tools**: 84 individual microservice tools
+- **Categories**: Geospatial (9), 3D Mathematics (30), Statistics (11), Basic Math (10), Encoding (6), Data Formats (4), Validation (3), String (3), Identifiers (3), Crypto (1), DateTime (1)
+- **Architecture**: Pure FTL SDK microservice pattern with ToolResponse standard
+- **Composition**: HTTP-based composition pattern for complex operations
+- **Performance**: Sub-millisecond to ~100ms response times  
 - **Accuracy**: Validated against reference implementations
 
 ## 🏗️ Architecture
 
 ### Modern Microservice Design
-This project uses a **pure FTL SDK microservice architecture** where each tool is a standalone WebAssembly component:
+This project uses a **pure FTL SDK microservice architecture** where each tool is a standalone WebAssembly component with HTTP composition capabilities:
+
+### Composition Pattern
+The architecture supports **HTTP-based composition** where complex operations can be built by combining atomic tools:
+- **Atomic Tools**: Single-purpose tools (vector_magnitude, dot_product, etc.)
+- **Composite Tools**: Complex operations combining multiple atomic tools via HTTP calls
+- **Example**: `vector_analysis` calls `vector_magnitude`, `vector_angle`, `dot_product`, and `cross_product`
 
 ```
 core-tools/

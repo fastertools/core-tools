@@ -234,7 +234,7 @@ mod tests {
     #[test]
     fn test_round_trip_precision() {
         // Test that converting back preserves precision
-        let original_cartesian = (3.0, 4.0, 5.0);
+        let original_cartesian = (3.0_f64, 4.0_f64, 5.0_f64);
         
         // Convert to cylindrical manually
         let radius = (original_cartesian.0 * original_cartesian.0 + original_cartesian.1 * original_cartesian.1).sqrt();

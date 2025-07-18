@@ -19,5 +19,8 @@ impl From<StatisticsInput> for LogicInput {
 
 #[cfg_attr(not(test), tool)]
 pub fn summary_statistics(input: StatisticsInput) -> ToolResponse {
-    summary_statistics_logic(input.into())
+    match summary_statistics_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

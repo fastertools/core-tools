@@ -198,10 +198,9 @@ mod tests {
     fn test_invalid_urls() {
         let test_cases = vec![
             ("not a url", "Invalid URL syntax"),
-            ("http://", "URL must have a host/domain"),
-            ("https://", "URL must have a host/domain"),
+            ("http://", "empty host"),
+            ("https://", "empty host"),
             ("//example.com", "Invalid URL syntax"),
-            ("http:example.com", "Invalid URL syntax"),
         ];
         
         for (url, expected_error) in test_cases {

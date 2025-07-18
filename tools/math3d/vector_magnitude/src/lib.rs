@@ -1,10 +1,9 @@
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{VectorMagnitudeInput as LogicInput, VectorMagnitudeOutput as LogicOutput, Vector3D as LogicVector3D};

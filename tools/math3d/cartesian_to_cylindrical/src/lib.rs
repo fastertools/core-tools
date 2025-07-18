@@ -83,13 +83,13 @@ mod tests {
 
     #[test]
     fn test_basic_conversion() {
-        let input = CartesianCoordinates {
+        let input = LogicCartesian {
             x: 1.0,
             y: 0.0,
             z: 2.0,
         };
         
-        let result = cartesian_to_cylindrical(input).unwrap();
+        let result = logic::cartesian_to_cylindrical_logic(input).unwrap();
         assert!((result.cylindrical_coordinates.radius - 1.0).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.theta).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.z - 2.0).abs() < 1e-15);
@@ -97,13 +97,13 @@ mod tests {
 
     #[test]
     fn test_45_degree_conversion() {
-        let input = CartesianCoordinates {
+        let input = LogicCartesian {
             x: 1.0,
             y: 1.0,
             z: 0.0,
         };
         
-        let result = cartesian_to_cylindrical(input).unwrap();
+        let result = logic::cartesian_to_cylindrical_logic(input).unwrap();
         assert!((result.cylindrical_coordinates.radius - 2.0_f64.sqrt()).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.theta - std::f64::consts::PI / 4.0).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.z).abs() < 1e-15);

@@ -94,7 +94,8 @@ build_tools_parallel() {
 
 # Function to wait for the first job to complete
 wait_for_job() {
-    wait -n
+    # Cross-shell compatible alternative to wait -n
+    sleep 0.1
 }
 
 # Function to check if tools have changed (for CI)
@@ -263,7 +264,11 @@ main() {
             log_info "Building all tools..."
             log_info "Target: $TARGET, Mode: $BUILD_TYPE, Parallel jobs: $MAX_PARALLEL_JOBS"
             
-            mapfile -t tools < <(find_tools)
+            # Replace mapfile with compatible alternative for cross-shell compatibility
+            tools=()
+            while IFS= read -r line; do
+                tools+=("$line")
+            done < <(find_tools)
             log_info "Found ${#tools[@]} tools to build"
             
             build_tools_parallel "${tools[@]}"

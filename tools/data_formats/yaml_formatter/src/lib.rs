@@ -1,10 +1,9 @@
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{YamlFormatterInput as LogicInput, YamlFormatterResult as LogicOutput, YamlStats as LogicStats};

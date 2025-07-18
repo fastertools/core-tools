@@ -85,7 +85,7 @@ pub struct DistributionParameters {
 /// Analyze distribution characteristics including histogram, normality tests, and parameter estimation
 /// This tool combines histogram generation and normality testing to provide comprehensive distribution analysis
 #[cfg_attr(not(test), tool)]
-pub fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
+pub async fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         data: input.data,
@@ -93,7 +93,7 @@ pub fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
     };
     
     // Call logic implementation
-    match logic::calculate_analyze_distribution(logic_input) {
+    match logic::calculate_analyze_distribution(logic_input).await {
         Ok(result) => {
             let response = AnalyzeDistributionOutput {
                 histogram: HistogramOutput {

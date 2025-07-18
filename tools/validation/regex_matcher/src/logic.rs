@@ -353,7 +353,7 @@ mod tests {
     fn test_invalid_pattern() {
         let input = RegexMatcherInput {
             text: "test".to_string(),
-            pattern: "[(]".to_string(), // Invalid regex
+            pattern: "[".to_string(), // Invalid regex - unclosed bracket
             find_all: None,
             capture_groups: None,
             flags: None,
