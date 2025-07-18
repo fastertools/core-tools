@@ -1,77 +1,43 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-mod logic;
-
-#[cfg(all(feature = "individual", not(test)))]
-use ftl_sdk::tool;
-
 #[cfg(feature = "individual")]
-use ftl_sdk::ToolResponse;
+use ftl_sdk::{tool, ToolResponse};
 
-// Re-export types from logic module
-pub use logic::{SingleNumberInput as LogicInput, SquareRootResult as LogicOutput};
+// Re-export logic module types
+mod logic;
+pub use logic::*;
 
-// Define wrapper types with JsonSchema for FTL-SDK
+// FTL-compatible input type (with JsonSchema for HTTP interface)
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct SingleNumberInput {
     /// Number to calculate square root of
     pub value: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SquareRootResult {
-    pub result: f64,
-    pub input: f64,
-    pub is_valid: bool,
-    pub error: Option<String>,
-}
-
-// Individual component mode - FTL tool
-#[cfg(all(feature = "individual", not(test)))]
-#[cfg_attr(not(test), tool)]
-pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
+// Core implementation - shared between both modes
+fn sqrt_impl(input: SingleNumberInput) -> Result<SquareRootResult, String> {
     // Convert to logic types
-    let logic_input = LogicInput {
+    let logic_input = logic::SingleNumberInput {
         value: input.value,
     };
     
-    // Call logic implementation
-    match logic::calculate_sqrt(logic_input) {
-        Ok(result) => {
-            let response = SquareRootResult {
-                result: result.result,
-                input: result.input,
-                is_valid: result.is_valid,
-                error: result.error,
-            };
-            ToolResponse::text(serde_json::to_string(&response).unwrap())
-        }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
-    }
+    // Call pure business logic
+    logic::calculate_sqrt(logic_input)
 }
 
-// Library mode - pure function for category use
+// Library mode: Primary export for pure function usage
 #[cfg(feature = "library")]
-pub fn sqrt_pure(input: SingleNumberInput) -> SquareRootResult {
-    // Convert to logic types
-    let logic_input = LogicInput {
-        value: input.value,
-    };
-    
-    // Call logic implementation
-    match logic::calculate_sqrt(logic_input) {
-        Ok(result) => SquareRootResult {
-            result: result.result,
-            input: result.input,
-            is_valid: result.is_valid,
-            error: result.error,
-        },
-        Err(_e) => SquareRootResult {
-            result: 0.0,
-            input: input.value,
-            is_valid: false,
-            error: Some("Calculation failed".to_string()),
-        }
+pub fn sqrt(input: SingleNumberInput) -> Result<SquareRootResult, String> {
+    sqrt_impl(input)
+}
+
+// Individual mode: HTTP-based tool handler
+#[cfg(feature = "individual")]
+#[cfg_attr(not(feature = "library"), tool)]
+pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
+    match sqrt_impl(input) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

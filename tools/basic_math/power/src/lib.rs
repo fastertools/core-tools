@@ -1,18 +1,14 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-mod logic;
-
-#[cfg(all(feature = "individual", not(test)))]
-use ftl_sdk::tool;
-
 #[cfg(feature = "individual")]
-use ftl_sdk::ToolResponse;
+use ftl_sdk::{tool, ToolResponse};
 
-// Re-export types from logic module
-pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
+// Re-export logic module types
+mod logic;
+pub use logic::*;
 
-// Define wrapper types with JsonSchema for FTL-SDK
+// FTL-compatible input type (with JsonSchema for HTTP interface)
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct TwoNumberInput {
     /// Base number
@@ -21,37 +17,30 @@ pub struct TwoNumberInput {
     pub b: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct ArithmeticResult {
-    pub result: f64,
-    pub operation: String,
-    pub inputs: Vec<f64>,
-}
-
-#[cfg(feature = "individual")]
-#[cfg_attr(not(test), tool)]
-pub fn power(input: TwoNumberInput) -> ToolResponse {
+// Core implementation - shared between both modes
+fn power_impl(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     // Convert to logic types
-    let logic_input = LogicInput {
+    let logic_input = logic::TwoNumberInput {
         a: input.a,
         b: input.b,
     };
     
-    // Call logic implementation
-    match logic::power_numbers(logic_input) {
-        Ok(result) => {
-            let response = ArithmeticResult {
-                result: result.result,
-                operation: result.operation,
-                inputs: result.inputs,
-            };
-            ToolResponse::text(serde_json::to_string(&response).unwrap())
-        }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
-    }
+    // Call pure business logic
+    logic::power_numbers(logic_input)
 }
 
+// Library mode: Primary export for pure function usage
 #[cfg(feature = "library")]
-pub fn power_pure(a: f64, b: f64) -> f64 {
-    a.powf(b)
+pub fn power(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
+    power_impl(input)
+}
+
+// Individual mode: HTTP-based tool handler
+#[cfg(feature = "individual")]
+#[cfg_attr(not(feature = "library"), tool)]
+pub fn power(input: TwoNumberInput) -> ToolResponse {
+    match power_impl(input) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

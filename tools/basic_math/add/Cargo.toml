@@ -16,7 +16,4 @@ ftl-sdk = { version = "0.2.3", features = ["macros"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 schemars = "0.8"
-basic_math_types = { path = "../../../shared/basic_math_types" }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
 spin-sdk = { version = "4.0", optional = true }

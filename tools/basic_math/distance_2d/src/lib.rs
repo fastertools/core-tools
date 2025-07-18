@@ -1,22 +1,16 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-#[cfg(all(feature = "individual", not(test)))]
-use ftl_sdk::tool;
-
 #[cfg(feature = "individual")]
-use ftl_sdk::ToolResponse;
+use ftl_sdk::{tool, ToolResponse};
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct Point2D {
-    /// X coordinate
-    pub x: f64,
-    /// Y coordinate
-    pub y: f64,
-}
+// Re-export logic module types
+mod logic;
+pub use logic::*;
 
+// FTL-compatible input type (flattened for HTTP interface)  
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TwoPointInput {
+pub struct TwoPointInputFlat {
     /// X coordinate of first point
     pub x1: f64,
     /// Y coordinate of first point
@@ -25,20 +19,6 @@ pub struct TwoPointInput {
     pub x2: f64,
     /// Y coordinate of second point
     pub y2: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct DistanceResult {
-    /// The calculated distance
-    pub distance: f64,
-    /// First point
-    pub point1: Point2D,
-    /// Second point
-    pub point2: Point2D,
-    /// Difference in X coordinates
-    pub delta_x: f64,
-    /// Difference in Y coordinates
-    pub delta_y: f64,
 }
 
 // Helper structs for calling pythagorean tool
@@ -66,23 +46,22 @@ struct ContentItem {
     text: String,
 }
 
-/// Calculate the distance between two 2D points using the Pythagorean theorem
-/// This demonstrates tool composition by calling the pythagorean tool via Spin's local chaining pattern
-#[cfg(all(feature = "individual", not(test)))]
-#[cfg_attr(not(test), tool)]
-pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
+// Helper function to convert flat input to structured input
+fn flat_to_structured(input: TwoPointInputFlat) -> TwoPointInput {
+    TwoPointInput {
+        point1: Point2D { x: input.x1, y: input.y1 },
+        point2: Point2D { x: input.x2, y: input.y2 },
+    }
+}
+
+// Conditional pythagorean helper - decides HTTP vs pure based on feature
+#[cfg(feature = "individual")]
+async fn conditional_pythagorean(input: PythagoreanInput) -> Result<f64, String> {
+    // Individual mode: HTTP call
     use spin_sdk::http::{Method, Request};
     
-    // Step 1: Calculate differences
-    let delta_x = input.x2 - input.x1;
-    let delta_y = input.y2 - input.y1;
-    
-    // Step 2: Call pythagorean tool via HTTP
-    let pyth_input = PythagoreanInput { a: delta_x, b: delta_y };
-    let request_body = match serde_json::to_string(&pyth_input) {
-        Ok(body) => body,
-        Err(e) => return ToolResponse::text(format!("Error: Failed to serialize pythagorean input: {}. Input: a={}, b={}", e, delta_x, delta_y))
-    };
+    let request_body = serde_json::to_string(&input)
+        .map_err(|e| format!("Failed to serialize pythagorean input: {}", e))?;
     
     let request = Request::builder()
         .method(Method::Post)
@@ -91,56 +70,78 @@ pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
         .body(request_body.into_bytes())
         .build();
     
-    let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
-        Ok(resp) => resp,
-        Err(e) => return ToolResponse::text(format!("Error: Error calling pythagorean tool: {:?}", e))
-    };
+    let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
+        .map_err(|e| format!("Error calling pythagorean tool: {:?}", e))?;
     
-    let body_bytes = response.into_body();
-    let body = match String::from_utf8(body_bytes) {
-        Ok(b) => b,
-        Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
-    };
+    let body = String::from_utf8(response.into_body())
+        .map_err(|e| format!("Failed to parse response body: {}", e))?;
     
-    // Parse the ToolResponse format
-    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
-        Ok(resp) => resp,
-        Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean response wrapper: {}", e))
-    };
+    let wrapper: ToolResponseWrapper = serde_json::from_str(&body)
+        .map_err(|e| format!("Failed to parse pythagorean response wrapper: {}", e))?;
     
-    let pyth_result: PythagoreanResult = match serde_json::from_str(&wrapper.content[0].text) {
-        Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean result: {}", e))
-    };
+    let pyth_result: PythagoreanResult = serde_json::from_str(&wrapper.content[0].text)
+        .map_err(|e| format!("Failed to parse pythagorean result: {}", e))?;
     
-    let distance = pyth_result.hypotenuse;
-    
-    let result = DistanceResult {
-        distance,
-        point1: Point2D { x: input.x1, y: input.y1 },
-        point2: Point2D { x: input.x2, y: input.y2 },
-        delta_x,
-        delta_y,
-    };
-    
-    ToolResponse::text(serde_json::to_string(&result).unwrap())
+    Ok(pyth_result.hypotenuse)
 }
 
-// Library mode - pure function for category use with direct calculation
 #[cfg(feature = "library")]
-pub fn distance_2d_pure(input: TwoPointInput) -> DistanceResult {
-    // Step 1: Calculate differences
-    let delta_x = input.x2 - input.x1;
-    let delta_y = input.y2 - input.y1;
+async fn conditional_pythagorean(input: pythagorean_tool::PythagoreanInput) -> Result<f64, String> {
+    // Library mode: Direct function call
+    use pythagorean_tool::pythagorean_pure;
     
-    // Step 2: Calculate distance directly using Pythagorean theorem - no HTTP!
-    let distance = (delta_x * delta_x + delta_y * delta_y).sqrt();
+    let pyth_result = pythagorean_pure(input);
+    Ok(pyth_result.hypotenuse)
+}
+
+// Core implementation - shared between both modes
+async fn distance_2d_impl(input: TwoPointInputFlat) -> Result<DistanceResult, String> {
+    let structured_input = flat_to_structured(input);
     
-    DistanceResult {
-        distance,
-        point1: Point2D { x: input.x1, y: input.y1 },
-        point2: Point2D { x: input.x2, y: input.y2 },
-        delta_x,
-        delta_y,
+    // Validate input
+    validate_input(&structured_input)?;
+    
+    // Calculate delta values
+    let delta_x = structured_input.point2.x - structured_input.point1.x;
+    let delta_y = structured_input.point2.y - structured_input.point1.y;
+    
+    // Get distance via conditional pythagorean (HTTP or pure based on feature)
+    #[cfg(feature = "individual")]
+    let pyth_input = PythagoreanInput { a: delta_x, b: delta_y };
+    #[cfg(feature = "library")]
+    let pyth_input = pythagorean_tool::PythagoreanInput { a: delta_x, b: delta_y };
+    
+    let distance = conditional_pythagorean(pyth_input).await?;
+    
+    // Build calculation steps for traceability
+    let mut calculation_steps = Vec::new();
+    calculation_steps.push("Step 1: Calculate differences".to_string());
+    calculation_steps.push(format!("Δx = {} - {} = {}", structured_input.point2.x, structured_input.point1.x, delta_x));
+    calculation_steps.push(format!("Δy = {} - {} = {}", structured_input.point2.y, structured_input.point1.y, delta_y));
+    
+    #[cfg(feature = "individual")]
+    calculation_steps.push("Step 2: Call pythagorean tool via HTTP".to_string());
+    #[cfg(feature = "library")]
+    calculation_steps.push("Step 2: Call pythagorean_pure function directly".to_string());
+    
+    calculation_steps.push(format!("distance = pythagorean({}, {}) = {}", delta_x, delta_y, distance));
+    
+    // Format result using pure business logic
+    Ok(format_distance_result(structured_input, distance, calculation_steps))
+}
+
+// Library mode: Primary export for pure function usage
+#[cfg(feature = "library")]
+pub async fn distance_2d(input: TwoPointInputFlat) -> Result<DistanceResult, String> {
+    distance_2d_impl(input).await
+}
+
+// Individual mode: HTTP-based tool handler
+#[cfg(feature = "individual")]
+#[cfg_attr(not(feature = "library"), tool)]
+pub async fn distance_2d(input: TwoPointInputFlat) -> ToolResponse {
+    match distance_2d_impl(input).await {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }
