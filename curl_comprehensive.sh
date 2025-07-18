@@ -51,13 +51,13 @@ test_endpoint "multiply" '{"a": 6, "b": 7}' "Multiplication - Basic Math"
 test_endpoint "divide" '{"a": 15, "b": 3}' "Division - Basic Math"
 test_endpoint "remainder" '{"a": 17, "b": 5}' "Remainder - Basic Math"
 test_endpoint "modulus" '{"a": 17, "b": 5}' "Modulus - Basic Math"
-test_endpoint "power" '{"base": 2, "exponent": 8}' "Power - Basic Math"
+test_endpoint "power" '{"a": 2, "b": 8}' "Power - Basic Math"
 test_endpoint "square" '{"value": 9}' "Square - Basic Math"
 test_endpoint "sqrt" '{"value": 64}' "Square Root - Basic Math"
 
 # 2D Distance and Geometry
 test_endpoint "pythagorean" '{"a": 3, "b": 4}' "Pythagorean Theorem"
-test_endpoint "distance-two-d" '{"point1": {"x": 0, "y": 0}, "point2": {"x": 3, "y": 4}}' "2D Distance Calculation"
+test_endpoint "distance-two-d" '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}' "2D Distance Calculation"
 
 echo "=== GEOSPATIAL TOOLS ==="
 echo
@@ -65,31 +65,31 @@ echo
 # Geospatial Operations
 test_endpoint "distance" '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}' "Geographic Distance (NYC to LA)"
 test_endpoint "bearing" '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}' "Geographic Bearing"
-test_endpoint "coordinate-conversion" '{"latitude": 40.7128, "longitude": -74.0060, "from_format": "decimal", "to_format": "dms"}' "Coordinate Format Conversion"
+test_endpoint "coordinate-conversion" '{"latitude": 40.7128, "longitude": -74.0060}' "Coordinate Format Conversion"
 
 # Polygon Operations  
-test_endpoint "polygon-area" '{"points": [{"lat": 0, "lon": 0}, {"lat": 0, "lon": 1}, {"lat": 1, "lon": 1}, {"lat": 1, "lon": 0}]}' "Polygon Area Calculation"
+test_endpoint "polygon-area" '{"coordinates": [{"lat": 0, "lon": 0}, {"lat": 0, "lon": 1}, {"lat": 1, "lon": 1}, {"lat": 1, "lon": 0}]}' "Polygon Area Calculation"
 test_endpoint "point-in-polygon" '{"point": {"lat": 0.5, "lon": 0.5}, "polygon": [{"lat": 0, "lon": 0}, {"lat": 0, "lon": 1}, {"lat": 1, "lon": 1}, {"lat": 1, "lon": 0}]}' "Point in Polygon Test"
-test_endpoint "polygon-simplification" '{"points": [{"lat": 0, "lon": 0}, {"lat": 0.1, "lon": 0.1}, {"lat": 1, "lon": 1}], "tolerance": 0.05}' "Polygon Simplification"
+test_endpoint "polygon-simplification" '{"polygon": [{"lat": 0, "lon": 0}, {"lat": 0.1, "lon": 0.1}, {"lat": 1, "lon": 1}], "tolerance_meters": 50}' "Polygon Simplification"
 
 # Buffer and Proximity
 test_endpoint "buffer-polygon" '{"center": {"lat": 40.7128, "lon": -74.0060}, "radius_meters": 1000, "num_points": 16}' "Buffer Polygon Generation"
-test_endpoint "proximity-search" '{"center": {"lat": 40.7128, "lon": -74.0060}, "radius_meters": 1000, "points": [{"lat": 40.713, "lon": -74.006}, {"lat": 40.720, "lon": -74.010}]}' "Proximity Search"
-test_endpoint "proximity-zone" '{"center": {"lat": 40.7128, "lon": -74.0060}, "radius_meters": 1000}' "Proximity Zone Creation"
+test_endpoint "proximity-search" '{"query_point": {"lat": 40.7128, "lon": -74.0060}, "candidate_points": [{"lat": 40.713, "lon": -74.006}, {"lat": 40.720, "lon": -74.010}], "max_results": 10, "max_distance_meters": 1000}' "Proximity Search"
+test_endpoint "proximity-zone" '{"center": {"lat": 40.7128, "lon": -74.0060}, "radius_meters": 1000, "candidate_points": [{"lat": 40.713, "lon": -74.006}, {"lat": 40.720, "lon": -74.010}]}' "Proximity Zone Creation"
 
 echo "=== 3D MATH TOOLS ==="
 echo
 
 # Vector Operations
 test_endpoint "vector-magnitude" '{"vector": {"x": 3, "y": 4, "z": 5}}' "Vector Magnitude"
-test_endpoint "vector-angle" '{"vector_a": {"x": 1, "y": 0, "z": 0}, "vector_b": {"x": 0, "y": 1, "z": 0}}' "Vector Angle"
-test_endpoint "dot-product" '{"vector_a": {"x": 1, "y": 2, "z": 3}, "vector_b": {"x": 4, "y": 5, "z": 6}}' "Dot Product"
-test_endpoint "cross-product" '{"vector_a": {"x": 1, "y": 0, "z": 0}, "vector_b": {"x": 0, "y": 1, "z": 0}}' "Cross Product"
+test_endpoint "vector-angle" '{"vector1": {"x": 1, "y": 0, "z": 0}, "vector2": {"x": 0, "y": 1, "z": 0}}' "Vector Angle"
+test_endpoint "dot-product" '{"vector1": {"x": 1, "y": 2, "z": 3}, "vector2": {"x": 4, "y": 5, "z": 6}}' "Dot Product"
+test_endpoint "cross-product" '{"vector1": {"x": 1, "y": 0, "z": 0}, "vector2": {"x": 0, "y": 1, "z": 0}}' "Cross Product"
 test_endpoint "vector-analysis" '{"vector_a": [1, 0, 0], "vector_b": [0, 1, 0]}' "Vector Analysis (Composite Tool)"
 
 # Line Operations
 test_endpoint "line-intersection" '{"line1": {"point": {"x": 0, "y": 0, "z": 0}, "direction": {"x": 1, "y": 0, "z": 0}}, "line2": {"point": {"x": 0, "y": 1, "z": 0}, "direction": {"x": 0, "y": -1, "z": 0}}}' "Line Intersection"
-test_endpoint "line-segment-intersection" '{"segment1": {"start": {"x": 0, "y": 0, "z": 0}, "end": {"x": 2, "y": 0, "z": 0}}, "segment2": {"start": {"x": 1, "y": -1, "z": 0}, "end": {"x": 1, "y": 1, "z": 0}}}' "Line Segment Intersection"
+test_endpoint "line-segment-intersection" '{"segment1_start": {"x": 0, "y": 0, "z": 0}, "segment1_end": {"x": 2, "y": 0, "z": 0}, "segment2_start": {"x": 1, "y": -1, "z": 0}, "segment2_end": {"x": 1, "y": 1, "z": 0}}' "Line Segment Intersection"
 test_endpoint "multiple-line-intersection" '{"lines": [{"point": {"x": 0, "y": 0, "z": 0}, "direction": {"x": 1, "y": 0, "z": 0}}, {"point": {"x": 1, "y": 1, "z": 0}, "direction": {"x": 0, "y": -1, "z": 0}}]}' "Multiple Line Intersection"
 test_endpoint "line-plane-intersection" '{"line": {"point": {"x": 0, "y": 0, "z": 0}, "direction": {"x": 0, "y": 0, "z": 1}}, "plane": {"point": {"x": 0, "y": 0, "z": 5}, "normal": {"x": 0, "y": 0, "z": 1}}}' "Line-Plane Intersection"
 test_endpoint "plane-plane-intersection" '{"plane1": {"point": {"x": 0, "y": 0, "z": 0}, "normal": {"x": 1, "y": 0, "z": 0}}, "plane2": {"point": {"x": 0, "y": 0, "z": 0}, "normal": {"x": 0, "y": 1, "z": 0}}}' "Plane-Plane Intersection"
@@ -99,12 +99,12 @@ test_endpoint "point-line-distance" '{"point": {"x": 1, "y": 1, "z": 0}, "line":
 test_endpoint "point-plane-distance" '{"point": {"x": 1, "y": 1, "z": 1}, "plane": {"point": {"x": 0, "y": 0, "z": 0}, "normal": {"x": 0, "y": 0, "z": 1}}}' "Point to Plane Distance"
 
 # Matrix Operations
-test_endpoint "matrix-vector-multiply" '{"matrix": [[1, 0, 0], [0, 1, 0], [0, 0, 1]], "vector": {"x": 1, "y": 2, "z": 3}}' "Matrix-Vector Multiplication"
-test_endpoint "rotation-matrix" '{"axis": "z", "angle_degrees": 90}' "Rotation Matrix"
-test_endpoint "arbitrary-rotation" '{"axis": {"x": 0, "y": 0, "z": 1}, "angle_radians": 1.5708, "point": {"x": 1, "y": 0, "z": 0}}' "Arbitrary Rotation"
+test_endpoint "matrix-vector-multiply" '{"matrix": {"m00": 1, "m01": 0, "m02": 0, "m10": 0, "m11": 1, "m12": 0, "m20": 0, "m21": 0, "m22": 1}, "vector": {"x": 1, "y": 2, "z": 3}}' "Matrix-Vector Multiplication"
+test_endpoint "rotation-matrix" '{"axis": "z", "angle": 1.5708}' "Rotation Matrix"
+test_endpoint "arbitrary-rotation" '{"axis": {"x": 0, "y": 0, "z": 1}, "angle": 1.5708, "point": {"x": 1, "y": 0, "z": 0}}' "Arbitrary Rotation"
 
 # Quaternion Operations
-test_endpoint "quaternion-from-axis-angle" '{"axis": {"x": 0, "y": 0, "z": 1}, "angle_radians": 1.5708}' "Quaternion from Axis-Angle"
+test_endpoint "quaternion-from-axis-angle" '{"axis": {"x": 0, "y": 0, "z": 1}, "angle": 1.5708}' "Quaternion from Axis-Angle"
 test_endpoint "quaternion-multiply" '{"q1": {"w": 1, "x": 0, "y": 0, "z": 0}, "q2": {"w": 0.707, "x": 0, "y": 0, "z": 0.707}}' "Quaternion Multiplication"
 test_endpoint "quaternion-slerp" '{"q1": {"w": 1, "x": 0, "y": 0, "z": 0}, "q2": {"w": 0.707, "x": 0, "y": 0, "z": 0.707}, "t": 0.5}' "Quaternion SLERP"
 
@@ -116,11 +116,11 @@ test_endpoint "cartesian-to-cylindrical" '{"x": 1, "y": 1, "z": 2}' "Cartesian t
 test_endpoint "cylindrical-to-cartesian" '{"radius": 1.414, "theta": 0.785, "z": 2}' "Cylindrical to Cartesian"
 
 # Volume Calculations
-test_endpoint "sphere-volume" '{"radius": 5}' "Sphere Volume"
-test_endpoint "cylinder-volume" '{"radius": 3, "height": 10}' "Cylinder Volume"
-test_endpoint "tetrahedron-volume" '{"vertices": [{"x": 0, "y": 0, "z": 0}, {"x": 1, "y": 0, "z": 0}, {"x": 0, "y": 1, "z": 0}, {"x": 0, "y": 0, "z": 1}]}' "Tetrahedron Volume"
-test_endpoint "pyramid-volume" '{"base_area": 12, "height": 8}' "Pyramid Volume"
-test_endpoint "aabb-volume" '{"min_point": {"x": 0, "y": 0, "z": 0}, "max_point": {"x": 2, "y": 3, "z": 4}}' "AABB Volume"
+test_endpoint "sphere-volume" '{"center": {"x": 0, "y": 0, "z": 0}, "radius": 5}' "Sphere Volume"
+test_endpoint "cylinder-volume" '{"base_center": {"x": 0, "y": 0, "z": 0}, "axis": {"x": 0, "y": 0, "z": 1}, "radius": 3, "height": 10}' "Cylinder Volume"
+test_endpoint "tetrahedron-volume" '{"point_a": {"x": 0, "y": 0, "z": 0}, "point_b": {"x": 1, "y": 0, "z": 0}, "point_c": {"x": 0, "y": 1, "z": 0}, "point_d": {"x": 0, "y": 0, "z": 1}}' "Tetrahedron Volume"
+test_endpoint "pyramid-volume" '{"base_points": [{"x": 0, "y": 0, "z": 0}, {"x": 2, "y": 0, "z": 0}, {"x": 1, "y": 2, "z": 0}], "apex": {"x": 1, "y": 1, "z": 3}}' "Pyramid Volume"
+test_endpoint "aabb-volume" '{"points": [{"x": 0, "y": 0, "z": 0}, {"x": 2, "y": 3, "z": 4}, {"x": 1, "y": 1, "z": 1}]}' "AABB Volume"
 
 # Ray Intersections
 test_endpoint "sphere-ray-intersection" '{"sphere": {"center": {"x": 0, "y": 0, "z": 0}, "radius": 1}, "ray": {"origin": {"x": -2, "y": 0, "z": 0}, "direction": {"x": 1, "y": 0, "z": 0}}}' "Sphere-Ray Intersection"
@@ -136,7 +136,7 @@ test_endpoint "descriptive-statistics" '{"data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 test_endpoint "summary-statistics" '{"data": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}' "Summary Statistics"
 test_endpoint "pearson-correlation" '{"x": [1, 2, 3, 4, 5], "y": [2, 4, 6, 8, 10]}' "Pearson Correlation"
 test_endpoint "spearman-correlation" '{"x": [1, 2, 3, 4, 5], "y": [1, 4, 9, 16, 25]}' "Spearman Correlation"
-test_endpoint "correlation-matrix" '{"variables": [{"name": "x", "values": [1, 2, 3]}, {"name": "y", "values": [2, 4, 6]}]}' "Correlation Matrix"
+test_endpoint "correlation-matrix" '{"data": [[1, 2, 3], [2, 4, 6]], "variable_names": ["x", "y"]}' "Correlation Matrix"
 
 # Regression Analysis
 test_endpoint "linear-regression" '{"x": [1, 2, 3, 4, 5], "y": [2, 4, 6, 8, 10]}' "Linear Regression"
@@ -163,37 +163,37 @@ echo "=== ENCODING TOOLS ==="
 echo
 
 # Base64 Operations
-test_endpoint "base64-encoder" '{"input": "Hello, World!", "variant": "standard"}' "Base64 Encoding"
-test_endpoint "base64-decoder" '{"input": "SGVsbG8sIFdvcmxkIQ==", "variant": "standard"}' "Base64 Decoding"
+test_endpoint "base64-encoder" '{"data": "Hello, World!", "variant": "standard"}' "Base64 Encoding"
+test_endpoint "base64-decoder" '{"encoded": "SGVsbG8sIFdvcmxkIQ==", "variant": "standard"}' "Base64 Decoding"
 
 # Hex Operations
-test_endpoint "hex-encoder" '{"input": "Hello, World!", "case": "lowercase"}' "Hex Encoding"
-test_endpoint "hex-decoder" '{"input": "48656c6c6f2c20576f726c6421", "ignore_whitespace": true}' "Hex Decoding"
+test_endpoint "hex-encoder" '{"data": "Hello, World!", "case": "lowercase"}' "Hex Encoding"
+test_endpoint "hex-decoder" '{"encoded": "48656c6c6f2c20576f726c6421", "ignore_whitespace": true}' "Hex Decoding"
 
 # URL Operations
-test_endpoint "url-encoder" '{"input": "Hello, World! @#$%", "encode_type": "component"}' "URL Encoding"
-test_endpoint "url-decoder" '{"input": "Hello%2C%20World%21%20%40%23%24%25"}' "URL Decoding"
+test_endpoint "url-encoder" '{"data": "Hello, World! @#$%", "mode": "component"}' "URL Encoding"
+test_endpoint "url-decoder" '{"encoded": "Hello%2C%20World%21%20%40%23%24%25"}' "URL Decoding"
 
 echo "=== STRING MANIPULATION ==="
 echo
 
 # String Operations
-test_endpoint "string-case-converter" '{"input": "Hello, World!", "target_case": "uppercase"}' "String Case Conversion"
-test_endpoint "string-trimmer" '{"input": "  Hello, World!  ", "trim_type": "both"}' "String Trimming"
-test_endpoint "string-splitter" '{"input": "apple,banana,cherry", "delimiter": ",", "max_splits": 3}' "String Splitting"
+test_endpoint "string-case-converter" '{"text": "Hello, World!", "target_case": "upper"}' "String Case Conversion"
+test_endpoint "string-trimmer" '{"text": "  Hello, World!  ", "operation": "trim"}' "String Trimming"
+test_endpoint "string-splitter" '{"text": "apple,banana,cherry", "delimiter": ",", "split_type": "string", "max_splits": 3}' "String Splitting"
 
 echo "=== DATA FORMAT TOOLS ==="
 echo
 
 # JSON Operations
-test_endpoint "json-formatter" '{"input": "{\\"name\\":\\"John\\",\\"age\\":30}", "indent": 2, "sort_keys": true}' "JSON Formatting"
-test_endpoint "json-validator" '{"input": "{\\"name\\":\\"John\\",\\"age\\":30}"}' "JSON Validation"
+test_endpoint "json-formatter" '{"json_string": "{\"name\":\"John\",\"age\":30}", "indent": 2}' "JSON Formatting"
+test_endpoint "json-validator" '{"json_string": "{\"name\":\"John\",\"age\":30}"}' "JSON Validation"
 
 # CSV Operations
 test_endpoint "csv-parser" '{"content": "name,age\\nJohn,30\\nJane,25", "has_headers": true, "delimiter": ","}' "CSV Parsing"
 
 # YAML Operations
-test_endpoint "yaml-formatter" '{"input": "name: John\\nage: 30", "indent": 2, "sort_keys": true}' "YAML Formatting"
+test_endpoint "yaml-formatter" '{"content": "name: John\\nage: 30", "indent_spaces": 2, "sort_keys": true}' "YAML Formatting"
 
 echo "=== VALIDATION TOOLS ==="
 echo
@@ -207,7 +207,7 @@ echo "=== CRYPTOGRAPHIC TOOLS ==="
 echo
 
 # Hash Operations
-test_endpoint "hash-generator" '{"input": "Hello, World!", "algorithm": "sha256", "format": "hex"}' "Hash Generation"
+test_endpoint "hash-generator" '{"text": "Hello, World!", "algorithm": "sha256", "format": "hex"}' "Hash Generation"
 
 echo
 echo "=== TEST SUMMARY ==="
