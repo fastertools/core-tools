@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -37,7 +39,7 @@ pub struct HashGeneratorResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn hash_generator(input: HashGeneratorInput) -> Result<HashGeneratorResult, String> {
+pub fn hash_generator(input: HashGeneratorInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         text: input.text,
@@ -46,15 +48,20 @@ pub fn hash_generator(input: HashGeneratorInput) -> Result<HashGeneratorResult, 
     };
     
     // Call logic implementation
-    let result = logic::generate_hash(logic_input)?;
+    let result = match logic::generate_hash(logic_input) {
+        Ok(r) => r,
+        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+    };
     
     // Convert back to wrapper types
-    Ok(HashGeneratorResult {
+    let output = HashGeneratorResult {
         hash: result.hash,
         algorithm: result.algorithm,
         format: result.format,
         byte_length: result.byte_length,
         string_length: result.string_length,
         input_length: result.input_length,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
 }

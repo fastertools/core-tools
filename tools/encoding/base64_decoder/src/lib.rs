@@ -5,6 +5,7 @@ mod logic;
 
 #[cfg(not(test))]
 use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{Base64DecoderInput as LogicInput, Base64DecoderOutput as LogicOutput};
@@ -36,7 +37,7 @@ pub struct Base64DecoderOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn base64_decoder(input: Base64DecoderInput) -> Result<Base64DecoderOutput, String> {
+pub fn base64_decoder(input: Base64DecoderInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         encoded: input.encoded,
@@ -44,15 +45,19 @@ pub fn base64_decoder(input: Base64DecoderInput) -> Result<Base64DecoderOutput, 
     };
     
     // Call logic implementation
-    let result = logic::decode_base64(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(Base64DecoderOutput {
-        decoded: result.decoded,
-        decoded_utf8: result.decoded_utf8,
-        encoded_length: result.encoded_length,
-        decoded_length: result.decoded_length,
-        variant: result.variant,
-        is_valid_utf8: result.is_valid_utf8,
-    })
+    match logic::decode_base64(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let output = Base64DecoderOutput {
+                decoded: result.decoded,
+                decoded_utf8: result.decoded_utf8,
+                encoded_length: result.encoded_length,
+                decoded_length: result.decoded_length,
+                variant: result.variant,
+                is_valid_utf8: result.is_valid_utf8,
+            };
+            ToolResponse::text(serde_json::to_string(&output).unwrap())
+        },
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+    }
 }

@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{VectorMagnitudeInput as LogicInput, VectorMagnitudeOutput as LogicOutput, Vector3D as LogicVector3D};
@@ -34,7 +34,7 @@ pub struct VectorMagnitudeResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn vector_magnitude(input: VectorMagnitudeInput) -> Result<VectorMagnitudeResult, String> {
+pub fn vector_magnitude(input: VectorMagnitudeInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         vector: LogicVector3D {
@@ -45,16 +45,20 @@ pub fn vector_magnitude(input: VectorMagnitudeInput) -> Result<VectorMagnitudeRe
     };
     
     // Call logic implementation
-    let result = logic::compute_vector_magnitude(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(VectorMagnitudeResult {
-        magnitude: result.magnitude,
-        unit_vector: Vector3D {
-            x: result.unit_vector.x,
-            y: result.unit_vector.y,
-            z: result.unit_vector.z,
-        },
-        is_zero_vector: result.is_zero_vector,
-    })
+    match logic::compute_vector_magnitude(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = VectorMagnitudeResult {
+                magnitude: result.magnitude,
+                unit_vector: Vector3D {
+                    x: result.unit_vector.x,
+                    y: result.unit_vector.y,
+                    z: result.unit_vector.z,
+                },
+                is_zero_vector: result.is_zero_vector,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

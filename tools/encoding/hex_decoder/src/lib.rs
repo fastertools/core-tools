@@ -5,6 +5,7 @@ mod logic;
 
 #[cfg(not(test))]
 use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{HexDecoderInput as LogicInput, HexDecoderOutput as LogicOutput};
@@ -35,7 +36,7 @@ pub struct HexDecoderOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn hex_decoder(input: HexDecoderInput) -> Result<HexDecoderOutput, String> {
+pub fn hex_decoder(input: HexDecoderInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         encoded: input.encoded,
@@ -43,15 +44,19 @@ pub fn hex_decoder(input: HexDecoderInput) -> Result<HexDecoderOutput, String> {
     };
     
     // Call logic implementation
-    let result = logic::decode_hex(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(HexDecoderOutput {
-        decoded: result.decoded,
-        decoded_utf8: result.decoded_utf8,
-        encoded_length: result.encoded_length,
-        decoded_length: result.decoded_length,
-        is_valid_utf8: result.is_valid_utf8,
-        pairs_decoded: result.pairs_decoded,
-    })
+    match logic::decode_hex(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let output = HexDecoderOutput {
+                decoded: result.decoded,
+                decoded_utf8: result.decoded_utf8,
+                encoded_length: result.encoded_length,
+                decoded_length: result.decoded_length,
+                is_valid_utf8: result.is_valid_utf8,
+                pairs_decoded: result.pairs_decoded,
+            };
+            ToolResponse::text(serde_json::to_string(&output).unwrap())
+        },
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+    }
 }

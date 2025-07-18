@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{PolynomialRegressionInput as LogicInput, PolynomialRegressionOutput as LogicOutput};
@@ -37,7 +37,7 @@ pub struct PolynomialRegressionOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn polynomial_regression(input: PolynomialRegressionInput) -> Result<PolynomialRegressionOutput, String> {
+pub fn polynomial_regression(input: PolynomialRegressionInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         x: input.x,
@@ -46,15 +46,19 @@ pub fn polynomial_regression(input: PolynomialRegressionInput) -> Result<Polynom
     };
     
     // Call logic implementation
-    let result = logic::calculate_polynomial_regression(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(PolynomialRegressionOutput {
-        coefficients: result.coefficients,
-        r_squared: result.r_squared,
-        equation: result.equation,
-        predicted_values: result.predicted_values,
-        residuals: result.residuals,
-        degree: result.degree,
-    })
+    match logic::calculate_polynomial_regression(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = PolynomialRegressionOutput {
+                coefficients: result.coefficients,
+                r_squared: result.r_squared,
+                equation: result.equation,
+                predicted_values: result.predicted_values,
+                residuals: result.residuals,
+                degree: result.degree,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

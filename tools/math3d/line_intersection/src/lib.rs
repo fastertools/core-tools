@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 use logic::{line_intersection_logic, LineIntersectionInput as LogicInput, LineIntersectionResult, Line3D as LogicLine3D, Vector3D as LogicVector3D};
 
@@ -60,6 +60,9 @@ impl From<LineIntersectionInput> for LogicInput {
 
 /// Find intersection of two 3D lines
 #[cfg_attr(not(test), tool)]
-pub fn line_intersection(input: LineIntersectionInput) -> Result<LineIntersectionResult, String> {
-    line_intersection_logic(input.into())
+pub fn line_intersection(input: LineIntersectionInput) -> ToolResponse {
+    match line_intersection_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

@@ -6,6 +6,8 @@ mod logic;
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
+use ftl_sdk::ToolResponse;
+
 // Re-export types from logic module
 pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
 
@@ -26,7 +28,7 @@ pub struct ArithmeticResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn multiply(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
+pub fn multiply(input: TwoNumberInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         a: input.a,
@@ -34,12 +36,15 @@ pub fn multiply(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     };
     
     // Call logic implementation
-    let result = logic::multiply_numbers(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(ArithmeticResult {
-        result: result.result,
-        operation: result.operation,
-        inputs: result.inputs,
-    })
+    match logic::multiply_numbers(logic_input) {
+        Ok(result) => {
+            let response = ArithmeticResult {
+                result: result.result,
+                operation: result.operation,
+                inputs: result.inputs,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

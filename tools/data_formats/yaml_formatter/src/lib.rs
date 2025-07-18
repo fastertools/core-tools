@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{YamlFormatterInput as LogicInput, YamlFormatterResult as LogicOutput, YamlStats as LogicStats};
@@ -49,7 +49,7 @@ pub struct YamlStats {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn yaml_formatter(input: YamlFormatterInput) -> Result<YamlFormatterResult, String> {
+pub fn yaml_formatter(input: YamlFormatterInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         content: input.content,
@@ -60,10 +60,13 @@ pub fn yaml_formatter(input: YamlFormatterInput) -> Result<YamlFormatterResult, 
     };
     
     // Call logic implementation
-    let result = logic::format_yaml(logic_input)?;
+    let result = match logic::format_yaml(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error formatting YAML: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(YamlFormatterResult {
+    let response = YamlFormatterResult {
         formatted: result.formatted,
         is_valid: result.is_valid,
         error: result.error,
@@ -73,5 +76,7 @@ pub fn yaml_formatter(input: YamlFormatterInput) -> Result<YamlFormatterResult, 
             max_depth: result.stats.max_depth,
             value_types: result.stats.value_types,
         },
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
 }

@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -39,7 +41,7 @@ pub struct RandomRange {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn random_integer(input: RandomIntegerInput) -> Result<RandomIntegerOutput, String> {
+pub fn random_integer(input: RandomIntegerInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         min: input.min,
@@ -48,14 +50,19 @@ pub fn random_integer(input: RandomIntegerInput) -> Result<RandomIntegerOutput, 
     };
     
     // Call logic implementation
-    let result = logic::generate_random_integers(logic_input)?;
+    let result = match logic::generate_random_integers(logic_input) {
+        Ok(r) => r,
+        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+    };
     
     // Convert back to wrapper types
-    Ok(RandomIntegerOutput {
+    let output = RandomIntegerOutput {
         values: result.values,
         range: RandomRange {
             min: result.range.min,
             max: result.range.max,
         },
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
 }

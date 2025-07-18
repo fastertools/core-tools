@@ -4,6 +4,8 @@ use schemars::JsonSchema;
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
+use ftl_sdk::ToolResponse;
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct Point2D {
     /// X coordinate
@@ -60,7 +62,7 @@ struct OkResponse<T> {
 /// Calculate the distance between two 2D points using the Pythagorean theorem
 /// This demonstrates tool composition by calling the pythagorean tool via Spin's local chaining pattern
 #[cfg_attr(not(test), tool)]
-pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String> {
+pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
     
     // Step 1: Calculate differences
@@ -69,8 +71,10 @@ pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String>
     
     // Step 2: Call pythagorean tool via HTTP
     let pyth_input = PythagoreanInput { a: delta_x, b: delta_y };
-    let request_body = serde_json::to_string(&pyth_input)
-        .map_err(|e| format!("Failed to serialize pythagorean input: {}. Input: a={}, b={}", e, delta_x, delta_y))?;
+    let request_body = match serde_json::to_string(&pyth_input) {
+        Ok(body) => body,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to serialize pythagorean input: {}. Input: a={}, b={}", e, delta_x, delta_y))
+    };
     
     let request = Request::builder()
         .method(Method::Post)
@@ -79,29 +83,37 @@ pub async fn distance_2d(input: TwoPointInput) -> Result<DistanceResult, String>
         .body(request_body.into_bytes())
         .build();
     
-    let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
-        .map_err(|e| format!("Error calling pythagorean tool: {:?}", e))?;
+    let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
+        Ok(resp) => resp,
+        Err(e) => return ToolResponse::text(format!("Error: Error calling pythagorean tool: {:?}", e))
+    };
     
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
+    let body = match String::from_utf8(body_bytes) {
+        Ok(b) => b,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
+    };
     
     // Parse the response with Ok wrapper
     let pyth_result: PythagoreanResult = if let Ok(ok_response) = serde_json::from_str::<OkResponse<PythagoreanResult>>(&body) {
         ok_response.ok
     } else {
         // If that fails, try parsing the body directly
-        serde_json::from_str(&body)
-            .map_err(|e| format!("Failed to parse pythagorean result both ways. Error: {}. Response body: {}", e, body))?
+        match serde_json::from_str(&body) {
+            Ok(result) => result,
+            Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean result both ways. Error: {}. Response body: {}", e, body))
+        }
     };
     
     let distance = pyth_result.hypotenuse;
     
-    Ok(DistanceResult {
+    let result = DistanceResult {
         distance,
         point1: Point2D { x: input.x1, y: input.y1 },
         point2: Point2D { x: input.x2, y: input.y2 },
         delta_x,
         delta_y,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&result).unwrap())
 }

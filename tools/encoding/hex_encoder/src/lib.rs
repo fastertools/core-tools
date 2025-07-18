@@ -5,6 +5,7 @@ mod logic;
 
 #[cfg(not(test))]
 use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{HexEncoderInput as LogicInput, HexEncoderOutput as LogicOutput};
@@ -32,7 +33,7 @@ pub struct HexEncoderOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn hex_encoder(input: HexEncoderInput) -> Result<HexEncoderOutput, String> {
+pub fn hex_encoder(input: HexEncoderInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         data: input.data,
@@ -40,13 +41,17 @@ pub fn hex_encoder(input: HexEncoderInput) -> Result<HexEncoderOutput, String> {
     };
     
     // Call logic implementation
-    let result = logic::encode_hex(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(HexEncoderOutput {
-        encoded: result.encoded,
-        original_length: result.original_length,
-        encoded_length: result.encoded_length,
-        case: result.case,
-    })
+    match logic::encode_hex(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let output = HexEncoderOutput {
+                encoded: result.encoded,
+                original_length: result.original_length,
+                encoded_length: result.encoded_length,
+                case: result.case,
+            };
+            ToolResponse::text(serde_json::to_string(&output).unwrap())
+        },
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+    }
 }

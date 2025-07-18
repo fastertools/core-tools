@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -47,7 +47,7 @@ pub struct CylinderRayResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn cylinder_ray_intersection(input: CylinderRayInput) -> Result<CylinderRayResult, String> {
+pub fn cylinder_ray_intersection(input: CylinderRayInput) -> ToolResponse {
     // Convert JsonSchema types to logic types
     let logic_input = logic::CylinderRayInput {
         cylinder: logic::Cylinder {
@@ -79,29 +79,33 @@ pub fn cylinder_ray_intersection(input: CylinderRayInput) -> Result<CylinderRayR
     };
 
     // Call business logic
-    let logic_result = cylinder_ray_intersection_logic(logic_input)?;
+    match cylinder_ray_intersection_logic(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to JsonSchema types
+            let intersection_points = logic_result.intersection_points
+                .into_iter()
+                .map(|point| IntersectionPoint {
+                    point: Vector3 {
+                        x: point.point.x,
+                        y: point.point.y,
+                        z: point.point.z,
+                    },
+                    distance: point.distance,
+                    normal: Vector3 {
+                        x: point.normal.x,
+                        y: point.normal.y,
+                        z: point.normal.z,
+                    },
+                })
+                .collect();
 
-    // Convert logic types back to JsonSchema types
-    let intersection_points = logic_result.intersection_points
-        .into_iter()
-        .map(|point| IntersectionPoint {
-            point: Vector3 {
-                x: point.point.x,
-                y: point.point.y,
-                z: point.point.z,
-            },
-            distance: point.distance,
-            normal: Vector3 {
-                x: point.normal.x,
-                y: point.normal.y,
-                z: point.normal.z,
-            },
-        })
-        .collect();
-
-    Ok(CylinderRayResult {
-        intersects: logic_result.intersects,
-        intersection_points,
-        closest_distance: logic_result.closest_distance,
-    })
+            let result = CylinderRayResult {
+                intersects: logic_result.intersects,
+                intersection_points,
+                closest_distance: logic_result.closest_distance,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

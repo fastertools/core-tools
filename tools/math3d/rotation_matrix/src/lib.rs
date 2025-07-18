@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -23,7 +23,7 @@ pub struct RotationMatrixResponse {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn rotation_matrix(input: RotationMatrixInput) -> Result<RotationMatrixResponse, String> {
+pub fn rotation_matrix(input: RotationMatrixInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::RotationMatrixInput {
         axis: input.axis,
@@ -31,20 +31,24 @@ pub fn rotation_matrix(input: RotationMatrixInput) -> Result<RotationMatrixRespo
     };
     
     // Call business logic
-    let logic_result = logic::compute_rotation_matrix(logic_input)?;
-    
-    // Convert logic types back to API types
-    Ok(RotationMatrixResponse {
-        matrix: Matrix3x3 {
-            m00: logic_result.matrix.m00,
-            m01: logic_result.matrix.m01,
-            m02: logic_result.matrix.m02,
-            m10: logic_result.matrix.m10,
-            m11: logic_result.matrix.m11,
-            m12: logic_result.matrix.m12,
-            m20: logic_result.matrix.m20,
-            m21: logic_result.matrix.m21,
-            m22: logic_result.matrix.m22,
-        },
-    })
+    match logic::compute_rotation_matrix(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to API types
+            let result = RotationMatrixResponse {
+                matrix: Matrix3x3 {
+                    m00: logic_result.matrix.m00,
+                    m01: logic_result.matrix.m01,
+                    m02: logic_result.matrix.m02,
+                    m10: logic_result.matrix.m10,
+                    m11: logic_result.matrix.m11,
+                    m12: logic_result.matrix.m12,
+                    m20: logic_result.matrix.m20,
+                    m21: logic_result.matrix.m21,
+                    m22: logic_result.matrix.m22,
+                },
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

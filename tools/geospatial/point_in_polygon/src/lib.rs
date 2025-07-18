@@ -1,11 +1,11 @@
-#[cfg(not(test))]
-use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
 
 mod logic;
 use logic::{Point as LogicPoint, PointInPolygonInput as LogicInput, point_in_polygon_check};
 
-#[derive(serde::Deserialize, JsonSchema)]
+#[derive(Deserialize, JsonSchema)]
 struct Point {
     /// Latitude in decimal degrees
     lat: f64,
@@ -19,12 +19,22 @@ impl From<Point> for LogicPoint {
     }
 }
 
-#[derive(serde::Deserialize, JsonSchema)]
+#[derive(Deserialize, JsonSchema)]
 struct PointInPolygonInput {
     /// Point to test
     point: Point,
     /// Polygon vertices
     polygon: Vec<Point>,
+}
+
+#[derive(Serialize, JsonSchema)]
+struct PointInPolygonResult {
+    /// Whether the point is inside the polygon
+    is_inside: bool,
+    /// Algorithm used for calculation
+    algorithm_used: String,
+    /// Whether the point is on the boundary
+    on_boundary: bool,
 }
 
 impl From<PointInPolygonInput> for LogicInput {
@@ -37,22 +47,21 @@ impl From<PointInPolygonInput> for LogicInput {
 }
 
 /// Check if a point is inside a polygon using ray casting algorithm
-#[cfg_attr(not(test), tool)]
+#[cfg_attr(not(test), ftl_sdk::tool)]
 fn point_in_polygon(input: PointInPolygonInput) -> ToolResponse {
-    match point_in_polygon_check(input.point.into(), input.polygon.into_iter().map(|p| p.into()).collect()) {
-        Ok(result) => {
-            ToolResponse::text(serde_json::to_string(&result).unwrap())
-        }
-        Err(e) => {
-            ToolResponse::text(format!("Error: {}", e))
-        }
-    }
+    let logic_input = LogicInput::from(input);
+    
+    let result = match point_in_polygon_check(logic_input.point, logic_input.polygon) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error checking point in polygon: {}", e)),
+    };
+    
+    let output = PointInPolygonResult {
+        is_inside: result.is_inside,
+        algorithm_used: result.algorithm_used,
+        on_boundary: result.on_boundary,
+    };
+    
+    ToolResponse::text(serde_json::to_string(&output).unwrap_or_else(|_| "Error serializing result".to_string()))
 }
 
-#[cfg(test)]
-pub struct ToolResponse;
-
-#[cfg(test)]
-impl ToolResponse {
-    pub fn text(_: String) -> Self { ToolResponse }
-}

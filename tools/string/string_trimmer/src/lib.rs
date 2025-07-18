@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -64,7 +66,7 @@ pub struct StringTrimResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn string_trimmer(input: StringTrimInput) -> Result<StringTrimResult, String> {
+pub fn string_trimmer(input: StringTrimInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         text: input.text,
@@ -76,14 +78,19 @@ pub fn string_trimmer(input: StringTrimInput) -> Result<StringTrimResult, String
     };
     
     // Call logic implementation
-    let result = logic::process_string(logic_input)?;
+    let result = match logic::process_string(logic_input) {
+        Ok(r) => r,
+        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+    };
     
     // Convert back to wrapper types
-    Ok(StringTrimResult {
+    let output = StringTrimResult {
         original: result.original,
         processed: result.processed,
         operation: result.operation,
         length_before: result.length_before,
         length_after: result.length_after,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
 }

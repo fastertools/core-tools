@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -33,7 +35,7 @@ pub struct StringCaseConverterOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn string_case_converter(input: StringCaseConverterInput) -> Result<StringCaseConverterOutput, String> {
+pub fn string_case_converter(input: StringCaseConverterInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         text: input.text,
@@ -41,13 +43,18 @@ pub fn string_case_converter(input: StringCaseConverterInput) -> Result<StringCa
     };
     
     // Call logic implementation
-    let result = logic::convert_case(logic_input)?;
+    let result = match logic::convert_case(logic_input) {
+        Ok(r) => r,
+        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+    };
     
     // Convert back to wrapper types
-    Ok(StringCaseConverterOutput {
+    let output = StringCaseConverterOutput {
         converted: result.converted,
         original: result.original,
         target_case: result.target_case,
         changed: result.changed,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
 }

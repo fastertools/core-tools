@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{TestNormalityInput as LogicInput, TestNormalityOutput as LogicOutput};
@@ -33,22 +33,26 @@ pub struct TestNormalityOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn test_normality(input: TestNormalityInput) -> Result<TestNormalityOutput, String> {
+pub fn test_normality(input: TestNormalityInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         data: input.data,
     };
     
     // Call logic implementation
-    let result = logic::calculate_test_normality(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(TestNormalityOutput {
-        is_normal: result.is_normal,
-        shapiro_wilk_statistic: result.shapiro_wilk_statistic,
-        jarque_bera_statistic: result.jarque_bera_statistic,
-        p_value: result.p_value,
-        confidence_level: result.confidence_level,
-        interpretation: result.interpretation,
-    })
+    match logic::calculate_test_normality(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = TestNormalityOutput {
+                is_normal: result.is_normal,
+                shapiro_wilk_statistic: result.shapiro_wilk_statistic,
+                jarque_bera_statistic: result.jarque_bera_statistic,
+                p_value: result.p_value,
+                confidence_level: result.confidence_level,
+                interpretation: result.interpretation,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

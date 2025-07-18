@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{JsonValidatorInput as LogicInput, JsonValidatorResult as LogicOutput, ValidationDetails as LogicDetails};
@@ -49,7 +49,7 @@ pub struct ValidationDetails {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn json_validator(input: JsonValidatorInput) -> Result<JsonValidatorResult, String> {
+pub fn json_validator(input: JsonValidatorInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         json_string: input.json_string,
@@ -57,10 +57,13 @@ pub fn json_validator(input: JsonValidatorInput) -> Result<JsonValidatorResult, 
     };
     
     // Call logic implementation
-    let result = logic::validate_json(logic_input)?;
+    let result = match logic::validate_json(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error validating JSON: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(JsonValidatorResult {
+    let response = JsonValidatorResult {
         is_valid: result.is_valid,
         error: result.error,
         details: ValidationDetails {
@@ -73,5 +76,7 @@ pub fn json_validator(input: JsonValidatorInput) -> Result<JsonValidatorResult, 
             error_column: result.details.error_column,
         },
         schema_validated: result.schema_validated,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
 }

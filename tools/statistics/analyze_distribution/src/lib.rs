@@ -84,19 +84,18 @@ pub struct DistributionParameters {
 
 /// Analyze distribution characteristics including histogram, normality tests, and parameter estimation
 /// This tool combines histogram generation and normality testing to provide comprehensive distribution analysis
-#[tool]
-async fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         data: input.data,
         num_bins: input.num_bins,
     };
     
-    // Call async logic implementation
-    match logic::calculate_analyze_distribution(logic_input).await {
+    // Call logic implementation
+    match logic::calculate_analyze_distribution(logic_input) {
         Ok(result) => {
-            // Convert back to wrapper types
-            let output = AnalyzeDistributionOutput {
+            let response = AnalyzeDistributionOutput {
                 histogram: HistogramOutput {
                     bins: result.histogram.bins.into_iter().map(|bin| HistogramBin {
                         lower_bound: bin.lower_bound,
@@ -125,9 +124,8 @@ async fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolResponse {
                     suggested_distribution: result.distribution_parameters.suggested_distribution,
                 },
             };
-            
-            ToolResponse::text(serde_json::to_string(&output).unwrap())
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

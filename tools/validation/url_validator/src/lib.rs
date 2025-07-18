@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -71,7 +73,7 @@ pub struct ValidationChecks {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn url_validator(input: UrlValidatorInput) -> Result<UrlValidatorResult, String> {
+pub fn url_validator(input: UrlValidatorInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         url: input.url,
@@ -80,10 +82,13 @@ pub fn url_validator(input: UrlValidatorInput) -> Result<UrlValidatorResult, Str
     };
     
     // Call logic implementation
-    let result = logic::validate_url(logic_input)?;
+    let result = match logic::validate_url(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error validating URL: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(UrlValidatorResult {
+    let url_result = UrlValidatorResult {
         is_valid: result.is_valid,
         error: result.error,
         components: result.components.map(|c| UrlComponents {
@@ -105,5 +110,7 @@ pub fn url_validator(input: UrlValidatorInput) -> Result<UrlValidatorResult, Str
             no_credentials: result.checks.no_credentials,
             valid_port: result.checks.valid_port,
         },
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&url_result).unwrap_or_else(|_| "Error serializing result".to_string()))
 }

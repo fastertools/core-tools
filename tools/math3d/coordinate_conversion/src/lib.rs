@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -88,7 +88,7 @@ struct OkResponse<T> {
 /// Convert between different 3D coordinate systems (cartesian, spherical, cylindrical)
 /// For cartesian↔spherical conversions, delegates to individual tools via HTTP
 #[cfg_attr(not(test), tool)]
-pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<CoordinateConversionResult, String> {
+pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
     
     // Normalize coordinate system names
@@ -103,8 +103,10 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 y: input.coordinates.y,
                 z: input.coordinates.z,
             };
-            let request_body = serde_json::to_string(&cartesian_input)
-                .map_err(|e| format!("Failed to serialize cartesian input: {}", e))?;
+            let request_body = match serde_json::to_string(&cartesian_input) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to serialize cartesian input: {}", e))
+            };
             
             let request = Request::builder()
                 .method(Method::Post)
@@ -113,15 +115,21 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 .body(request_body.into_bytes())
                 .build();
             
-            let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
-                .map_err(|e| format!("Error calling cartesian-to-spherical tool: {:?}", e))?;
+            let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Error calling cartesian-to-spherical tool: {:?}", e))
+            };
             
             let body_bytes = response.into_body();
-            let body = String::from_utf8(body_bytes)
-                .map_err(|e| format!("Failed to parse response body: {}", e))?;
+            let body = match String::from_utf8(body_bytes) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
+            };
             
-            let result: OkResponse<CartesianToSphericalResult> = serde_json::from_str(&body)
-                .map_err(|e| format!("Failed to parse cartesian-to-spherical result: {}. Response body: {}", e, body))?;
+            let result: OkResponse<CartesianToSphericalResult> = match serde_json::from_str(&body) {
+                Ok(result) => result,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-spherical result: {}. Response body: {}", e, body))
+            };
             
             Vector3D {
                 x: result.ok.spherical_coordinates.radius,
@@ -136,8 +144,10 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 theta: input.coordinates.y,
                 phi: input.coordinates.z,
             };
-            let request_body = serde_json::to_string(&spherical_input)
-                .map_err(|e| format!("Failed to serialize spherical input: {}", e))?;
+            let request_body = match serde_json::to_string(&spherical_input) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to serialize spherical input: {}", e))
+            };
             
             let request = Request::builder()
                 .method(Method::Post)
@@ -146,15 +156,21 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 .body(request_body.into_bytes())
                 .build();
             
-            let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
-                .map_err(|e| format!("Error calling spherical-to-cartesian tool: {:?}", e))?;
+            let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Error calling spherical-to-cartesian tool: {:?}", e))
+            };
             
             let body_bytes = response.into_body();
-            let body = String::from_utf8(body_bytes)
-                .map_err(|e| format!("Failed to parse response body: {}", e))?;
+            let body = match String::from_utf8(body_bytes) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
+            };
             
-            let result: OkResponse<SphericalToCartesianResult> = serde_json::from_str(&body)
-                .map_err(|e| format!("Failed to parse spherical-to-cartesian result: {}. Response body: {}", e, body))?;
+            let result: OkResponse<SphericalToCartesianResult> = match serde_json::from_str(&body) {
+                Ok(result) => result,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse spherical-to-cartesian result: {}. Response body: {}", e, body))
+            };
             
             Vector3D {
                 x: result.ok.cartesian_coordinates.x,
@@ -169,8 +185,10 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 y: input.coordinates.y,
                 z: input.coordinates.z,
             };
-            let request_body = serde_json::to_string(&cartesian_input)
-                .map_err(|e| format!("Failed to serialize cartesian input: {}", e))?;
+            let request_body = match serde_json::to_string(&cartesian_input) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to serialize cartesian input: {}", e))
+            };
             
             let request = Request::builder()
                 .method(Method::Post)
@@ -179,15 +197,21 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 .body(request_body.into_bytes())
                 .build();
             
-            let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
-                .map_err(|e| format!("Error calling cartesian-to-cylindrical tool: {:?}", e))?;
+            let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Error calling cartesian-to-cylindrical tool: {:?}", e))
+            };
             
             let body_bytes = response.into_body();
-            let body = String::from_utf8(body_bytes)
-                .map_err(|e| format!("Failed to parse response body: {}", e))?;
+            let body = match String::from_utf8(body_bytes) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
+            };
             
-            let result: OkResponse<CartesianToCylindricalResult> = serde_json::from_str(&body)
-                .map_err(|e| format!("Failed to parse cartesian-to-cylindrical result: {}. Response body: {}", e, body))?;
+            let result: OkResponse<CartesianToCylindricalResult> = match serde_json::from_str(&body) {
+                Ok(result) => result,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-cylindrical result: {}. Response body: {}", e, body))
+            };
             
             Vector3D {
                 x: result.ok.cylindrical_coordinates.radius,
@@ -202,8 +226,10 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 theta: input.coordinates.y,
                 z: input.coordinates.z,
             };
-            let request_body = serde_json::to_string(&cylindrical_input)
-                .map_err(|e| format!("Failed to serialize cylindrical input: {}", e))?;
+            let request_body = match serde_json::to_string(&cylindrical_input) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to serialize cylindrical input: {}", e))
+            };
             
             let request = Request::builder()
                 .method(Method::Post)
@@ -212,15 +238,21 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
                 .body(request_body.into_bytes())
                 .build();
             
-            let response: spin_sdk::http::Response = spin_sdk::http::send(request).await
-                .map_err(|e| format!("Error calling cylindrical-to-cartesian tool: {:?}", e))?;
+            let response: spin_sdk::http::Response = match spin_sdk::http::send(request).await {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Error calling cylindrical-to-cartesian tool: {:?}", e))
+            };
             
             let body_bytes = response.into_body();
-            let body = String::from_utf8(body_bytes)
-                .map_err(|e| format!("Failed to parse response body: {}", e))?;
+            let body = match String::from_utf8(body_bytes) {
+                Ok(body) => body,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
+            };
             
-            let result: OkResponse<CylindricalToCartesianResult> = serde_json::from_str(&body)
-                .map_err(|e| format!("Failed to parse cylindrical-to-cartesian result: {}. Response body: {}", e, body))?;
+            let result: OkResponse<CylindricalToCartesianResult> = match serde_json::from_str(&body) {
+                Ok(result) => result,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cylindrical-to-cartesian result: {}. Response body: {}", e, body))
+            };
             
             Vector3D {
                 x: result.ok.cartesian_coordinates.x,
@@ -229,14 +261,15 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> Result<C
             }
         },
         _ => {
-            return Err("Invalid coordinate conversion. Supported: cartesian↔spherical, cartesian↔cylindrical".to_string());
+            return ToolResponse::text(format!("Error: Invalid coordinate conversion. Supported: cartesian↔spherical, cartesian↔cylindrical"));
         }
     };
     
-    Ok(CoordinateConversionResult {
+    let result = CoordinateConversionResult {
         original: input.coordinates,
         converted,
         from_type: input.from_type,
         to_type: input.to_type,
-    })
+    };
+    ToolResponse::text(serde_json::to_string(&result).unwrap())
 }

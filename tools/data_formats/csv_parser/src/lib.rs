@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{CsvParserInput as LogicInput, CsvParserResult as LogicOutput, ParsingStats as LogicStats};
@@ -53,7 +53,7 @@ pub struct ParsingStats {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn csv_parser(input: CsvParserInput) -> Result<CsvParserResult, String> {
+pub fn csv_parser(input: CsvParserInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         content: input.content,
@@ -64,10 +64,13 @@ pub fn csv_parser(input: CsvParserInput) -> Result<CsvParserResult, String> {
     };
     
     // Call logic implementation
-    let result = logic::parse_csv(logic_input)?;
+    let result = match logic::parse_csv(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error parsing CSV: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(CsvParserResult {
+    let response = CsvParserResult {
         headers: result.headers,
         rows: result.rows,
         row_count: result.row_count,
@@ -79,5 +82,7 @@ pub fn csv_parser(input: CsvParserInput) -> Result<CsvParserResult, String> {
             delimiter_used: result.stats.delimiter_used,
         },
         error: result.error,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
 }

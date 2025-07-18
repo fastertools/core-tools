@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -45,7 +45,7 @@ pub struct AABBIntersectionResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn ray_aabb_intersection(input: AABBRayInput) -> Result<AABBIntersectionResult, String> {
+pub fn ray_aabb_intersection(input: AABBRayInput) -> ToolResponse {
     // Convert JsonSchema types to logic types
     let logic_input = logic::AABBRayInput {
         aabb: logic::AABB {
@@ -75,29 +75,33 @@ pub fn ray_aabb_intersection(input: AABBRayInput) -> Result<AABBIntersectionResu
     };
 
     // Call business logic
-    let logic_result = ray_aabb_intersection_logic(logic_input)?;
+    match ray_aabb_intersection_logic(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to JsonSchema types
+            let intersection_points = logic_result.intersection_points
+                .into_iter()
+                .map(|point| IntersectionPoint {
+                    point: Vector3 {
+                        x: point.point.x,
+                        y: point.point.y,
+                        z: point.point.z,
+                    },
+                    distance: point.distance,
+                    normal: Vector3 {
+                        x: point.normal.x,
+                        y: point.normal.y,
+                        z: point.normal.z,
+                    },
+                })
+                .collect();
 
-    // Convert logic types back to JsonSchema types
-    let intersection_points = logic_result.intersection_points
-        .into_iter()
-        .map(|point| IntersectionPoint {
-            point: Vector3 {
-                x: point.point.x,
-                y: point.point.y,
-                z: point.point.z,
-            },
-            distance: point.distance,
-            normal: Vector3 {
-                x: point.normal.x,
-                y: point.normal.y,
-                z: point.normal.z,
-            },
-        })
-        .collect();
-
-    Ok(AABBIntersectionResult {
-        intersects: logic_result.intersects,
-        closest_distance: logic_result.closest_distance,
-        intersection_points,
-    })
+            let result = AABBIntersectionResult {
+                intersects: logic_result.intersects,
+                closest_distance: logic_result.closest_distance,
+                intersection_points,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

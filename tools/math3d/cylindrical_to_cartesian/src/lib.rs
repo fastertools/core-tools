@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -54,28 +54,32 @@ pub struct CylindricalToCartesianResult {
 /// - y = ρ * sin(θ)
 /// - z = z (unchanged)
 #[cfg_attr(not(test), tool)]
-pub fn cylindrical_to_cartesian(input: CylindricalCoordinates) -> Result<CylindricalToCartesianResult, String> {
+pub fn cylindrical_to_cartesian(input: CylindricalCoordinates) -> ToolResponse {
     let logic_input = LogicInput {
         radius: input.radius,
         theta: input.theta,
         z: input.z,
     };
     
-    let logic_result = cylindrical_to_cartesian_logic(logic_input)?;
-    
-    Ok(CylindricalToCartesianResult {
-        original_cylindrical: CylindricalCoordinates {
-            radius: logic_result.original_cylindrical.radius,
-            theta: logic_result.original_cylindrical.theta,
-            z: logic_result.original_cylindrical.z,
-        },
-        cartesian_coordinates: CartesianCoordinates {
-            x: logic_result.cartesian_coordinates.x,
-            y: logic_result.cartesian_coordinates.y,
-            z: logic_result.cartesian_coordinates.z,
-        },
-        conversion_notes: logic_result.conversion_notes,
-    })
+    match cylindrical_to_cartesian_logic(logic_input) {
+        Ok(logic_result) => {
+            let result = CylindricalToCartesianResult {
+                original_cylindrical: CylindricalCoordinates {
+                    radius: logic_result.original_cylindrical.radius,
+                    theta: logic_result.original_cylindrical.theta,
+                    z: logic_result.original_cylindrical.z,
+                },
+                cartesian_coordinates: CartesianCoordinates {
+                    x: logic_result.cartesian_coordinates.x,
+                    y: logic_result.cartesian_coordinates.y,
+                    z: logic_result.cartesian_coordinates.z,
+                },
+                conversion_notes: logic_result.conversion_notes,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }
 
 #[cfg(test)]

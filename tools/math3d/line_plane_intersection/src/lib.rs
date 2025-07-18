@@ -1,4 +1,3 @@
-use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -36,7 +35,7 @@ pub struct LinePlaneInput {
     pub plane: Plane3D,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, JsonSchema)]
 pub struct LinePlaneIntersectionResult {
     /// Type of intersection: "point", "line_in_plane", or "no_intersection"
     pub intersection_type: String,
@@ -54,20 +53,10 @@ pub struct LinePlaneIntersectionResult {
     pub distance_to_plane: f64,
 }
 
-#[cfg(test)]
-struct DummyToolResponse;
-
-#[cfg(test)]
-impl DummyToolResponse {
-    fn text(_content: String) -> Self {
-        DummyToolResponse
-    }
-}
-
 /// Calculate the intersection between a 3D line and a plane
 /// Returns detailed information about the intersection including type, point, and geometric relationships
-#[cfg_attr(not(test), tool)]
-pub fn line_plane_intersection(input: LinePlaneInput) -> ToolResponse {
+#[cfg_attr(not(test), ftl_sdk::tool)]
+pub fn line_plane_intersection(input: LinePlaneInput) -> ftl_sdk::ToolResponse {
     // Convert JsonSchema types to logic types
     let logic_input = logic::LinePlaneInput {
         line: logic::Line3D {
@@ -113,18 +102,8 @@ pub fn line_plane_intersection(input: LinePlaneInput) -> ToolResponse {
                 line_is_in_plane: logic_result.line_is_in_plane,
                 distance_to_plane: logic_result.distance_to_plane,
             };
-            
-            ToolResponse::text(serde_json::to_string(&result).unwrap())
+            ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(error) => {
-            ToolResponse::text(serde_json::to_string(&serde_json::json!({
-                "error": error
-            })).unwrap())
-        }
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
     }
-}
-
-#[cfg(test)]
-fn line_plane_intersection_test_wrapper(input: LinePlaneInput) -> DummyToolResponse {
-    DummyToolResponse::text("test".to_string())
 }

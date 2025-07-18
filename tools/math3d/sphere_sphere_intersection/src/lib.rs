@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
@@ -40,7 +40,7 @@ pub struct IntersectionCircle {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn sphere_sphere_intersection(input: SphereSphereInput) -> Result<SphereSphereResult, String> {
+pub fn sphere_sphere_intersection(input: SphereSphereInput) -> ToolResponse {
     // Convert JsonSchema types to logic types
     let logic_input = logic::SphereSphereInput {
         sphere1: logic::Sphere {
@@ -62,27 +62,31 @@ pub fn sphere_sphere_intersection(input: SphereSphereInput) -> Result<SphereSphe
     };
 
     // Call business logic
-    let logic_result = sphere_sphere_intersection_logic(logic_input)?;
+    match sphere_sphere_intersection_logic(logic_input) {
+        Ok(logic_result) => {
+            // Convert logic types back to JsonSchema types
+            let intersection_circle = logic_result.intersection_circle.map(|circle| IntersectionCircle {
+                center: Vector3 {
+                    x: circle.center.x,
+                    y: circle.center.y,
+                    z: circle.center.z,
+                },
+                radius: circle.radius,
+                normal: Vector3 {
+                    x: circle.normal.x,
+                    y: circle.normal.y,
+                    z: circle.normal.z,
+                },
+            });
 
-    // Convert logic types back to JsonSchema types
-    let intersection_circle = logic_result.intersection_circle.map(|circle| IntersectionCircle {
-        center: Vector3 {
-            x: circle.center.x,
-            y: circle.center.y,
-            z: circle.center.z,
-        },
-        radius: circle.radius,
-        normal: Vector3 {
-            x: circle.normal.x,
-            y: circle.normal.y,
-            z: circle.normal.z,
-        },
-    });
-
-    Ok(SphereSphereResult {
-        intersects: logic_result.intersects,
-        intersection_type: logic_result.intersection_type,
-        distance_between_centers: logic_result.distance_between_centers,
-        intersection_circle,
-    })
+            let result = SphereSphereResult {
+                intersects: logic_result.intersects,
+                intersection_type: logic_result.intersection_type,
+                distance_between_centers: logic_result.distance_between_centers,
+                intersection_circle,
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

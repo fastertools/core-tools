@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{BearingInput as LogicInput, BearingResult as LogicOutput};
@@ -30,7 +30,7 @@ pub struct BearingResult {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn bearing(input: BearingInput) -> Result<BearingResult, String> {
+pub fn bearing(input: BearingInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         lat1: input.lat1,
@@ -40,12 +40,15 @@ pub fn bearing(input: BearingInput) -> Result<BearingResult, String> {
     };
     
     // Call logic implementation
-    let result = logic::calculate_bearing_between_points(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(BearingResult {
-        bearing_degrees: result.bearing_degrees,
-        bearing_radians: result.bearing_radians,
-        compass_direction: result.compass_direction,
-    })
+    match logic::calculate_bearing_between_points(logic_input) {
+        Ok(result) => {
+            let response = BearingResult {
+                bearing_degrees: result.bearing_degrees,
+                bearing_radians: result.bearing_radians,
+                compass_direction: result.compass_direction,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

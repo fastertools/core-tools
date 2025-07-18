@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -59,7 +61,7 @@ pub struct ValidationChecks {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn email_validator(input: EmailValidatorInput) -> Result<EmailValidatorResult, String> {
+pub fn email_validator(input: EmailValidatorInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         email: input.email,
@@ -67,10 +69,13 @@ pub fn email_validator(input: EmailValidatorInput) -> Result<EmailValidatorResul
     };
     
     // Call logic implementation
-    let result = logic::validate_email(logic_input)?;
+    let result = match logic::validate_email(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error validating email: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(EmailValidatorResult {
+    let email_result = EmailValidatorResult {
         is_valid: result.is_valid,
         error: result.error,
         parts: result.parts.map(|p| EmailParts {
@@ -87,5 +92,7 @@ pub fn email_validator(input: EmailValidatorInput) -> Result<EmailValidatorResul
             valid_characters: result.checks.valid_characters,
             reasonable_length: result.checks.reasonable_length,
         },
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&email_result).unwrap_or_else(|_| "Error serializing result".to_string()))
 }

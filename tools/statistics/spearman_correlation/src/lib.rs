@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 mod logic;
 
 #[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{TwoSeriesInput as LogicInput, CorrelationOutput as LogicOutput};
@@ -31,7 +31,7 @@ pub struct CorrelationOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn spearman_correlation(input: TwoSeriesInput) -> Result<CorrelationOutput, String> {
+pub fn spearman_correlation(input: TwoSeriesInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         x: input.x,
@@ -39,13 +39,17 @@ pub fn spearman_correlation(input: TwoSeriesInput) -> Result<CorrelationOutput, 
     };
     
     // Call logic implementation
-    let result = logic::calculate_spearman_correlation(logic_input)?;
-    
-    // Convert back to wrapper types
-    Ok(CorrelationOutput {
-        correlation_coefficient: result.correlation_coefficient,
-        p_value: result.p_value,
-        sample_size: result.sample_size,
-        interpretation: result.interpretation,
-    })
+    match logic::calculate_spearman_correlation(logic_input) {
+        Ok(result) => {
+            // Convert back to wrapper types
+            let response = CorrelationOutput {
+                correlation_coefficient: result.correlation_coefficient,
+                p_value: result.p_value,
+                sample_size: result.sample_size,
+                interpretation: result.interpretation,
+            };
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
+        }
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
 }

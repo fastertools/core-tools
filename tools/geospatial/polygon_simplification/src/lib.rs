@@ -1,6 +1,5 @@
-#[cfg(not(test))]
-use ftl_sdk::tool;
 use schemars::JsonSchema;
+use ftl_sdk::ToolResponse;
 
 mod logic;
 use logic::{Point as LogicPoint, PolygonSimplificationInput as LogicInput, polygon_simplification_logic};
@@ -34,7 +33,10 @@ impl From<PolygonSimplificationInput> for LogicInput {
     }
 }
 
-#[cfg_attr(not(test), tool)]
-pub fn polygon_simplification(input: PolygonSimplificationInput) -> Result<logic::PolygonSimplificationResult, String> {
-    polygon_simplification_logic(input.into())
+#[cfg_attr(not(test), ftl_sdk::tool)]
+pub fn polygon_simplification(input: PolygonSimplificationInput) -> ToolResponse {
+    match polygon_simplification_logic(input.into()) {
+        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap_or_else(|_| "Error serializing result".to_string())),
+        Err(error) => ToolResponse::text(error),
+    }
 }

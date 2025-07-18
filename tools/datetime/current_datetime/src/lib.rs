@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -57,7 +59,7 @@ pub struct DateTimeComponents {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn current_datetime(input: CurrentDatetimeInput) -> Result<CurrentDatetimeOutput, String> {
+pub fn current_datetime(input: CurrentDatetimeInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         timezone: input.timezone,
@@ -65,10 +67,13 @@ pub fn current_datetime(input: CurrentDatetimeInput) -> Result<CurrentDatetimeOu
     };
     
     // Call logic implementation
-    let result = logic::get_current_datetime(logic_input)?;
+    let result = match logic::get_current_datetime(logic_input) {
+        Ok(r) => r,
+        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+    };
     
     // Convert back to wrapper types
-    Ok(CurrentDatetimeOutput {
+    let output = CurrentDatetimeOutput {
         iso: result.iso,
         unix_timestamp: result.unix_timestamp,
         unix_timestamp_ms: result.unix_timestamp_ms,
@@ -87,5 +92,7 @@ pub fn current_datetime(input: CurrentDatetimeInput) -> Result<CurrentDatetimeOu
             week_of_year: result.components.week_of_year,
         },
         timezone: result.timezone,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
 }

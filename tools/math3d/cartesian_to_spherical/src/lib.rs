@@ -1,4 +1,4 @@
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -37,14 +37,14 @@ pub struct CartesianToSphericalResult {
 
 /// Convert Cartesian coordinates (x, y, z) to spherical coordinates (r, theta, phi)
 #[cfg_attr(not(test), tool)]
-pub fn cartesian_to_spherical(input: CartesianCoordinates) -> Result<CartesianToSphericalResult, String> {
+pub fn cartesian_to_spherical(input: CartesianCoordinates) -> ToolResponse {
     let logic_input = CartesianToSphericalInput {
         coordinates: logic::Vector3D { x: input.x, y: input.y, z: input.z },
     };
     
     match cartesian_to_spherical_logic(logic_input) {
         Ok(output) => {
-            Ok(CartesianToSphericalResult {
+            let result = CartesianToSphericalResult {
                 original_cartesian: CartesianCoordinates {
                     x: output.original_cartesian.x,
                     y: output.original_cartesian.y,
@@ -56,8 +56,9 @@ pub fn cartesian_to_spherical(input: CartesianCoordinates) -> Result<CartesianTo
                     phi: output.spherical_coordinates.phi,
                 },
                 conversion_notes: output.conversion_notes,
-            })
+            };
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => Err(e),
+        Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
 }

@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
+
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -87,7 +89,7 @@ pub struct PatternInfo {
 }
 
 #[cfg_attr(not(test), tool)]
-pub fn regex_matcher(input: RegexMatcherInput) -> Result<RegexMatcherResult, String> {
+pub fn regex_matcher(input: RegexMatcherInput) -> ToolResponse {
     // Convert to logic types
     let logic_input = LogicInput {
         text: input.text,
@@ -102,10 +104,13 @@ pub fn regex_matcher(input: RegexMatcherInput) -> Result<RegexMatcherResult, Str
     };
     
     // Call logic implementation
-    let result = logic::match_regex(logic_input)?;
+    let result = match logic::match_regex(logic_input) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error matching regex: {}", e)),
+    };
     
     // Convert back to wrapper types
-    Ok(RegexMatcherResult {
+    let regex_result = RegexMatcherResult {
         has_match: result.has_match,
         match_count: result.match_count,
         matches: result.matches.into_iter().map(|m| Match {
@@ -129,5 +134,7 @@ pub fn regex_matcher(input: RegexMatcherInput) -> Result<RegexMatcherResult, Str
             flags_applied: result.pattern_info.flags_applied,
         },
         error: result.error,
-    })
+    };
+    
+    ToolResponse::text(serde_json::to_string(&regex_result).unwrap_or_else(|_| "Error serializing result".to_string()))
 }
