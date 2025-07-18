@@ -51,6 +51,8 @@ struct TwoNumberInput {
 #[derive(Deserialize)]
 struct ArithmeticResult {
     result: f64,
+    operation: String,
+    inputs: Vec<f64>,
 }
 
 #[derive(Deserialize)]
@@ -61,9 +63,15 @@ struct SquareRootResult {
 }
 
 #[derive(Deserialize)]
-struct OkResponse<T> {
-    #[serde(rename = "Ok")]
-    ok: T,
+struct ToolResponseWrapper {
+    content: Vec<ContentItem>,
+}
+
+#[derive(Deserialize)]
+struct ContentItem {
+    #[serde(rename = "type")]
+    item_type: String,
+    text: String,
 }
 
 /// Calculate the hypotenuse of a right triangle using the Pythagorean theorem: c = sqrt(a² + b²)
@@ -97,12 +105,17 @@ pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
     };
     
-    let square_response: OkResponse<ArithmeticResult> = match serde_json::from_str(&body) {
+    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
         Ok(resp) => resp,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse square response wrapper: {}", e))
+    };
+    
+    let square_result: ArithmeticResult = match serde_json::from_str(&wrapper.content[0].text) {
+        Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse square result: {}", e))
     };
     
-    let a_squared = square_response.ok.result;
+    let a_squared = square_result.result;
     
     // Step 2: Square second leg (b²) by calling /square
     let square_input = SingleNumberInput { value: input.b };
@@ -129,12 +142,17 @@ pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
     };
     
-    let square_response: OkResponse<ArithmeticResult> = match serde_json::from_str(&body) {
+    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
         Ok(resp) => resp,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse square response wrapper: {}", e))
+    };
+    
+    let square_result: ArithmeticResult = match serde_json::from_str(&wrapper.content[0].text) {
+        Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse square result: {}", e))
     };
     
-    let b_squared = square_response.ok.result;
+    let b_squared = square_result.result;
     
     // Step 3: Add the squares (a² + b²) by calling /add
     let add_input = TwoNumberInput { a: a_squared, b: b_squared };
@@ -161,12 +179,17 @@ pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
     };
     
-    let add_response: OkResponse<ArithmeticResult> = match serde_json::from_str(&body) {
+    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
         Ok(resp) => resp,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse add response wrapper: {}", e))
+    };
+    
+    let add_result: ArithmeticResult = match serde_json::from_str(&wrapper.content[0].text) {
+        Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse add result: {}", e))
     };
     
-    let sum_of_squares = add_response.ok.result;
+    let sum_of_squares = add_result.result;
     
     // Step 4: Take square root (sqrt(a² + b²)) by calling /sqrt
     let sqrt_input = SingleNumberInput { value: sum_of_squares };
@@ -193,12 +216,15 @@ pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
     };
     
-    let sqrt_response: OkResponse<SquareRootResult> = match serde_json::from_str(&body) {
+    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
         Ok(resp) => resp,
-        Err(e) => return ToolResponse::text(format!("Error: Failed to parse sqrt result: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse sqrt response wrapper: {}", e))
     };
     
-    let sqrt_result = sqrt_response.ok;
+    let sqrt_result: SquareRootResult = match serde_json::from_str(&wrapper.content[0].text) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse sqrt result: {}", e))
+    };
     
     if !sqrt_result.is_valid {
         return ToolResponse::text(format!("Error: {}", sqrt_result.error.unwrap_or("Invalid sqrt result".to_string())));

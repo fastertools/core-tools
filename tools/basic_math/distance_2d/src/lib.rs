@@ -54,9 +54,15 @@ struct PythagoreanResult {
 }
 
 #[derive(Deserialize)]
-struct OkResponse<T> {
-    #[serde(rename = "Ok")]
-    ok: T,
+struct ToolResponseWrapper {
+    content: Vec<ContentItem>,
+}
+
+#[derive(Deserialize)]
+struct ContentItem {
+    #[serde(rename = "type")]
+    item_type: String,
+    text: String,
 }
 
 /// Calculate the distance between two 2D points using the Pythagorean theorem
@@ -94,15 +100,15 @@ pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
         Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
     };
     
-    // Parse the response with Ok wrapper
-    let pyth_result: PythagoreanResult = if let Ok(ok_response) = serde_json::from_str::<OkResponse<PythagoreanResult>>(&body) {
-        ok_response.ok
-    } else {
-        // If that fails, try parsing the body directly
-        match serde_json::from_str(&body) {
-            Ok(result) => result,
-            Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean result both ways. Error: {}. Response body: {}", e, body))
-        }
+    // Parse the ToolResponse format
+    let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
+        Ok(resp) => resp,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean response wrapper: {}", e))
+    };
+    
+    let pyth_result: PythagoreanResult = match serde_json::from_str(&wrapper.content[0].text) {
+        Ok(result) => result,
+        Err(e) => return ToolResponse::text(format!("Error: Failed to parse pythagorean result: {}", e))
     };
     
     let distance = pyth_result.hypotenuse;

@@ -80,9 +80,15 @@ struct CylindricalToCartesianResult {
 }
 
 #[derive(Deserialize)]
-struct OkResponse<T> {
-    #[serde(rename = "Ok")]
-    ok: T,
+struct ToolResponseWrapper {
+    content: Vec<ContentItem>,
+}
+
+#[derive(Deserialize)]
+struct ContentItem {
+    #[serde(rename = "type")]
+    item_type: String,
+    text: String,
 }
 
 /// Convert between different 3D coordinate systems (cartesian, spherical, cylindrical)
@@ -126,15 +132,20 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
             };
             
-            let result: OkResponse<CartesianToSphericalResult> = match serde_json::from_str(&body) {
+            let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-spherical response wrapper: {}", e))
+            };
+            
+            let result: CartesianToSphericalResult = match serde_json::from_str(&wrapper.content[0].text) {
                 Ok(result) => result,
-                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-spherical result: {}. Response body: {}", e, body))
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-spherical result: {}", e))
             };
             
             Vector3D {
-                x: result.ok.spherical_coordinates.radius,
-                y: result.ok.spherical_coordinates.theta,
-                z: result.ok.spherical_coordinates.phi,
+                x: result.spherical_coordinates.radius,
+                y: result.spherical_coordinates.theta,
+                z: result.spherical_coordinates.phi,
             }
         },
         ("spherical", "cartesian") => {
@@ -167,15 +178,20 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
             };
             
-            let result: OkResponse<SphericalToCartesianResult> = match serde_json::from_str(&body) {
+            let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse spherical-to-cartesian response wrapper: {}", e))
+            };
+            
+            let result: SphericalToCartesianResult = match serde_json::from_str(&wrapper.content[0].text) {
                 Ok(result) => result,
-                Err(e) => return ToolResponse::text(format!("Error: Failed to parse spherical-to-cartesian result: {}. Response body: {}", e, body))
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse spherical-to-cartesian result: {}", e))
             };
             
             Vector3D {
-                x: result.ok.cartesian_coordinates.x,
-                y: result.ok.cartesian_coordinates.y,
-                z: result.ok.cartesian_coordinates.z,
+                x: result.cartesian_coordinates.x,
+                y: result.cartesian_coordinates.y,
+                z: result.cartesian_coordinates.z,
             }
         },
         ("cartesian", "cylindrical") => {
@@ -208,15 +224,20 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
             };
             
-            let result: OkResponse<CartesianToCylindricalResult> = match serde_json::from_str(&body) {
+            let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-cylindrical response wrapper: {}", e))
+            };
+            
+            let result: CartesianToCylindricalResult = match serde_json::from_str(&wrapper.content[0].text) {
                 Ok(result) => result,
-                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-cylindrical result: {}. Response body: {}", e, body))
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cartesian-to-cylindrical result: {}", e))
             };
             
             Vector3D {
-                x: result.ok.cylindrical_coordinates.radius,
-                y: result.ok.cylindrical_coordinates.theta,
-                z: result.ok.cylindrical_coordinates.z,
+                x: result.cylindrical_coordinates.radius,
+                y: result.cylindrical_coordinates.theta,
+                z: result.cylindrical_coordinates.z,
             }
         },
         ("cylindrical", "cartesian") => {
@@ -249,15 +270,20 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Err(e) => return ToolResponse::text(format!("Error: Failed to parse response body: {}", e))
             };
             
-            let result: OkResponse<CylindricalToCartesianResult> = match serde_json::from_str(&body) {
+            let wrapper: ToolResponseWrapper = match serde_json::from_str(&body) {
+                Ok(resp) => resp,
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cylindrical-to-cartesian response wrapper: {}", e))
+            };
+            
+            let result: CylindricalToCartesianResult = match serde_json::from_str(&wrapper.content[0].text) {
                 Ok(result) => result,
-                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cylindrical-to-cartesian result: {}. Response body: {}", e, body))
+                Err(e) => return ToolResponse::text(format!("Error: Failed to parse cylindrical-to-cartesian result: {}", e))
             };
             
             Vector3D {
-                x: result.ok.cartesian_coordinates.x,
-                y: result.ok.cartesian_coordinates.y,
-                z: result.ok.cartesian_coordinates.z,
+                x: result.cartesian_coordinates.x,
+                y: result.cartesian_coordinates.y,
+                z: result.cartesian_coordinates.z,
             }
         },
         _ => {
