@@ -349,17 +349,22 @@ jobs:
           spin up --listen 127.0.0.1:3000 > spin_test.log 2>&1 &
           SPIN_PID=$!
           
-          # Wait for server to start
+          # Wait for server to start (extended timeout for 84 tools)
           echo "Waiting for Spin server to start..."
-          for i in {1..30}; do
+          for i in {1..90}; do
             if curl -s http://127.0.0.1:3000/mcp >/dev/null 2>&1; then
-              echo "✅ Spin server is ready"
+              echo "✅ Spin server is ready after $i seconds"
               break
             fi
-            if [ $i -eq 30 ]; then
-              echo "❌ Spin server failed to start within 30 seconds"
+            if [ $i -eq 90 ]; then
+              echo "❌ Spin server failed to start within 90 seconds"
+              echo "=== Spin server logs ==="
               cat spin_test.log
               exit 1
+            fi
+            # Show progress every 10 seconds
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "⏳ Still waiting for Spin server... (${i}s elapsed)"
             fi
             sleep 1
           done
