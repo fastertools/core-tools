@@ -17,6 +17,8 @@ members = [
     "tools/basic_math/sqrt",
     "tools/basic_math/square",
     "tools/basic_math/subtract",
+    "tools/categories/basic_math",
+    "shared/basic_math_types",
     "tools/datetime/current_datetime",
     "tools/encoding/base64_decoder",
     "tools/encoding/base64_encoder",

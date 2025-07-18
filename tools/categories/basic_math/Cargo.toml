@@ -1,0 +1,22 @@
+[package]
+name = "basic_math_category"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+ftl-sdk = { version = "0.2.3", features = ["macros"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+schemars = "0.8"
+spin-sdk = "4.0"
+
+# Shared types
+basic_math_types = { path = "../../../shared/basic_math_types" }
+
+# Basic math tools as library dependencies (standardized ones only for now)
+add_tool = { path = "../../basic_math/add", default-features = false, features = ["library"] }
+subtract_tool = { path = "../../basic_math/subtract", default-features = false, features = ["library"] }
+multiply_tool = { path = "../../basic_math/multiply", default-features = false, features = ["library"] }

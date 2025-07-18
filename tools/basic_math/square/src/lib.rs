@@ -3,9 +3,10 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
@@ -25,6 +26,8 @@ pub struct ArithmeticResult {
     pub inputs: Vec<f64>,
 }
 
+// Individual component mode - FTL tool
+#[cfg(all(feature = "individual", not(test)))]
 #[cfg_attr(not(test), tool)]
 pub fn square(input: SingleNumberInput) -> ToolResponse {
     // Convert to logic types
@@ -43,5 +46,28 @@ pub fn square(input: SingleNumberInput) -> ToolResponse {
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
         Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
+}
+
+// Library mode - pure function for category use
+#[cfg(feature = "library")]
+pub fn square_pure(input: SingleNumberInput) -> ArithmeticResult {
+    // Convert to logic types
+    let logic_input = LogicInput {
+        value: input.value,
+    };
+    
+    // Call logic implementation
+    match logic::square_number(logic_input) {
+        Ok(result) => ArithmeticResult {
+            result: result.result,
+            operation: result.operation,
+            inputs: result.inputs,
+        },
+        Err(_e) => ArithmeticResult {
+            result: 0.0,
+            operation: "square".to_string(),
+            inputs: vec![input.value],
+        }
     }
 }

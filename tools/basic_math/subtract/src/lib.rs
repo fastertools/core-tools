@@ -1,50 +1,36 @@
-use serde::{Deserialize, Serialize};
-use schemars::JsonSchema;
+use basic_math_types::{TwoNumberInput, ArithmeticResult, SafeArithmeticResult, helpers};
+
+#[cfg(feature = "individual")]
+use ftl_sdk::{tool, ToolResponse};
+
+#[cfg(feature = "individual")]
+use serde_json;
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::tool;
+// Re-export standardized types for external use
+pub use basic_math_types;
 
-use ftl_sdk::ToolResponse;
-
-// Re-export types from logic module
-pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
-
-// Define wrapper types with JsonSchema for FTL-SDK
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TwoNumberInput {
-    /// First number (minuend)
-    pub a: f64,
-    /// Second number to subtract (subtrahend)
-    pub b: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct ArithmeticResult {
-    pub result: f64,
-    pub operation: String,
-    pub inputs: Vec<f64>,
-}
-
+// Individual component mode - FTL tool
+#[cfg(feature = "individual")]
 #[cfg_attr(not(test), tool)]
 pub fn subtract(input: TwoNumberInput) -> ToolResponse {
-    // Convert to logic types
-    let logic_input = LogicInput {
-        a: input.a,
-        b: input.b,
-    };
-    
-    // Call logic implementation
-    match logic::subtract_numbers(logic_input) {
-        Ok(result) => {
-            let response = ArithmeticResult {
-                result: result.result,
-                operation: result.operation,
-                inputs: result.inputs,
-            };
-            ToolResponse::text(serde_json::to_string(&response).unwrap())
-        }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
-    }
+    let (a, b) = helpers::two_to_tuple(input);
+    let result = a - b;
+    let response = helpers::two_result("subtract", a, b, result);
+    ToolResponse::text(serde_json::to_string(&response).unwrap())
+}
+
+// Library mode - pure function for category use
+#[cfg(feature = "library")]
+pub fn subtract_pure(a: f64, b: f64) -> f64 {
+    a - b
+}
+
+// Library mode - structured function for category use
+#[cfg(feature = "library")]
+pub fn subtract_structured(input: TwoNumberInput) -> ArithmeticResult {
+    let (a, b) = helpers::two_to_tuple(input);
+    let result = a - b;
+    helpers::two_result("subtract", a, b, result)
 }

@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -67,6 +68,7 @@ struct ContentItem {
 
 /// Calculate the distance between two 2D points using the Pythagorean theorem
 /// This demonstrates tool composition by calling the pythagorean tool via Spin's local chaining pattern
+#[cfg(all(feature = "individual", not(test)))]
 #[cfg_attr(not(test), tool)]
 pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
@@ -122,4 +124,23 @@ pub async fn distance_2d(input: TwoPointInput) -> ToolResponse {
     };
     
     ToolResponse::text(serde_json::to_string(&result).unwrap())
+}
+
+// Library mode - pure function for category use with direct calculation
+#[cfg(feature = "library")]
+pub fn distance_2d_pure(input: TwoPointInput) -> DistanceResult {
+    // Step 1: Calculate differences
+    let delta_x = input.x2 - input.x1;
+    let delta_y = input.y2 - input.y1;
+    
+    // Step 2: Calculate distance directly using Pythagorean theorem - no HTTP!
+    let distance = (delta_x * delta_x + delta_y * delta_y).sqrt();
+    
+    DistanceResult {
+        distance,
+        point1: Point2D { x: input.x1, y: input.y1 },
+        point2: Point2D { x: input.x2, y: input.y2 },
+        delta_x,
+        delta_y,
+    }
 }

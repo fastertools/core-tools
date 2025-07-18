@@ -3,9 +3,10 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
@@ -27,6 +28,7 @@ pub struct ArithmeticResult {
     pub inputs: Vec<f64>,
 }
 
+#[cfg(feature = "individual")]
 #[cfg_attr(not(test), tool)]
 pub fn divide(input: TwoNumberInput) -> ToolResponse {
     // Convert to logic types
@@ -46,5 +48,14 @@ pub fn divide(input: TwoNumberInput) -> ToolResponse {
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
         Err(e) => ToolResponse::text(format!("Error: {}", e))
+    }
+}
+
+#[cfg(feature = "library")]
+pub fn divide_pure(a: f64, b: f64) -> Result<f64, String> {
+    if b == 0.0 {
+        Err("Cannot divide by zero".to_string())
+    } else {
+        Ok(a / b)
     }
 }

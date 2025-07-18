@@ -3,9 +3,10 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
@@ -76,6 +77,7 @@ struct ContentItem {
 
 /// Calculate the hypotenuse of a right triangle using the Pythagorean theorem: c = sqrt(a² + b²)
 /// This demonstrates tool composition by calling other tools via Spin's local chaining pattern
+#[cfg(all(feature = "individual", not(test)))]
 #[cfg_attr(not(test), tool)]
 pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
     use spin_sdk::http::{Method, Request};
@@ -242,4 +244,41 @@ pub async fn pythagorean(input: PythagoreanInput) -> ToolResponse {
     };
     
     ToolResponse::text(serde_json::to_string(&result).unwrap())
+}
+
+// Library mode - pure function for category use with direct function calls
+#[cfg(feature = "library")]
+pub fn pythagorean_pure(input: PythagoreanInput) -> PythagoreanResult {
+    // Convert to logic types and call logic implementation directly
+    let logic_input = LogicInput {
+        a: input.a,
+        b: input.b,
+    };
+    
+    // Call logic implementation directly - no HTTP calls!
+    match logic::calculate_pythagorean(logic_input) {
+        Ok(result) => {
+            // Calculate intermediate values for the wrapper type
+            let a_squared = input.a * input.a;
+            let b_squared = input.b * input.b;
+            let sum_of_squares = a_squared + b_squared;
+            
+            PythagoreanResult {
+                hypotenuse: result.hypotenuse,
+                leg_a: result.leg_a,
+                leg_b: result.leg_b,
+                a_squared,
+                b_squared,
+                sum_of_squares,
+            }
+        },
+        Err(_e) => PythagoreanResult {
+            hypotenuse: 0.0,
+            leg_a: input.a,
+            leg_b: input.b,
+            a_squared: 0.0,
+            b_squared: 0.0,
+            sum_of_squares: 0.0,
+        }
+    }
 }

@@ -9,7 +9,7 @@ description = "Core computational tools MCP server"
 [variables]
 # List all tool components that should be discovered by the gateway
 # Each component hosts exactly one tool due to WASM constraints
-tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,cartesian-to-spherical,spherical-to-cartesian,cartesian-to-cylindrical,cylindrical-to-cartesian,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,vector-analysis,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator,url-validator,regex-matcher,csv-parser,yaml-formatter,basic-math-category" }
+tool_components = { default = "distance,bearing,dot-product,polygon-area,point-in-polygon,coordinate-conversion,cross-product,vector-magnitude,line-intersection,buffer-polygon,proximity-search,proximity-zone,add,multiply,square,sqrt,pythagorean,distance-two-d,line-plane-intersection,plane-plane-intersection,point-plane-distance,rotation-matrix,arbitrary-rotation,quaternion-from-axis-angle,quaternion-multiply,quaternion-slerp,matrix-vector-multiply,coordinate-conversion-three-d,cartesian-to-spherical,spherical-to-cartesian,cartesian-to-cylindrical,cylindrical-to-cartesian,tetrahedron-volume,sphere-volume,cylinder-volume,aabb-volume,pyramid-volume,sphere-ray-intersection,sphere-sphere-intersection,cylinder-ray-intersection,ray-aabb-intersection,point-line-distance,descriptive-statistics,summary-statistics,pearson-correlation,spearman-correlation,correlation-matrix,linear-regression,histogram,predict-values,polynomial-regression,test-normality,analyze-distribution,polygon-simplification,vector-angle,vector-analysis,line-segment-intersection,multiple-line-intersection,subtract,divide,remainder,modulus,power,uuid-generator,current-datetime,base64-encoder,base64-decoder,random-integer,random-string,url-encoder,url-decoder,hex-encoder,hex-decoder,string-case-converter,string-trimmer,string-splitter,json-formatter,json-validator,email-validator,hash-generator,url-validator,regex-matcher,csv-parser,yaml-formatter" }
 
 [[trigger.http]]
 route = "/mcp"
@@ -1026,16 +1026,5 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/cylindrical_to_cartesian"
 watch = ["tools/math3d/cylindrical_to_cartesian/src/**/*.rs", "tools/math3d/cylindrical_to_cartesian/Cargo.toml"]
-
-[[trigger.http]]
-route = "/basic-math-category"
-component = "basic-math-category"
-[component.basic-math-category]
-source = "target/wasm32-wasip1/release/basic_math_category.wasm"
-allowed_outbound_hosts = []
-[component.basic-math-category.build]
-command = "cargo build --target wasm32-wasip1 --release"
-workdir = "tools/categories/basic_math"
-watch = ["tools/categories/basic_math/src/**/*.rs", "tools/categories/basic_math/Cargo.toml"]
 
 

@@ -3,9 +3,10 @@ use schemars::JsonSchema;
 
 mod logic;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
@@ -27,6 +28,7 @@ pub struct ArithmeticResult {
     pub inputs: Vec<f64>,
 }
 
+#[cfg(feature = "individual")]
 #[cfg_attr(not(test), tool)]
 pub fn power(input: TwoNumberInput) -> ToolResponse {
     // Convert to logic types
@@ -47,4 +49,9 @@ pub fn power(input: TwoNumberInput) -> ToolResponse {
         }
         Err(e) => ToolResponse::text(format!("Error: {}", e))
     }
+}
+
+#[cfg(feature = "library")]
+pub fn power_pure(a: f64, b: f64) -> f64 {
+    a.powf(b)
 }
