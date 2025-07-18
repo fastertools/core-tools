@@ -4,9 +4,6 @@ use serde::{Deserialize, Serialize};
 
 mod logic;
 
-#[cfg(not(test))]
-use ftl_sdk::{tool, ToolResponse};
-
 use logic::{line_intersection_logic, LineIntersectionInput as LogicInput, LineIntersectionResult, Line3D as LogicLine3D, Vector3D as LogicVector3D};
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
