@@ -66,6 +66,7 @@ members = [
     "tools/math3d/cylindrical_to_cartesian",
     "tools/math3d/tetrahedron_volume",
     "tools/math3d/vector_angle",
+    "tools/math3d/vector_analysis",
     "tools/math3d/vector_magnitude",
     "tools/statistics/analyze_distribution",
     "tools/statistics/correlation_matrix",

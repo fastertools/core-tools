@@ -136,6 +136,22 @@ echo "HTTP Code: $http_code"
 echo "Response: $response_body"
 echo
 
+# === VECTOR ANALYSIS COMPOSITE TOOL ===
+echo "=== VECTOR ANALYSIS COMPOSITE TOOL ==="
+echo
+
+# Test Vector Analysis (composite tool demonstrating HTTP composition pattern)
+echo "--- Test: Vector Analysis (composite tool - calls vector_magnitude, vector_angle, dot_product, cross_product) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/vector-analysis -H "Content-Type: application/json" -d '{
+  "vector_a": [1, 0, 0],
+  "vector_b": [0, 1, 0]
+}')
+http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+echo "HTTP Code: $http_code"
+echo "Response: $response_body"
+echo
+
 echo "=== SUMMARY ==="
 echo "This script tests tools in the Architecture Improvements Initiative:"
 echo "1. line-intersection (pattern fixed)"
@@ -143,4 +159,5 @@ echo "2. multiple-line-intersection (already extracted)"
 echo "3. coordinate conversion tools (coordinate-conversion-three-d fixed)"
 echo "4. cartesian-to-cylindrical (newly extracted)"
 echo "5. cylindrical-to-cartesian (newly extracted)"
+echo "6. vector-analysis (composite tool demonstrating HTTP composition pattern)"
 echo
