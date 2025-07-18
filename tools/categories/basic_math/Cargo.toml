@@ -1,7 +1,7 @@
 [package]
 name = "basic_math_category"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -13,10 +13,14 @@ serde_json = "1.0"
 schemars = "0.8"
 spin-sdk = "4.0"
 
-# Shared types
-basic_math_types = { path = "../../../shared/basic_math_types" }
-
-# Basic math tools as library dependencies (standardized ones only for now)
+# ALL basic math tools as library dependencies - dual-mode architecture
 add_tool = { path = "../../basic_math/add", default-features = false, features = ["library"] }
 subtract_tool = { path = "../../basic_math/subtract", default-features = false, features = ["library"] }
 multiply_tool = { path = "../../basic_math/multiply", default-features = false, features = ["library"] }
+divide_tool = { path = "../../basic_math/divide", default-features = false, features = ["library"] }
+power_tool = { path = "../../basic_math/power", default-features = false, features = ["library"] }
+sqrt_tool = { path = "../../basic_math/sqrt", default-features = false, features = ["library"] }
+square_tool = { path = "../../basic_math/square", default-features = false, features = ["library"] }
+remainder_tool = { path = "../../basic_math/remainder", default-features = false, features = ["library"] }
+modulus_tool = { path = "../../basic_math/modulus", default-features = false, features = ["library"] }
+distance_2d_tool = { path = "../../basic_math/distance_2d", default-features = false, features = ["library"] }

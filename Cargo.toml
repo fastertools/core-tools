@@ -91,7 +91,7 @@ members = [
     "tools/validation/url_validator",
     "tools/validation/regex_matcher",
     "tools/data_formats/csv_parser",
-    "tools/data_formats/yaml_formatter",
+    "tools/data_formats/yaml_formatter", "pure_validation",
 ]
 
 # This workspace doesn't have a default member package
