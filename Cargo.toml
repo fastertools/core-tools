@@ -7,7 +7,7 @@ resolver = "2"
 # Include all tool directories as workspace members
 members = [
     "tools/basic_math/add",
-    "tools/basic_math/distance_2d",
+    "tools/basic_math/distance-two-d",
     "tools/basic_math/divide",
     "tools/basic_math/remainder",
     "tools/basic_math/modulus",
