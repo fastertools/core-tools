@@ -87,7 +87,7 @@ jobs:
     - name: Install Spin
       uses: fermyon/actions/spin/setup@v1
       with:
-        version: "2.0.0"
+        version: "v2.0.1"
     
     - name: Download WASM artifacts
       uses: actions/download-artifact@v4
