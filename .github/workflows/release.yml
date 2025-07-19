@@ -412,7 +412,7 @@ jobs:
           component = "$TOOL_NAME_CLEAN"
           
           [component.$TOOL_NAME_CLEAN]
-          source = "target/wasm32-wasip1/release/${PACKAGE_NAME}.wasm"
+          source = "target/wasm32-wasip1/release/${PACKAGE_NAME//-/_}.wasm"
           allowed_outbound_hosts = []
           EOF
             
