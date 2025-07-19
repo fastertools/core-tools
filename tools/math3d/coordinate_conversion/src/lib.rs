@@ -5,7 +5,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{CoordinateConversionInput as LogicInput, coordinate_conversion_logic};
 
 #[derive(Deserialize, JsonSchema)]
 pub struct CoordinateConversionInput {
@@ -89,7 +88,7 @@ struct ToolResponseWrapper {
 #[derive(Deserialize)]
 struct ContentItem {
     #[serde(rename = "type")]
-    item_type: String,
+    _item_type: String,
     text: String,
 }
 
@@ -143,8 +142,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse response body: {}",
-                        e
+                        "Error: Failed to parse response body: {e}"
                     ));
                 }
             };
@@ -215,8 +213,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse response body: {}",
-                        e
+                        "Error: Failed to parse response body: {e}"
                     ));
                 }
             };
@@ -287,8 +284,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse response body: {}",
-                        e
+                        "Error: Failed to parse response body: {e}"
                     ));
                 }
             };
@@ -297,8 +293,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse cartesian-to-cylindrical response wrapper: {}",
-                        e
+                        "Error: Failed to parse cartesian-to-cylindrical response wrapper: {e}"
                     ));
                 }
             };
@@ -308,8 +303,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                     Ok(result) => result,
                     Err(e) => {
                         return ToolResponse::text(format!(
-                            "Error: Failed to parse cartesian-to-cylindrical result: {}",
-                            e
+                            "Error: Failed to parse cartesian-to-cylindrical result: {e}"
                         ));
                     }
                 };
@@ -331,8 +325,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to serialize cylindrical input: {}",
-                        e
+                        "Error: Failed to serialize cylindrical input: {e}"
                     ));
                 }
             };
@@ -348,8 +341,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Error calling cylindrical-to-cartesian tool: {:?}",
-                        e
+                        "Error: Error calling cylindrical-to-cartesian tool: {e:?}"
                     ));
                 }
             };
@@ -359,8 +351,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse response body: {}",
-                        e
+                        "Error: Failed to parse response body: {e}"
                     ));
                 }
             };
@@ -369,8 +360,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse cylindrical-to-cartesian response wrapper: {}",
-                        e
+                        "Error: Failed to parse cylindrical-to-cartesian response wrapper: {e}"
                     ));
                 }
             };
@@ -380,8 +370,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                     Ok(result) => result,
                     Err(e) => {
                         return ToolResponse::text(format!(
-                            "Error: Failed to parse cylindrical-to-cartesian result: {}",
-                            e
+                            "Error: Failed to parse cylindrical-to-cartesian result: {e}"
                         ));
                     }
                 };
@@ -393,9 +382,9 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
             }
         }
         _ => {
-            return ToolResponse::text(format!(
-                "Error: Invalid coordinate conversion. Supported: cartesian↔spherical, cartesian↔cylindrical"
-            ));
+            return ToolResponse::text(
+                "Error: Invalid coordinate conversion. Supported: cartesian↔spherical, cartesian↔cylindrical".to_string()
+            );
         }
     };
 

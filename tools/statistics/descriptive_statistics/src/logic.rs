@@ -177,13 +177,12 @@ fn calculate_skewness(data: &[f64], mean: f64, std_dev: f64) -> f64 {
     }
 
     let n = data.len() as f64;
-    let skewness = data
+    
+    data
         .iter()
         .map(|x| ((x - mean) / std_dev).powi(3))
         .sum::<f64>()
-        / n;
-
-    skewness
+        / n
 }
 
 fn calculate_kurtosis(data: &[f64], mean: f64, std_dev: f64) -> f64 {

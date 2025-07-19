@@ -193,7 +193,7 @@ fn calculate_depth_and_count(value: &Value, current_depth: usize) -> (usize, usi
     }
 }
 
-fn validate_against_schema(value: &Value, schema_str: &str) -> Result<bool, String> {
+fn validate_against_schema(_value: &Value, schema_str: &str) -> Result<bool, String> {
     // Parse the schema
     let _schema: Value =
         serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {}", e))?;

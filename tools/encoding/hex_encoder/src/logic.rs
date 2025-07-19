@@ -31,8 +31,7 @@ pub fn encode_hex(input: HexEncoderInput) -> Result<HexEncoderOutput, String> {
     // Validate case option
     if !["lowercase", "uppercase"].contains(&case.as_str()) {
         return Err(format!(
-            "Invalid case '{}'. Valid options are: lowercase, uppercase",
-            case
+            "Invalid case '{case}'. Valid options are: lowercase, uppercase"
         ));
     }
 

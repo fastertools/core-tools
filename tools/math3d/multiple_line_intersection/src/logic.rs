@@ -99,13 +99,13 @@ fn solve_3x3_system(a: &[[f64; 3]; 3], b: &[f64; 3]) -> Result<[f64; 3], String>
     // Cramer's rule
     let mut x = [0.0; 3];
 
-    for i in 0..3 {
+    for (i, x_i) in x.iter_mut().enumerate().take(3) {
         let mut a_i = *a;
         a_i[0][i] = b[0];
         a_i[1][i] = b[1];
         a_i[2][i] = b[2];
 
-        x[i] = determinant_3x3(&a_i) / det_a;
+        *x_i = determinant_3x3(&a_i) / det_a;
     }
 
     Ok(x)

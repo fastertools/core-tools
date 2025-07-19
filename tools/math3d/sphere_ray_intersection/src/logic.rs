@@ -306,7 +306,7 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
         assert!(result.closest_distance.is_some());
     }
 
@@ -487,7 +487,7 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -505,6 +505,6 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 }

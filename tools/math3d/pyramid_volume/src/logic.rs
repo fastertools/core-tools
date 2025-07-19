@@ -40,10 +40,10 @@ pub fn compute_pyramid_volume(input: PyramidInput) -> Result<PyramidResponse, St
     // Validate base points for NaN and infinite values
     for (i, point) in input.base_points.iter().enumerate() {
         if point.x.is_nan() || point.y.is_nan() || point.z.is_nan() {
-            return Err(format!("Base point {} contains NaN values", i));
+            return Err(format!("Base point {i} contains NaN values"));
         }
         if point.x.is_infinite() || point.y.is_infinite() || point.z.is_infinite() {
-            return Err(format!("Base point {} contains infinite values", i));
+            return Err(format!("Base point {i} contains infinite values"));
         }
     }
 

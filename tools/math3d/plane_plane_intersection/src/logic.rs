@@ -146,7 +146,7 @@ impl Plane3D {
         let n1 = self.normal.normalize()?;
         let n2 = other.normal.normalize()?;
         let dot = n1.dot(&n2);
-        let clamped = dot.max(-1.0).min(1.0);
+        let clamped = dot.clamp(-1.0, 1.0);
         Ok(clamped.acos())
     }
 

@@ -28,7 +28,7 @@ impl From<Point> for LogicPoint {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct ProximityZoneInput {
+pub struct ProximityZoneInput {
     /// Center of the proximity zone
     center: Point,
     /// Radius of the zone in meters

@@ -304,7 +304,7 @@ mod tests {
         let result = cylinder_ray_intersection_logic(input).unwrap();
         // This ray passes through the cylinder at height 0.5 (within ±2 height bounds)
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -495,7 +495,7 @@ mod tests {
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -537,7 +537,7 @@ mod tests {
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -554,6 +554,6 @@ mod tests {
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 }

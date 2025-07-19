@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    TwoVectorInput as LogicInput, Vector3D as LogicVector3D, VectorAngleResult, vector_angle_logic,
+    TwoVectorInput as LogicInput, Vector3D as LogicVector3D, vector_angle_logic,
 };
 
 #[derive(Deserialize, Serialize, Clone, JsonSchema)]

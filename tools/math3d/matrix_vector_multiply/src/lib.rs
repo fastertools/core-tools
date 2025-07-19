@@ -7,7 +7,7 @@ mod logic;
 use logic::{MatrixVectorInput, matrix_vector_multiply_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     matrix: logic::Matrix3x3,
     vector: logic::Vector3D,
 }

@@ -52,9 +52,9 @@ pub fn calculate_polynomial_regression(
 
     // Create design matrix (Vandermonde matrix)
     let mut design_matrix = vec![vec![0.0; degree + 1]; n];
-    for i in 0..n {
+    for (i, row) in design_matrix.iter_mut().enumerate().take(n) {
         for j in 0..=degree {
-            design_matrix[i][j] = input.x[i].powi(j as i32);
+            row[j] = input.x[i].powi(j as i32);
         }
     }
 
@@ -63,18 +63,18 @@ pub fn calculate_polynomial_regression(
     let mut xty = vec![0.0; degree + 1];
 
     // Calculate X^T X
-    for i in 0..=degree {
+    for (i, row) in xtx.iter_mut().enumerate().take(degree + 1) {
         for j in 0..=degree {
-            for k in 0..n {
-                xtx[i][j] += design_matrix[k][i] * design_matrix[k][j];
+            for design_row in design_matrix.iter().take(n) {
+                row[j] += design_row[i] * design_row[j];
             }
         }
     }
 
     // Calculate X^T y
-    for i in 0..=degree {
-        for k in 0..n {
-            xty[i] += design_matrix[k][i] * input.y[k];
+    for (i, xty_item) in xty.iter_mut().enumerate().take(degree + 1) {
+        for (design_row, &y_val) in design_matrix.iter().zip(input.y.iter()).take(n) {
+            *xty_item += design_row[i] * y_val;
         }
     }
 

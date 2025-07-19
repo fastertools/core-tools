@@ -46,7 +46,7 @@ impl Quaternion {
     }
 
     pub fn slerp(&self, other: &Quaternion, t: f64) -> Result<Quaternion, String> {
-        if t < 0.0 || t > 1.0 {
+        if !(0.0..=1.0).contains(&t) {
             return Err("Interpolation parameter t must be between 0 and 1".to_string());
         }
 

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    Line3D as LogicLine3D, MultipleLineIntersectionResult, MultipleLinesInput as LogicInput,
+    Line3D as LogicLine3D, MultipleLinesInput as LogicInput,
     Vector3D as LogicVector3D, multiple_line_intersection_logic,
 };
 

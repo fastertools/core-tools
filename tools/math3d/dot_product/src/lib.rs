@@ -18,7 +18,7 @@ struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct DotProductInput {
+pub struct DotProductInput {
     /// First 3D vector
     vector1: Vector3D,
     /// Second 3D vector

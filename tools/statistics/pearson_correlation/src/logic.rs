@@ -105,7 +105,7 @@ fn interpret_correlation(r: f64) -> String {
         "no"
     };
 
-    format!("{} {} correlation", strength, direction)
+    format!("{strength} {direction} correlation")
 }
 
 fn calculate_t_test_p_value(t_stat: f64, df: f64) -> f64 {
@@ -123,7 +123,7 @@ fn calculate_t_test_p_value(t_stat: f64, df: f64) -> f64 {
     } else {
         // Simple approximation for small df
         let p = 2.0 * (1.0 - (1.0 / (1.0 + (t_stat * t_stat) / df)).powf(df / 2.0));
-        p.min(1.0).max(0.0)
+        p.clamp(0.0, 1.0)
     }
 }
 

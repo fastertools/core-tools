@@ -7,7 +7,7 @@ mod logic;
 use logic::{QuaternionSlerpInput, quaternion_slerp_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     q1: logic::Quaternion,
     q2: logic::Quaternion,
     t: f64,

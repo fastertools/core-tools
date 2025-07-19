@@ -7,7 +7,7 @@ mod logic;
 use logic::{ArbitraryRotationInput, arbitrary_rotation_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     axis: logic::Vector3D,
     angle: f64,
 }

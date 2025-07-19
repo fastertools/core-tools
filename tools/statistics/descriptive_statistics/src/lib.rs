@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    DescriptiveStatisticsOutput, StatisticsInput as LogicInput, descriptive_statistics_logic,
+    StatisticsInput as LogicInput, descriptive_statistics_logic,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]

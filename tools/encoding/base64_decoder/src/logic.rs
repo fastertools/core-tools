@@ -1,6 +1,6 @@
 use base64::{
-    Engine as _, alphabet,
-    engine::{GeneralPurpose, general_purpose},
+    Engine as _,
+    engine::general_purpose,
 };
 use serde::{Deserialize, Serialize};
 
@@ -59,11 +59,10 @@ pub fn decode_base64(input: Base64DecoderInput) -> Result<Base64DecoderOutput, S
         },
         _ => {
             return Err(format!(
-                "Invalid variant '{}'. Valid variants are: standard, standard_no_pad, url_safe, url_safe_no_pad",
-                variant
+                "Invalid variant '{variant}'. Valid variants are: standard, standard_no_pad, url_safe, url_safe_no_pad"
             ));
         }
-    }.map_err(|e| format!("Failed to decode base64: {}", e))?;
+    }.map_err(|e| format!("Failed to decode base64: {e}"))?;
 
     // Try to convert to UTF-8 string
     let decoded_utf8 = String::from_utf8(decoded_bytes.clone()).ok();

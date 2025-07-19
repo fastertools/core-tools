@@ -1,0 +1,553 @@
+    Checking base64_decoder_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/encoding/base64_decoder)
+    Checking cross_product_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/cross_product)
+    Checking quaternion_from_axis_angle_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/quaternion_from_axis_angle)
+    Checking vector_analysis v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/vector_analysis)
+    Checking vector-magnitude v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/vector_magnitude)
+    Checking matrix_vector_multiply_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/matrix_vector_multiply)
+    Checking remainder_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/basic_math/remainder)
+    Checking hex_encoder_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/encoding/hex_encoder)
+    Checking bearing-tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/geospatial/bearing)
+    Checking arbitrary_rotation_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/arbitrary_rotation)
+    Checking cartesian_to_cylindrical_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/cartesian_to_cylindrical)
+    Checking random_string_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/identifiers/random_string)
+    Checking json_validator_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/data_formats/json_validator)
+    Checking predict_values v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/statistics/predict_values)
+    Checking rotation_matrix_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/rotation_matrix)
+    Checking url_validator_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/validation/url_validator)
+error: unused imports: `GeneralPurpose` and `alphabet`
+ --> tools/encoding/base64_decoder/src/logic.rs:2:18
+  |
+2 |     Engine as _, alphabet,
+  |                  ^^^^^^^^
+3 |     engine::{GeneralPurpose, general_purpose},
+  |              ^^^^^^^^^^^^^^
+  |
+  = note: `-D unused-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: type `ToolInput` is more private than the item `matrix_vector_multiply`
+  --> tools/math3d/matrix_vector_multiply/src/lib.rs:22:1
+   |
+22 | pub fn matrix_vector_multiply(input: ToolInput) -> ToolResponse {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function `matrix_vector_multiply` is reachable at visibility `pub`
+   |
+note: but type `ToolInput` is only usable at visibility `pub(crate)`
+  --> tools/math3d/matrix_vector_multiply/src/lib.rs:10:1
+   |
+10 | struct ToolInput {
+   | ^^^^^^^^^^^^^^^^
+   = note: `-D private-interfaces` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(private_interfaces)]`
+
+error: variables can be used directly in the `format!` string
+  --> tools/encoding/base64_decoder/src/logic.rs:61:24
+   |
+61 |               return Err(format!(
+   |  ________________________^
+62 | |                 "Invalid variant '{}'. Valid variants are: standard, standard_no_pad, url_safe, url_safe_no_pad",
+63 | |                 variant
+64 | |             ));
+   | |_____________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: variables can be used directly in the `format!` string
+  --> tools/encoding/base64_decoder/src/logic.rs:66:19
+   |
+66 |     }.map_err(|e| format!("Failed to decode base64: {}", e))?;
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+66 -     }.map_err(|e| format!("Failed to decode base64: {}", e))?;
+66 +     }.map_err(|e| format!("Failed to decode base64: {e}"))?;
+   |
+
+error: could not compile `matrix_vector_multiply_tool` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `base64_decoder_tool` (lib test) due to 3 previous errors
+error: unused variable: `value`
+   --> tools/data_formats/json_validator/src/logic.rs:196:28
+    |
+196 | fn validate_against_schema(value: &Value, schema_str: &str) -> Result<bool, String> {
+    |                            ^^^^^ help: if this is intentional, prefix it with an underscore: `_value`
+    |
+    = note: `-D unused-variables` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_variables)]`
+
+error: unnecessary parentheses around assigned value
+   --> tools/math3d/vector_analysis/src/logic.rs:111:25
+    |
+111 |     let is_orthogonal = (dot_product.abs() < 1e-10);
+    |                         ^                         ^
+    |
+    = note: `-D unused-parens` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(unused_parens)]`
+help: remove these parentheses
+    |
+111 -     let is_orthogonal = (dot_product.abs() < 1e-10);
+111 +     let is_orthogonal = dot_product.abs() < 1e-10;
+    |
+
+error: unnecessary parentheses around assigned value
+   --> tools/math3d/vector_analysis/src/logic.rs:112:23
+    |
+112 |     let is_parallel = (cross_product.iter().all(|&x| x.abs() < 1e-10));
+    |                       ^                                              ^
+    |
+help: remove these parentheses
+    |
+112 -     let is_parallel = (cross_product.iter().all(|&x| x.abs() < 1e-10));
+112 +     let is_parallel = cross_product.iter().all(|&x| x.abs() < 1e-10);
+    |
+
+error: variables can be used directly in the `format!` string
+  --> tools/data_formats/json_validator/src/logic.rs:52:29
+   |
+52 |                 error: Some(format!("Invalid JSON: {}", e)),
+   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+52 -                 error: Some(format!("Invalid JSON: {}", e)),
+52 +                 error: Some(format!("Invalid JSON: {e}")),
+   |
+
+error: variables can be used directly in the `format!` string
+  --> tools/data_formats/json_validator/src/logic.rs:87:33
+   |
+87 |                     error: Some(format!("Schema validation error: {}", e)),
+   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+87 -                     error: Some(format!("Schema validation error: {}", e)),
+87 +                     error: Some(format!("Schema validation error: {e}")),
+   |
+
+error: variables can be used directly in the `format!` string
+   --> tools/data_formats/json_validator/src/logic.rs:199:54
+    |
+199 |         serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {}", e))?;
+    |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+199 -         serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {}", e))?;
+199 +         serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {e}"))?;
+    |
+
+error: could not compile `json_validator_tool` (lib test) due to 4 previous errors
+error: type `ToolInput` is more private than the item `arbitrary_rotation`
+  --> tools/math3d/arbitrary_rotation/src/lib.rs:22:1
+   |
+22 | pub fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ function `arbitrary_rotation` is reachable at visibility `pub`
+   |
+note: but type `ToolInput` is only usable at visibility `pub(crate)`
+  --> tools/math3d/arbitrary_rotation/src/lib.rs:10:1
+   |
+10 | struct ToolInput {
+   | ^^^^^^^^^^^^^^^^
+   = note: `-D private-interfaces` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(private_interfaces)]`
+
+error: method `normalize` is never used
+  --> tools/math3d/arbitrary_rotation/src/logic.rs:44:12
+   |
+35 | impl Vector3D {
+   | ------------- method in this implementation
+...
+44 |     pub fn normalize(&self) -> Result<Self, String> {
+   |            ^^^^^^^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(dead_code)]`
+
+error: methods `multiply_vector` and `determinant` are never used
+   --> tools/math3d/arbitrary_rotation/src/logic.rs:109:12
+    |
+57  | impl Matrix3x3 {
+    | -------------- methods in this implementation
+...
+109 |     pub fn multiply_vector(&self, v: &Vector3D) -> Vector3D {
+    |            ^^^^^^^^^^^^^^^
+...
+117 |     pub fn determinant(&self) -> f64 {
+    |            ^^^^^^^^^^^
+
+error: variables can be used directly in the `format!` string
+  --> tools/encoding/hex_encoder/src/logic.rs:33:20
+   |
+33 |           return Err(format!(
+   |  ____________________^
+34 | |             "Invalid case '{}'. Valid options are: lowercase, uppercase",
+35 | |             case
+36 | |         ));
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: returning the result of a `let` binding from a block
+  --> tools/geospatial/bearing/src/logic.rs:65:5
+   |
+63 |     let bearing_deg = (bearing_rad * 180.0 / PI + 360.0) % 360.0;
+   |     ------------------------------------------------------------- unnecessary `let` binding
+64 |
+65 |     bearing_deg
+   |     ^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#let_and_return
+   = note: `-D clippy::let-and-return` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::let_and_return)]`
+help: return the expression directly
+   |
+63 ~     
+64 |
+65 ~     (bearing_rad * 180.0 / PI + 360.0) % 360.0
+   |
+
+error: could not compile `hex_encoder_tool` (lib) due to 1 previous error
+error: could not compile `bearing-tool` (lib) due to 1 previous error
+error: could not compile `arbitrary_rotation_tool` (lib) due to 3 previous errors
+error: fields `unit_vector` and `is_zero_vector` are never read
+  --> tools/math3d/vector_analysis/src/logic.rs:44:5
+   |
+42 | struct MagnitudeResult {
+   |        --------------- fields in this struct
+43 |     magnitude: f64,
+44 |     unit_vector: Vector3D,
+   |     ^^^^^^^^^^^
+45 |     is_zero_vector: bool,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(dead_code)]`
+
+error: fields `angle_degrees`, `cos_angle`, `vector1_magnitude`, `vector2_magnitude`, `is_perpendicular`, and `is_parallel` are never read
+  --> tools/math3d/vector_analysis/src/logic.rs:51:5
+   |
+49 | struct AngleResult {
+   |        ----------- fields in this struct
+50 |     angle_radians: f64,
+51 |     angle_degrees: f64,
+   |     ^^^^^^^^^^^^^
+52 |     cos_angle: f64,
+   |     ^^^^^^^^^
+53 |     vector1_magnitude: f64,
+   |     ^^^^^^^^^^^^^^^^^
+54 |     vector2_magnitude: f64,
+   |     ^^^^^^^^^^^^^^^^^
+55 |     is_perpendicular: bool,
+   |     ^^^^^^^^^^^^^^^^
+56 |     is_parallel: bool,
+   |     ^^^^^^^^^^^
+
+error: fields `angle_radians`, `angle_degrees`, `are_perpendicular`, and `are_parallel` are never read
+  --> tools/math3d/vector_analysis/src/logic.rs:62:5
+   |
+60 | struct DotProductResult {
+   |        ---------------- fields in this struct
+61 |     dot_product: f64,
+62 |     angle_radians: f64,
+   |     ^^^^^^^^^^^^^
+63 |     angle_degrees: f64,
+   |     ^^^^^^^^^^^^^
+64 |     are_perpendicular: bool,
+   |     ^^^^^^^^^^^^^^^^^
+65 |     are_parallel: bool,
+   |     ^^^^^^^^^^^^
+
+error: fields `magnitude`, `area_parallelogram`, and `are_parallel` are never read
+  --> tools/math3d/vector_analysis/src/logic.rs:71:5
+   |
+69 | struct CrossProductResult {
+   |        ------------------ fields in this struct
+70 |     cross_product: CrossProductVector,
+71 |     magnitude: f64,
+   |     ^^^^^^^^^
+72 |     area_parallelogram: f64,
+   |     ^^^^^^^^^^^^^^^^^^
+73 |     are_parallel: bool,
+   |     ^^^^^^^^^^^^
+
+error: field `item_type` is never read
+  --> tools/math3d/vector_analysis/src/logic.rs:91:5
+   |
+89 | struct ContentItem<T> {
+   |        ----------- field in this struct
+90 |     #[serde(rename = "type")]
+91 |     item_type: String,
+   |     ^^^^^^^^^
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:147:22
+    |
+147 |         .map_err(|e| format!("Failed to serialize vector input: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+    |
+147 -         .map_err(|e| format!("Failed to serialize vector input: {}", e))?;
+147 +         .map_err(|e| format!("Failed to serialize vector input: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:158:22
+    |
+158 |         .map_err(|e| format!("Failed to call vector_magnitude: {:?}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+158 -         .map_err(|e| format!("Failed to call vector_magnitude: {:?}", e))?;
+158 +         .map_err(|e| format!("Failed to call vector_magnitude: {e:?}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:162:22
+    |
+162 |         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+162 -         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+162 +         .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:166:22
+    |
+166 |         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+166 -         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+166 +         .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:170:22
+    |
+170 |         .map_err(|e| format!("Failed to parse magnitude result: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+170 -         .map_err(|e| format!("Failed to parse magnitude result: {}", e))?;
+170 +         .map_err(|e| format!("Failed to parse magnitude result: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:195:22
+    |
+195 |         .map_err(|e| format!("Failed to serialize vector angle input: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+195 -         .map_err(|e| format!("Failed to serialize vector angle input: {}", e))?;
+195 +         .map_err(|e| format!("Failed to serialize vector angle input: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:206:22
+    |
+206 |         .map_err(|e| format!("Failed to call vector_angle: {:?}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+206 -         .map_err(|e| format!("Failed to call vector_angle: {:?}", e))?;
+206 +         .map_err(|e| format!("Failed to call vector_angle: {e:?}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:210:22
+    |
+210 |         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+210 -         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+210 +         .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:213:22
+    |
+213 |         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+213 -         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+213 +         .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:217:9
+    |
+217 | /         format!(
+218 | |             "Failed to parse angle result: {}. Response body: {}",
+219 | |             e, body
+220 | |         )
+    | |_________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:242:22
+    |
+242 |         .map_err(|e| format!("Failed to serialize dot product input: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+242 -         .map_err(|e| format!("Failed to serialize dot product input: {}", e))?;
+242 +         .map_err(|e| format!("Failed to serialize dot product input: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:253:22
+    |
+253 |         .map_err(|e| format!("Failed to call dot_product: {:?}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+253 -         .map_err(|e| format!("Failed to call dot_product: {:?}", e))?;
+253 +         .map_err(|e| format!("Failed to call dot_product: {e:?}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:257:22
+    |
+257 |         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+257 -         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+257 +         .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:260:22
+    |
+260 |         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+260 -         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+260 +         .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:264:22
+    |
+264 |         .map_err(|e| format!("Failed to parse dot product result: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+264 -         .map_err(|e| format!("Failed to parse dot product result: {}", e))?;
+264 +         .map_err(|e| format!("Failed to parse dot product result: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:285:22
+    |
+285 |         .map_err(|e| format!("Failed to serialize cross product input: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+285 -         .map_err(|e| format!("Failed to serialize cross product input: {}", e))?;
+285 +         .map_err(|e| format!("Failed to serialize cross product input: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:296:22
+    |
+296 |         .map_err(|e| format!("Failed to call cross_product: {:?}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+296 -         .map_err(|e| format!("Failed to call cross_product: {:?}", e))?;
+296 +         .map_err(|e| format!("Failed to call cross_product: {e:?}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:300:22
+    |
+300 |         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+300 -         .map_err(|e| format!("Failed to parse response body: {}", e))?;
+300 +         .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:303:22
+    |
+303 |         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+303 -         .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
+303 +         .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+    |
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/vector_analysis/src/logic.rs:307:22
+    |
+307 |         .map_err(|e| format!("Failed to parse cross product result: {}", e))?;
+    |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+    |
+307 -         .map_err(|e| format!("Failed to parse cross product result: {}", e))?;
+307 +         .map_err(|e| format!("Failed to parse cross product result: {e}"))?;
+    |
+
+error: could not compile `vector_analysis` (lib) due to 27 previous errors

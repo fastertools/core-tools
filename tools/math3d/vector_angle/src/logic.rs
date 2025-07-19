@@ -49,7 +49,7 @@ impl Vector3D {
         let cos_angle = self.dot(other) / (mag1 * mag2);
 
         // Clamp to [-1, 1] to handle numerical precision issues
-        let cos_angle = cos_angle.max(-1.0).min(1.0);
+        let cos_angle = cos_angle.clamp(-1.0, 1.0);
 
         Ok(cos_angle.acos())
     }

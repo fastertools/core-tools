@@ -25,7 +25,7 @@ impl From<Point> for LogicPoint {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct CircularBufferInput {
+pub struct CircularBufferInput {
     /// Center point for the buffer
     center: Point,
     /// Buffer radius in meters

@@ -283,7 +283,7 @@ mod tests {
         let result = calculate_distribution_parameters(&data, false).unwrap();
 
         assert_eq!(result.mean, 3.0);
-        assert!((result.std_dev - 1.4142135623730951).abs() < 1e-10);
+        assert!((result.std_dev - std::f64::consts::SQRT_2).abs() < 1e-10);
         assert!(result.skewness.abs() < 1e-10); // Should be close to 0 for symmetric data
         assert!(!result.suggested_distribution.is_empty());
     }

@@ -7,7 +7,7 @@ mod logic;
 use logic::{PlanePlaneIntersectionInput, plane_plane_intersection_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     /// First plane
     plane1: logic::Plane3D,
     /// Second plane

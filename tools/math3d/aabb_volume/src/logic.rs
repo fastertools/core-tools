@@ -30,10 +30,10 @@ pub fn compute_aabb_volume(input: BoundingBoxInput) -> Result<BoundingBoxRespons
     // Check for NaN and infinite values
     for (i, point) in input.points.iter().enumerate() {
         if point.x.is_nan() || point.y.is_nan() || point.z.is_nan() {
-            return Err(format!("Point {} contains NaN values", i));
+            return Err(format!("Point {i} contains NaN values"));
         }
         if point.x.is_infinite() || point.y.is_infinite() || point.z.is_infinite() {
-            return Err(format!("Point {} contains infinite values", i));
+            return Err(format!("Point {i} contains infinite values"));
         }
     }
 

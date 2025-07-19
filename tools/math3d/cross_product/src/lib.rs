@@ -8,7 +8,7 @@ mod logic;
 use logic::{CrossProductInput as LogicInput, Vector3D as LogicVector3D, cross_product_logic};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug, PartialEq)]
-struct Vector3D {
+pub struct Vector3D {
     /// X component of the vector
     x: f64,
     /// Y component of the vector
@@ -18,7 +18,7 @@ struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct CrossProductInput {
+pub struct CrossProductInput {
     /// First 3D vector
     vector1: Vector3D,
     /// Second 3D vector
@@ -26,7 +26,7 @@ struct CrossProductInput {
 }
 
 #[derive(Serialize, JsonSchema)]
-struct CrossProductResult {
+pub struct CrossProductResult {
     /// The resulting cross product vector
     pub cross_product: Vector3D,
     /// Magnitude of the cross product vector
@@ -58,7 +58,7 @@ impl From<CrossProductInput> for LogicInput {
 
 /// Calculate cross product of two 3D vectors
 #[cfg_attr(not(test), tool)]
-fn cross_product(input: CrossProductInput) -> ToolResponse {
+pub fn cross_product(input: CrossProductInput) -> ToolResponse {
     match cross_product_logic(input.into()) {
         Ok(logic_result) => {
             let result = CrossProductResult {

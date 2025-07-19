@@ -51,7 +51,7 @@ pub fn create_circular_buffer(
         ));
     }
 
-    let num_points = num_points.unwrap_or(32).max(8).min(360);
+    let num_points = num_points.unwrap_or(32).clamp(8, 360);
     let mut buffer_points = Vec::new();
 
     let lat_rad = center.lat * PI / 180.0;
