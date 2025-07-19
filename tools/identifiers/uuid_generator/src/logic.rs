@@ -35,8 +35,7 @@ pub fn generate_uuids(input: UuidGeneratorInput) -> Result<UuidGeneratorOutput, 
     // Validate format
     if !["hyphenated", "simple", "urn", "braced"].contains(&format.as_str()) {
         return Err(format!(
-            "Invalid format '{}'. Valid formats are: hyphenated, simple, urn, braced",
-            format
+            "Invalid format '{format}'. Valid formats are: hyphenated, simple, urn, braced"
         ));
     }
 

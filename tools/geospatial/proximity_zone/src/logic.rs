@@ -654,7 +654,7 @@ mod tests {
             candidates.push(Point {
                 lat: center.lat + lat_offset,
                 lon: center.lon + lon_offset,
-                id: Some(format!("Point{}", i)),
+                id: Some(format!("Point{ i}")),
             });
         }
 

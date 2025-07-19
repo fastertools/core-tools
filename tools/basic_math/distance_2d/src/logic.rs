@@ -59,10 +59,9 @@ pub fn calculate_distance_2d(input: TwoPointInput) -> Result<DistanceResult, Str
     let distance = distance_squared.sqrt();
 
     calculation_steps.push(format!(
-        "d² = {}² + {}² = {}",
-        delta_x, delta_y, distance_squared
+        "d² = {delta_x}² + {delta_y}² = {distance_squared}"
     ));
-    calculation_steps.push(format!("d = √{} = {}", distance_squared, distance));
+    calculation_steps.push(format!("d = √{distance_squared} = {distance}"));
 
     Ok(DistanceResult {
         distance,

@@ -39,8 +39,7 @@ pub fn generate_hash(input: HashGeneratorInput) -> Result<HashGeneratorResult, S
     // Validate format
     if format != "hex" && format != "base64" {
         return Err(format!(
-            "Unsupported format: {}. Use 'hex' or 'base64'",
-            format
+            "Unsupported format: {format}. Use 'hex' or 'base64'"
         ));
     }
 
@@ -66,8 +65,7 @@ pub fn generate_hash(input: HashGeneratorInput) -> Result<HashGeneratorResult, S
         }
         _ => {
             return Err(format!(
-                "Unsupported algorithm: {}. Use 'md5', 'sha256', or 'sha512'",
-                algorithm
+                "Unsupported algorithm: {algorithm}. Use 'md5', 'sha256', or 'sha512'"
             ));
         }
     };

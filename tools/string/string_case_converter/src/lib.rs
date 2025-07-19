@@ -45,7 +45,7 @@ pub fn string_case_converter(input: StringCaseConverterInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::convert_case(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error: {e}")),
     };
 
     // Convert back to wrapper types

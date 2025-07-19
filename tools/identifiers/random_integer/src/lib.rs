@@ -49,7 +49,7 @@ pub fn random_integer(input: RandomIntegerInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::generate_random_integers(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error: {e}")),
     };
 
     // Convert back to wrapper types

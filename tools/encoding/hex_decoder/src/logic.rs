@@ -74,7 +74,7 @@ pub fn decode_hex(input: HexDecoderInput) -> Result<HexDecoderOutput, String> {
                 pairs_decoded,
             })
         }
-        Err(e) => Err(format!("Failed to decode hex: {}", e)),
+        Err(e) => Err(format!("Failed to decode hex: {e}")),
     }
 }
 

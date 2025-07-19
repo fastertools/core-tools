@@ -54,6 +54,6 @@ pub fn plane_plane_intersection(input: ToolInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

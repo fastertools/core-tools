@@ -109,7 +109,7 @@ pub fn regex_matcher(input: RegexMatcherInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::match_regex(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error matching regex: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error matching regex: {e}")),
     };
 
     // Convert back to wrapper types

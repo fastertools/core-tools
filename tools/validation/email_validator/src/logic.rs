@@ -260,7 +260,7 @@ mod tests {
                 check_dns: None,
             };
             let result = validate_email(input).unwrap();
-            assert!(result.is_valid, "Email '{}' should be valid", email);
+            assert!(result.is_valid, "Email '{email}' should be valid");
         }
     }
 
@@ -302,15 +302,12 @@ mod tests {
                 check_dns: None,
             };
             let result = validate_email(input).unwrap();
-            assert!(!result.is_valid, "Email '{}' should be invalid", email);
+            assert!(!result.is_valid, "Email '{email}' should be invalid");
             assert!(result.error.is_some());
             let actual_error = result.error.unwrap();
             assert!(
                 actual_error.contains(expected_error),
-                "Email '{}' should have error containing '{}', but got '{}'",
-                email,
-                expected_error,
-                actual_error
+                "Email '{email}' should have error containing '{expected_error}', but got '{actual_error}'"
             );
         }
     }
@@ -351,7 +348,7 @@ mod tests {
     fn test_long_email() {
         let local = "a".repeat(64);
         let domain = "example.com";
-        let email = format!("{}@{}", local, domain);
+        let email = format!("{local}@{domain}");
 
         let input = EmailValidatorInput {
             email,
@@ -365,7 +362,7 @@ mod tests {
     fn test_too_long_local() {
         let local = "a".repeat(65);
         let domain = "example.com";
-        let email = format!("{}@{}", local, domain);
+        let email = format!("{local}@{domain}");
 
         let input = EmailValidatorInput {
             email,

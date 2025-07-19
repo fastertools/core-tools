@@ -74,7 +74,7 @@ pub fn email_validator(input: EmailValidatorInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::validate_email(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error validating email: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error validating email: {e}")),
     };
 
     // Convert back to wrapper types

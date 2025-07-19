@@ -43,7 +43,7 @@ pub fn distance(input: DistanceInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::calculate_distance_between_points(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error calculating distance: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error calculating distance: {e}")),
     };
 
     // Convert back to wrapper types

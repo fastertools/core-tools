@@ -64,8 +64,7 @@ pub fn generate_random_strings(input: RandomStringInput) -> Result<RandomStringO
         "hex" => "0123456789abcdef".chars().collect(),
         _ => {
             return Err(format!(
-                "Invalid charset '{}'. Valid options are: alphanumeric, alphabetic, numeric, lowercase, uppercase, hex",
-                charset
+                "Invalid charset '{charset}'. Valid options are: alphanumeric, alphabetic, numeric, lowercase, uppercase, hex"
             ));
         }
     };

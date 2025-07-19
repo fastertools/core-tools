@@ -52,7 +52,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
             return Ok(YamlFormatterResult {
                 formatted: None,
                 is_valid: false,
-                error: Some(format!("Invalid YAML syntax: {}", e)),
+                error: Some(format!("Invalid YAML syntax: {e}")),
                 stats: YamlStats {
                     document_count: 0,
                     key_count: 0,
@@ -126,7 +126,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
         let formatted = if quote_all_strings {
             format_with_quoted_strings(value, indent_spaces)
         } else {
-            serde_yml::to_string(&value).map_err(|e| format!("Failed to format YAML: {}", e))?
+            serde_yml::to_string(&value).map_err(|e| format!("Failed to format YAML: {e}"))?
         };
 
         output.push_str(&formatted);

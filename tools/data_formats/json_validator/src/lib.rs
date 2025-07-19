@@ -62,7 +62,7 @@ pub fn json_validator(input: JsonValidatorInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::validate_json(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error validating JSON: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error validating JSON: {e}")),
     };
 
     // Convert back to wrapper types
@@ -82,6 +82,6 @@ pub fn json_validator(input: JsonValidatorInput) -> ToolResponse {
     };
 
     ToolResponse::text(
-        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {e}")),
     )
 }

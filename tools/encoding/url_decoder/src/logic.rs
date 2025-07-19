@@ -68,7 +68,7 @@ pub fn decode_url(input: UrlDecoderInput) -> Result<UrlDecoderOutput, String> {
                 encoded_length: input.encoded.len(),
                 sequences_decoded,
                 is_valid_utf8: false,
-                error: Some(format!("Invalid UTF-8 sequence: {}", e)),
+                error: Some(format!("Invalid UTF-8 sequence: {e}")),
             })
         }
     }

@@ -87,7 +87,7 @@ pub fn url_validator(input: UrlValidatorInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::validate_url(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error validating URL: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error validating URL: {e}")),
     };
 
     // Convert back to wrapper types

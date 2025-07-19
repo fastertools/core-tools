@@ -81,7 +81,7 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
         Err(e) => {
             return Ok(UrlValidatorResult {
                 is_valid: false,
-                error: Some(format!("Invalid URL syntax: {}", e)),
+                error: Some(format!("Invalid URL syntax: {e}")),
                 components: None,
                 checks,
             });
@@ -100,7 +100,7 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
         if !checks.scheme_allowed {
             return Ok(UrlValidatorResult {
                 is_valid: false,
-                error: Some(format!("Scheme '{}' is not allowed", scheme)),
+                error: Some(format!("Scheme '{scheme}' is not allowed")),
                 components: None,
                 checks,
             });
@@ -189,7 +189,7 @@ mod tests {
                 allowed_schemes: None,
             };
             let result = validate_url(input).unwrap();
-            assert!(result.is_valid, "URL '{}' should be valid", url);
+            assert!(result.is_valid, "URL '{url}' should be valid");
             assert!(result.components.is_some());
         }
     }
@@ -210,13 +210,11 @@ mod tests {
                 allowed_schemes: None,
             };
             let result = validate_url(input).unwrap();
-            assert!(!result.is_valid, "URL '{}' should be invalid", url);
+            assert!(!result.is_valid, "URL '{url}' should be invalid");
             assert!(result.error.is_some());
             assert!(
                 result.error.unwrap().contains(expected_error),
-                "URL '{}' should have error containing '{}'",
-                url,
-                expected_error
+                "URL '{url}' should have error containing '{expected_error}'"
             );
         }
     }

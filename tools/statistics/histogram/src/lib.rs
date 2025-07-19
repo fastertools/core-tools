@@ -77,6 +77,6 @@ pub fn histogram(input: HistogramInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

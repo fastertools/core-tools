@@ -30,47 +30,42 @@ pub fn calculate_pythagorean(input: PythagoreanInput) -> Result<PythagoreanResul
     let mut tool_calls = Vec::new();
 
     // Step 1: Square first leg (a²)
-    calculation_steps.push(format!("Step 1: Square first leg: {}² = ?", input.a));
-    tool_calls.push(format!("Pure function: square({}) via a²", input.a));
+    calculation_steps.push(format!("Step 1: Square first leg: {a}² = ?", a = input.a));
+    tool_calls.push(format!("Pure function: square({a}) via a²", a = input.a));
 
     let a_squared = input.a * input.a;
-    calculation_steps.push(format!("Result: {}² = {}", input.a, a_squared));
+    calculation_steps.push(format!("Result: {a}² = {a_squared}", a = input.a));
 
     // Step 2: Square second leg (b²)
-    calculation_steps.push(format!("Step 2: Square second leg: {}² = ?", input.b));
-    tool_calls.push(format!("Pure function: square({}) via b²", input.b));
+    calculation_steps.push(format!("Step 2: Square second leg: {b}² = ?", b = input.b));
+    tool_calls.push(format!("Pure function: square({b}) via b²", b = input.b));
 
     let b_squared = input.b * input.b;
-    calculation_steps.push(format!("Result: {}² = {}", input.b, b_squared));
+    calculation_steps.push(format!("Result: {b}² = {b_squared}", b = input.b));
 
     // Step 3: Add the squares (a² + b²)
     calculation_steps.push(format!(
-        "Step 3: Add squares: {} + {} = ?",
-        a_squared, b_squared
+        "Step 3: Add squares: {a_squared} + {b_squared} = ?"
     ));
     tool_calls.push(format!(
-        "Pure function: add({}, {}) via a² + b²",
-        a_squared, b_squared
+        "Pure function: add({a_squared}, {b_squared}) via a² + b²"
     ));
 
     let sum_of_squares = a_squared + b_squared;
     calculation_steps.push(format!(
-        "Result: {} + {} = {}",
-        a_squared, b_squared, sum_of_squares
+        "Result: {a_squared} + {b_squared} = {sum_of_squares}"
     ));
 
     // Step 4: Take square root (sqrt(a² + b²))
     calculation_steps.push(format!(
-        "Step 4: Take square root: sqrt({}) = ?",
-        sum_of_squares
+        "Step 4: Take square root: sqrt({sum_of_squares}) = ?"
     ));
     tool_calls.push(format!(
-        "Pure function: sqrt({}) via f64::sqrt()",
-        sum_of_squares
+        "Pure function: sqrt({sum_of_squares}) via f64::sqrt()"
     ));
 
     let hypotenuse = sum_of_squares.sqrt();
-    calculation_steps.push(format!("Result: sqrt({}) = {}", sum_of_squares, hypotenuse));
+    calculation_steps.push(format!("Result: sqrt({sum_of_squares}) = {hypotenuse}"));
 
     Ok(PythagoreanResult {
         hypotenuse,

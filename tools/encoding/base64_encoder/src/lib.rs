@@ -52,6 +52,6 @@ pub fn base64_encoder(input: Base64EncoderInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&output).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

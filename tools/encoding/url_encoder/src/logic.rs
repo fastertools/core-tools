@@ -76,8 +76,7 @@ pub fn encode_url(input: UrlEncoderInput) -> Result<UrlEncoderOutput, String> {
         }
         _ => {
             return Err(format!(
-                "Invalid mode '{}'. Valid modes are: component, path, query, full",
-                mode
+                "Invalid mode '{mode}'. Valid modes are: component, path, query, full"
             ));
         }
     };

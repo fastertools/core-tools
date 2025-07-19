@@ -63,6 +63,6 @@ pub fn coordinate_conversion(input: DecimalDegreesInput) -> ToolResponse {
             };
             ftl_sdk::ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {e}")),
     }
 }

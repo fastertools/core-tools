@@ -112,7 +112,7 @@ async fn call_histogram_tool(
     };
 
     let request_body = serde_json::to_string(&histogram_input)
-        .map_err(|e| format!("Failed to serialize histogram input: {}", e))?;
+        .map_err(|e| format!("Failed to serialize histogram input: {e}"))?;
 
     let request = Request::builder()
         .method(Method::Post)
@@ -123,14 +123,14 @@ async fn call_histogram_tool(
 
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Error calling histogram tool: {:?}", e))?;
+        .map_err(|e| format!("Error calling histogram tool: {e:?}"))?;
 
     let body_bytes = response.into_body();
     let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
+        .map_err(|e| format!("Failed to parse response body: {e}"))?;
 
     let wrapper: ToolResponseWrapper<HistogramOutput> =
-        serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {}", e))?;
+        serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {e}"))?;
 
     let histogram_result = wrapper.ok;
 
@@ -145,7 +145,7 @@ async fn call_test_normality_tool(data: &[f64]) -> Result<NormalityTestOutput, S
     };
 
     let request_body = serde_json::to_string(&test_normality_input)
-        .map_err(|e| format!("Failed to serialize test_normality input: {}", e))?;
+        .map_err(|e| format!("Failed to serialize test_normality input: {e}"))?;
 
     let request = Request::builder()
         .method(Method::Post)
@@ -156,14 +156,14 @@ async fn call_test_normality_tool(data: &[f64]) -> Result<NormalityTestOutput, S
 
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Error calling test_normality tool: {:?}", e))?;
+        .map_err(|e| format!("Error calling test_normality tool: {e:?}"))?;
 
     let body_bytes = response.into_body();
     let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
+        .map_err(|e| format!("Failed to parse response body: {e}"))?;
 
     let wrapper: ToolResponseWrapper<NormalityTestOutput> =
-        serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {}", e))?;
+        serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {e}"))?;
 
     let normality_result = wrapper.ok;
 

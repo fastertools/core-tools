@@ -56,7 +56,7 @@ fn point_in_polygon(input: PointInPolygonInput) -> ToolResponse {
 
     let result = match point_in_polygon_check(logic_input.point, logic_input.polygon) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error checking point in polygon: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error checking point in polygon: {e}")),
     };
 
     let output = PointInPolygonResult {

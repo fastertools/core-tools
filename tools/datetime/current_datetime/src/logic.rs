@@ -67,15 +67,14 @@ pub fn get_current_datetime(input: CurrentDatetimeInput) -> Result<CurrentDateti
         }
         _ => {
             return Err(format!(
-                "Invalid timezone '{}'. Use 'UTC', 'Local', or offset like '+05:30', '-08:00'",
-                timezone
+                "Invalid timezone '{timezone}'. Use 'UTC', 'Local', or offset like '+05:30', '-08:00'"
             ));
         }
     };
 
     // Parse the datetime string to get a proper DateTime object
     let datetime = DateTime::parse_from_rfc3339(&datetime_str)
-        .map_err(|e| format!("Failed to parse datetime: {}", e))?;
+        .map_err(|e| format!("Failed to parse datetime: {e}"))?;
 
     // Calculate components
     let components = DateTimeComponents {

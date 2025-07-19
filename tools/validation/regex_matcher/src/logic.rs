@@ -113,7 +113,7 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
                     capture_group_count: 0,
                     flags_applied: flags_applied.join(", "),
                 },
-                error: Some(format!("Invalid regex pattern: {}", e)),
+                error: Some(format!("Invalid regex pattern: {e}")),
             });
         }
     };

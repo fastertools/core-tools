@@ -75,6 +75,6 @@ pub fn pyramid_volume(input: PyramidInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

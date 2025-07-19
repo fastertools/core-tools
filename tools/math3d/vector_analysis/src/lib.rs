@@ -70,7 +70,7 @@ pub async fn vector_analysis(input: VectorAnalysisInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string_pretty(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }
 

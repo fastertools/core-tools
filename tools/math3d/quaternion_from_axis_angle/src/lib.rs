@@ -58,6 +58,6 @@ pub fn quaternion_from_axis_angle(input: QuaternionFromAxisAngleInput) -> ToolRe
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

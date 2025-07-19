@@ -64,7 +64,7 @@ pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String
 
         "regex" => {
             let regex = Regex::new(&input.delimiter)
-                .map_err(|e| format!("Invalid regex pattern: {}", e))?;
+                .map_err(|e| format!("Invalid regex pattern: {e}"))?;
 
             if let Some(limit) = input.limit {
                 regex

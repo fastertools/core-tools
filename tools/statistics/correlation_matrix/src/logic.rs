@@ -94,7 +94,7 @@ pub fn calculate_correlation_matrix(
         names
     } else {
         (0..num_variables)
-            .map(|i| format!("Variable_{}", i + 1))
+            .map(|i| format!("Variable_{num}", num = i + 1))
             .collect()
     };
 
@@ -196,7 +196,7 @@ fn interpret_correlation(r: f64) -> String {
         "no"
     };
 
-    format!("{} {} correlation", strength, direction)
+    format!("{strength} {direction} correlation")
 }
 
 fn calculate_t_test_p_value(t_stat: f64, df: f64) -> f64 {

@@ -100,7 +100,7 @@ pub fn process_string(input: StringTrimInput) -> Result<StringTrimResult, String
                     "pad_left" => {
                         let pad_count = pad_length - original.len();
                         let padding = pad_char.to_string().repeat(pad_count);
-                        format!("{}{}", padding, original)
+                        format!("{padding}{original}")
                     }
                     "pad_center" => {
                         let total_pad = pad_length - original.len();
@@ -108,7 +108,7 @@ pub fn process_string(input: StringTrimInput) -> Result<StringTrimResult, String
                         let right_pad = total_pad - left_pad;
                         let left_padding = pad_char.to_string().repeat(left_pad);
                         let right_padding = pad_char.to_string().repeat(right_pad);
-                        format!("{}{}{}", left_padding, original, right_padding)
+                        format!("{left_padding}{original}{right_padding}")
                     }
                     _ => unreachable!(),
                 }

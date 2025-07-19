@@ -122,7 +122,7 @@ fn calculate_mode(data: &[f64]) -> Option<f64> {
 
     // Use string representation to handle floating point precision
     for &value in data {
-        let key = format!("{:.10}", value);
+        let key = format!("{value:.10}");
         *frequency.entry(key).or_insert(0) += 1;
     }
 

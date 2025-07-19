@@ -119,11 +119,11 @@ pub fn calculate_polynomial_regression(
             if i == 1 {
                 equation.push_str(&format!("{:.6}x", coeff.abs()));
             } else {
-                equation.push_str(&format!("{:.6}x^{}", coeff.abs(), i));
+                equation.push_str(&format!("{coeff:.6}x^{i}", coeff = coeff.abs()));
             }
         }
     }
-    equation = format!("y = {}", equation);
+    equation = format!("y = {equation}");
 
     Ok(PolynomialRegressionOutput {
         coefficients,

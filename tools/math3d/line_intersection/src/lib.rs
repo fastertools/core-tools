@@ -70,6 +70,6 @@ impl From<LineIntersectionInput> for LogicInput {
 pub fn line_intersection(input: LineIntersectionInput) -> ToolResponse {
     match line_intersection_logic(input.into()) {
         Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(e) => ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }
