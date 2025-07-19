@@ -1,0 +1,418 @@
+name: Main CI/CD
+# Consolidates: Main branch parts of build-and-test.yml, build-and-publish.yml, publish-tools.yml
+
+on:
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  # TODO: Update Spin version from mixed versions to v3.3.1
+  SPIN_VERSION: v3.3.1
+
+jobs:
+  # ===== BUILD ALL TOOLS =====
+  # From: build-and-publish.yml build-tools (reduced from 8 to 4 batches)
+  build-all:
+    name: Build All Tools
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Reduced from 8 batches to 4 (still prevents OOM)
+        batch: [1, 2, 3, 4]
+    outputs:
+      tool-count: ${{ steps.count.outputs.total }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/*/target
+          key: ${{ runner.os }}-cargo-main-${{ hashFiles('tools/**/Cargo.toml') }}-batch-${{ matrix.batch }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-main-${{ hashFiles('tools/**/Cargo.toml') }}-
+            ${{ runner.os }}-cargo-main-
+      
+      - name: Count total tools (first batch only)
+        id: count
+        if: matrix.batch == 1
+        run: |
+          TOTAL=$(./build_all.sh list | grep "^  " | wc -l)
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "Total tools to build: ${TOTAL}"
+      
+      - name: Build tools (batch ${{ matrix.batch }})
+        run: |
+          # Get all tools and split into batches
+          ALL_TOOLS=($(./build_all.sh list | grep "^  " | sed 's/^  //'))
+          TOTAL_TOOLS=${#ALL_TOOLS[@]}
+          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 3) / 4 ))  # Round up division by 4
+          
+          START_INDEX=$(( (${{ matrix.batch }} - 1) * TOOLS_PER_BATCH ))
+          END_INDEX=$(( START_INDEX + TOOLS_PER_BATCH ))
+          
+          if [ $END_INDEX -gt $TOTAL_TOOLS ]; then
+            END_INDEX=$TOTAL_TOOLS
+          fi
+          
+          echo "Building batch ${{ matrix.batch }}: tools $START_INDEX to $((END_INDEX-1))"
+          
+          # Build tools in this batch
+          for i in $(seq $START_INDEX $((END_INDEX-1))); do
+            if [ $i -lt $TOTAL_TOOLS ]; then
+              TOOL=${ALL_TOOLS[$i]}
+              echo "Building $TOOL..."
+              TOOL_PATH="tools/${TOOL}"
+              if [ -d "$TOOL_PATH" ] && [ -f "$TOOL_PATH/Cargo.toml" ]; then
+                PACKAGE_NAME=$(grep '^name = ' "$TOOL_PATH/Cargo.toml" | cut -d'"' -f2)
+                echo "Building package $PACKAGE_NAME in $TOOL_PATH"
+                # Use single-threaded builds to avoid OOM
+                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1
+              fi
+            fi
+          done
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-tools-batch-${{ matrix.batch }}
+          path: target/wasm32-wasip1/release/*.wasm
+          retention-days: 7
+
+  # ===== TEST ALL =====
+  # From: build-and-test.yml test + build-and-publish.yml test-tools
+  test-all:
+    name: Test All
+    needs: build-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo test
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-main-${{ hashFiles('**/Cargo.lock') }}
+      
+      # Unit tests from build-and-test.yml
+      - name: Run all unit tests
+        run: cargo test --all --all-features
+      
+      # Integration tests from build-and-publish.yml
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: target/wasm32-wasip1/release/
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          # TODO: Was curl install, now proper version
+          version: ${{ env.SPIN_VERSION }}
+      
+      - name: Run integration tests
+        run: |
+          echo "Starting Spin server for integration testing..."
+          
+          spin up --listen 127.0.0.1:3000 > spin_test.log 2>&1 &
+          SPIN_PID=$!
+          
+          # Wait for server to start
+          echo "Waiting for Spin server to start..."
+          for i in {1..90}; do
+            if curl -s http://127.0.0.1:3000/mcp >/dev/null 2>&1; then
+              echo "✅ Spin server is ready after $i seconds"
+              break
+            fi
+            if [ $i -eq 90 ]; then
+              echo "❌ Spin server failed to start within 90 seconds"
+              cat spin_test.log
+              exit 1
+            fi
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "⏳ Still waiting... (${i}s elapsed)"
+            fi
+            sleep 1
+          done
+          
+          # Test tool composition
+          echo "Testing tool composition chain..."
+          RESPONSE=$(curl -s -X POST http://127.0.0.1:3000/distance-two-d \
+            -H "Content-Type: application/json" \
+            -d '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}')
+          
+          if echo "$RESPONSE" | grep -q '"distance":5'; then
+            echo "✅ Integration tests passed"
+          else
+            echo "❌ Integration tests failed"
+            cat spin_test.log
+            exit 1
+          fi
+          
+          kill $SPIN_PID || true
+
+  # ===== PUBLISH BUNDLE =====
+  # From: build-and-publish.yml publish-spin-oci + publish-tools.yml publish-bundle
+  publish-bundle:
+    name: Publish Bundle to GHCR
+    needs: [build-all, test-all]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          # TODO: Was v2.0.0, now v3.3.1
+          version: ${{ env.SPIN_VERSION }}
+      
+      - name: Copy WASM files to target
+        run: |
+          mkdir -p target/wasm32-wasip1/release
+          cp artifacts/*.wasm target/wasm32-wasip1/release/
+          echo "Found $(ls -1 target/wasm32-wasip1/release/*.wasm | wc -l) WASM files"
+      
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      
+      - name: Push bundle
+        run: |
+          # Push with multiple tags
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+          
+          # Daily tag
+          DATE_TAG=$(date +%Y%m%d)
+          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${DATE_TAG}"
+          
+          echo "Bundle published to ghcr.io/${{ env.IMAGE_NAME }}"
+
+  # ===== PUBLISH INDIVIDUAL TOOLS =====
+  # From: publish-tools.yml build-and-publish (only for changed tools on main)
+  publish-tools:
+    name: Publish Individual Tools
+    needs: [build-all, test-all]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Detect changed tools
+        id: changes
+        run: |
+          # Get changed tools since last successful main build
+          CHANGED_TOOLS=$(git diff --name-only HEAD~1..HEAD | grep "^tools/" | cut -d'/' -f1-3 | sort -u)
+          
+          if [ -n "$CHANGED_TOOLS" ]; then
+            echo "Changed tools to publish individually:"
+            echo "$CHANGED_TOOLS"
+            
+            # Convert to JSON array for matrix
+            JSON_ARRAY=$(echo "$CHANGED_TOOLS" | jq -R . | jq -s . | jq -c .)
+            echo "matrix={\"tool\":${JSON_ARRAY}}" >> $GITHUB_OUTPUT
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "No individual tools to publish"
+            echo "matrix={\"tool\":[]}" >> $GITHUB_OUTPUT
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install Spin
+        if: steps.changes.outputs.has-changes == 'true'
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          version: ${{ env.SPIN_VERSION }}
+      
+      - name: Download artifacts
+        if: steps.changes.outputs.has-changes == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: target/wasm32-wasip1/release/
+      
+      - name: Log in to GHCR
+        if: steps.changes.outputs.has-changes == 'true'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      
+      - name: Publish changed tools
+        if: steps.changes.outputs.has-changes == 'true'
+        run: |
+          # Parse matrix and publish each tool
+          echo '${{ steps.changes.outputs.matrix }}' | jq -r '.tool[]' | while read tool_path; do
+            if [ -n "$tool_path" ] && [ -d "$tool_path" ]; then
+              TOOL_NAME=$(basename $tool_path)
+              CATEGORY=$(basename $(dirname $tool_path))
+              PACKAGE_NAME=$(grep '^name = ' $tool_path/Cargo.toml | cut -d'"' -f2)
+              VERSION=$(grep '^version = ' $tool_path/Cargo.toml | cut -d'"' -f2)
+              
+              # Clean name for container
+              TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
+              
+              # Create minimal spin.toml
+              cat > tool-spin.toml << EOF
+          spin_manifest_version = 2
+          
+          [application]
+          name = "$TOOL_NAME"
+          version = "$VERSION"
+          
+          [[trigger.http]]
+          route = "/$TOOL_NAME"
+          component = "$TOOL_NAME"
+          
+          [component.$TOOL_NAME]
+          source = "target/wasm32-wasip1/release/${PACKAGE_NAME}.wasm"
+          allowed_outbound_hosts = []
+          EOF
+              
+              # Publish individual tool
+              IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
+              spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
+              spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
+              
+              echo "Published ${IMAGE_NAME}"
+            fi
+          done
+
+  # ===== CREATE SPIN APP PACKAGE =====
+  # From: build-and-publish.yml publish-spin-app
+  create-package:
+    name: Create Spin App Package
+    needs: [build-all, test-all]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: artifacts
+      
+      - name: Copy artifacts to tool directories
+        run: |
+          # Copy WASM files to their expected locations
+          find artifacts -name "*.wasm" | while read wasm_file; do
+            filename=$(basename "$wasm_file")
+            
+            # Find matching tool directory
+            find tools -name "Cargo.toml" | while read cargo_file; do
+              tool_dir=$(dirname "$cargo_file")
+              expected_name=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
+              
+              if [[ "$filename" == "${expected_name}.wasm" ]]; then
+                mkdir -p "$tool_dir/target/wasm32-wasip1/release"
+                cp "$wasm_file" "$tool_dir/target/wasm32-wasip1/release/"
+                echo "Copied $filename to $tool_dir"
+                break
+              fi
+            done
+          done
+      
+      - name: Create deployable package
+        run: |
+          mkdir -p spin-package
+          cp spin.toml spin-package/
+          cp -r tools spin-package/
+          
+          # Create tarball
+          tar -czf core-tools-spin-app.tar.gz -C spin-package .
+          
+          echo "Package size: $(du -h core-tools-spin-app.tar.gz | cut -f1)"
+      
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-tools-spin-app
+          path: core-tools-spin-app.tar.gz
+          retention-days: 30
+
+  # ===== SUMMARY =====
+  # From: build-and-test.yml build-summary + publish-tools.yml summary
+  ci-summary:
+    name: CI/CD Summary
+    if: always()
+    needs: [build-all, test-all, publish-bundle, publish-tools, create-package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create summary
+        run: |
+          echo "## Main CI/CD Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Build status
+          if [[ "${{ needs.build-all.result }}" == "success" ]]; then
+            echo "✅ **Build**: Successfully built ${{ needs.build-all.outputs.tool-count || '84' }} tools" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Build**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Test status
+          if [[ "${{ needs.test-all.result }}" == "success" ]]; then
+            echo "✅ **Tests**: All unit and integration tests passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Publishing status
+          if [[ "${{ needs.publish-bundle.result }}" == "success" ]]; then
+            echo "✅ **Bundle**: Published to ghcr.io/${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Bundle**: Publishing failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.publish-tools.result }}" == "success" ]]; then
+            echo "✅ **Individual Tools**: Published changed tools" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.publish-tools.result }}" == "skipped" ]]; then
+            echo "⏭️ **Individual Tools**: No changes to publish" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Individual Tools**: Publishing failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ needs.create-package.result }}" == "success" ]]; then
+            echo "✅ **Spin Package**: Created deployable artifact" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Spin Package**: Failed to create" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Locations" >> $GITHUB_STEP_SUMMARY
+          echo "- Bundle: \`ghcr.io/${{ github.repository }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Individual tools: \`ghcr.io/${{ github.repository_owner }}/ftl-tool-[name]\`" >> $GITHUB_STEP_SUMMARY

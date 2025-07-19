@@ -1,0 +1,309 @@
+name: PR Checks
+# Consolidates: pr-validation.yml, test-pr.yml, PR parts of build-and-test.yml and build-and-publish.yml
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  CARGO_TERM_COLOR: always
+  # TODO: Update Spin version from v2.0.1 to v3.3.1
+  SPIN_VERSION: v3.3.1
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ===== CHANGE DETECTION =====
+  # From: pr-validation.yml (using dorny/paths-filter)
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      tools: ${{ steps.filter.outputs.tools }}
+      rust: ${{ steps.filter.outputs.rust }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            tools:
+              - 'tools/**'
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - 'Cargo.lock'
+            workflows:
+              - '.github/workflows/**'
+
+  # ===== LINTING =====
+  # From: pr-validation.yml lint job
+  lint:
+    name: Lint Code
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ===== BUILD CHANGED TOOLS =====
+  # From: pr-validation.yml build-changed + test-pr.yml test-changed-tools
+  build-changed:
+    name: Build Changed Tools
+    needs: changes
+    if: needs.changes.outputs.tools == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.changed.outputs.count }}
+      tools: ${{ steps.changed.outputs.tools }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Get changed tools
+        id: changed
+        run: |
+          chmod +x build_all.sh
+          CHANGED_TOOLS=$(./build_all.sh changed --base-ref origin/${{ github.base_ref }})
+          CHANGED_COUNT=$(echo "$CHANGED_TOOLS" | grep -E "^\s*[a-zA-Z_]+/" | wc -l)
+          echo "count=${CHANGED_COUNT}" >> $GITHUB_OUTPUT
+          echo "tools<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_TOOLS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "Changed tools (${CHANGED_COUNT}):"
+          echo "$CHANGED_TOOLS"
+      
+      - name: Build changed tools
+        if: steps.changed.outputs.count > 0
+        run: ./build_all.sh changed --base-ref origin/${{ github.base_ref }}
+      
+      # From: test-pr.yml - Validate spin.toml
+      - name: Validate spin.toml
+        run: |
+          echo "Checking for naming consistency..."
+          
+          # Verify all tools in spin.toml exist
+          echo "Verifying all tools referenced in spin.toml exist..."
+          grep -o 'workdir = "tools/[^"]*"' spin.toml | sed 's/workdir = "//' | sed 's/"//' | while read tool_dir; do
+            if [ ! -d "$tool_dir" ]; then
+              echo "ERROR: Tool directory $tool_dir referenced in spin.toml does not exist"
+              exit 1
+            fi
+            if [ ! -f "$tool_dir/Cargo.toml" ]; then
+              echo "ERROR: Tool directory $tool_dir missing Cargo.toml"
+              exit 1
+            fi
+          done
+          
+          echo "All spin.toml checks passed!"
+      
+      - name: Upload build artifacts
+        if: steps.changed.outputs.count > 0
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-wasm-modules
+          path: target/wasm32-wasip1/release/*.wasm
+          retention-days: 1
+
+  # ===== UNIT TESTS =====
+  # From: build-and-test.yml test job
+  test-changed:
+    name: Test Changed Tools
+    needs: [changes, build-changed]
+    if: needs.changes.outputs.tools == 'true' && needs.build-changed.outputs.count > 0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo test
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run tests for changed packages
+        run: |
+          # Parse the changed tools and run tests for each
+          echo "${{ needs.build-changed.outputs.tools }}" | grep -E "^\s*[a-zA-Z_]+/" | while read tool_path; do
+            tool_path=$(echo $tool_path | xargs) # trim whitespace
+            if [ -n "$tool_path" ] && [ -d "tools/$tool_path" ]; then
+              package_name=$(grep '^name = ' "tools/$tool_path/Cargo.toml" | cut -d'"' -f2)
+              echo "Testing package: $package_name"
+              cargo test -p "$package_name" --lib
+            fi
+          done
+
+  # ===== INTEGRATION TESTS =====
+  # From: build-and-publish.yml test-tools job (critical integration tests!)
+  integration-test:
+    name: Integration Tests
+    needs: [changes, build-changed]
+    if: needs.changes.outputs.tools == 'true' && needs.build-changed.outputs.count > 0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-wasm-modules
+          path: target/wasm32-wasip1/release/
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          # TODO: This was v2.0.1, now updated to v3.3.1
+          version: ${{ env.SPIN_VERSION }}
+      
+      - name: Run integration tests with Spin server
+        run: |
+          echo "Starting Spin server for integration testing..."
+          
+          # Start Spin server in background
+          spin up --listen 127.0.0.1:3000 > spin_test.log 2>&1 &
+          SPIN_PID=$!
+          
+          # Wait for server to start (extended timeout for 84 tools)
+          echo "Waiting for Spin server to start..."
+          for i in {1..90}; do
+            if curl -s http://127.0.0.1:3000/mcp >/dev/null 2>&1; then
+              echo "✅ Spin server is ready after $i seconds"
+              break
+            fi
+            if [ $i -eq 90 ]; then
+              echo "❌ Spin server failed to start within 90 seconds"
+              echo "=== Spin server logs ==="
+              cat spin_test.log
+              exit 1
+            fi
+            # Show progress every 10 seconds
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "⏳ Still waiting for Spin server... (${i}s elapsed)"
+            fi
+            sleep 1
+          done
+          
+          # Test basic connectivity
+          echo "Testing MCP gateway connectivity..."
+          curl -s http://127.0.0.1:3000/mcp || {
+            echo "❌ MCP gateway not responding"
+            cat spin_test.log
+            exit 1
+          }
+          
+          # Test tool composition: distance_2d → pythagorean → [square, add, sqrt]
+          echo "Testing tool composition chain: distance_2d → pythagorean → [square, add, sqrt]"
+          RESPONSE=$(curl -s -X POST http://127.0.0.1:3000/distance-two-d \
+            -H "Content-Type: application/json" \
+            -d '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}')
+          
+          echo "Distance 2D response: $RESPONSE"
+          
+          # Check if response contains expected distance of 5.0 in ToolResponse format
+          if echo "$RESPONSE" | grep -q '"distance":5'; then
+            echo "✅ Tool composition working correctly"
+          else
+            echo "❌ Tool composition failed - unexpected response"
+            cat spin_test.log
+            exit 1
+          fi
+          
+          # Cleanup
+          kill $SPIN_PID || true
+          wait $SPIN_PID 2>/dev/null || true
+          
+          echo "✅ Integration tests completed successfully!"
+
+  # ===== PR SUMMARY =====
+  pr-summary:
+    name: PR Summary
+    if: always()
+    needs: [lint, build-changed, test-changed, integration-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create PR Summary
+        run: |
+          echo "## PR Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Lint results
+          if [[ "${{ needs.lint.result }}" == "success" ]]; then
+            echo "✅ **Lint**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.lint.result }}" == "skipped" ]]; then
+            echo "⏭️ **Lint**: Skipped (no Rust changes)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Lint**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Build results
+          if [[ "${{ needs.build-changed.result }}" == "success" ]]; then
+            echo "✅ **Build**: Passed (${{ needs.build-changed.outputs.count || 0 }} tools)" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.build-changed.result }}" == "skipped" ]]; then
+            echo "⏭️ **Build**: Skipped (no tool changes)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Build**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Test results
+          if [[ "${{ needs.test-changed.result }}" == "success" ]]; then
+            echo "✅ **Unit Tests**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.test-changed.result }}" == "skipped" ]]; then
+            echo "⏭️ **Unit Tests**: Skipped" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Unit Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Integration test results
+          if [[ "${{ needs.integration-test.result }}" == "success" ]]; then
+            echo "✅ **Integration Tests**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.integration-test.result }}" == "skipped" ]]; then
+            echo "⏭️ **Integration Tests**: Skipped" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Integration Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note**: PR commenting disabled due to permission limitations" >> $GITHUB_STEP_SUMMARY
