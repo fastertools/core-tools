@@ -100,9 +100,13 @@ pub fn sphere_ray_intersection_logic(input: SphereRayInput) -> Result<SphereRayR
     }
 
     // Check for NaN or infinite values
-    if sphere.center.x.is_nan() || sphere.center.x.is_infinite() ||
-       sphere.center.y.is_nan() || sphere.center.y.is_infinite() ||
-       sphere.center.z.is_nan() || sphere.center.z.is_infinite() {
+    if sphere.center.x.is_nan()
+        || sphere.center.x.is_infinite()
+        || sphere.center.y.is_nan()
+        || sphere.center.y.is_infinite()
+        || sphere.center.z.is_nan()
+        || sphere.center.z.is_infinite()
+    {
         return Err("Sphere center coordinates must be finite".to_string());
     }
 
@@ -110,15 +114,23 @@ pub fn sphere_ray_intersection_logic(input: SphereRayInput) -> Result<SphereRayR
         return Err("Sphere radius must be finite".to_string());
     }
 
-    if ray.origin.x.is_nan() || ray.origin.x.is_infinite() ||
-       ray.origin.y.is_nan() || ray.origin.y.is_infinite() ||
-       ray.origin.z.is_nan() || ray.origin.z.is_infinite() {
+    if ray.origin.x.is_nan()
+        || ray.origin.x.is_infinite()
+        || ray.origin.y.is_nan()
+        || ray.origin.y.is_infinite()
+        || ray.origin.z.is_nan()
+        || ray.origin.z.is_infinite()
+    {
         return Err("Ray origin coordinates must be finite".to_string());
     }
 
-    if ray.direction.x.is_nan() || ray.direction.x.is_infinite() ||
-       ray.direction.y.is_nan() || ray.direction.y.is_infinite() ||
-       ray.direction.z.is_nan() || ray.direction.z.is_infinite() {
+    if ray.direction.x.is_nan()
+        || ray.direction.x.is_infinite()
+        || ray.direction.y.is_nan()
+        || ray.direction.y.is_infinite()
+        || ray.direction.z.is_nan()
+        || ray.direction.z.is_infinite()
+    {
         return Err("Ray direction coordinates must be finite".to_string());
     }
 
@@ -129,11 +141,11 @@ pub fn sphere_ray_intersection_logic(input: SphereRayInput) -> Result<SphereRayR
 
     let ray_dir = ray.direction.normalize();
     let to_sphere = sphere.center.subtract(&ray.origin);
-    
+
     let proj_length = to_sphere.dot(&ray_dir);
     let closest_point = ray.origin.add(&ray_dir.scale(proj_length));
     let distance_to_center = sphere.center.subtract(&closest_point).magnitude();
-    
+
     if distance_to_center > sphere.radius {
         return Ok(SphereRayResult {
             intersects: false,
@@ -142,45 +154,46 @@ pub fn sphere_ray_intersection_logic(input: SphereRayInput) -> Result<SphereRayR
         });
     }
 
-    let chord_half_length = (sphere.radius * sphere.radius - distance_to_center * distance_to_center).sqrt();
-    
+    let chord_half_length =
+        (sphere.radius * sphere.radius - distance_to_center * distance_to_center).sqrt();
+
     let mut intersection_points = vec![];
     let mut closest_distance = None;
 
     if proj_length >= chord_half_length {
         let t1 = proj_length - chord_half_length;
         let t2 = proj_length + chord_half_length;
-        
+
         let point1 = ray.origin.add(&ray_dir.scale(t1));
         let point2 = ray.origin.add(&ray_dir.scale(t2));
-        
+
         let normal1 = point1.subtract(&sphere.center).normalize();
         let normal2 = point2.subtract(&sphere.center).normalize();
-        
+
         intersection_points.push(IntersectionPoint {
             point: point1,
             distance: t1,
             normal: normal1,
         });
-        
+
         intersection_points.push(IntersectionPoint {
             point: point2,
             distance: t2,
             normal: normal2,
         });
-        
+
         closest_distance = Some(t1.min(t2));
     } else if proj_length >= -chord_half_length {
         let t2 = proj_length + chord_half_length;
         let point2 = ray.origin.add(&ray_dir.scale(t2));
         let normal2 = point2.subtract(&sphere.center).normalize();
-        
+
         intersection_points.push(IntersectionPoint {
             point: point2,
             distance: t2,
             normal: normal2,
         });
-        
+
         closest_distance = Some(t2);
     }
 
@@ -212,7 +225,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 2);
         assert!(result.closest_distance.is_some());
-        
+
         let closest = result.closest_distance.unwrap();
         assert!((closest - 4.0).abs() < 1e-10);
     }
@@ -273,7 +286,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 1);
         assert!(result.closest_distance.is_some());
-        
+
         let closest = result.closest_distance.unwrap();
         assert!((closest - 2.0).abs() < 1e-10);
     }
@@ -293,7 +306,7 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
         assert!(result.closest_distance.is_some());
     }
 
@@ -348,7 +361,11 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Sphere center coordinates must be finite"));
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Sphere center coordinates must be finite")
+        );
     }
 
     #[test]
@@ -384,7 +401,11 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Ray origin coordinates must be finite"));
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Ray origin coordinates must be finite")
+        );
     }
 
     #[test]
@@ -402,7 +423,11 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("Ray direction coordinates must be finite"));
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Ray direction coordinates must be finite")
+        );
     }
 
     #[test]
@@ -439,7 +464,7 @@ mod tests {
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 2);
-        
+
         // Check that normals are unit vectors pointing outward from sphere center
         for intersection in &result.intersection_points {
             let normal_magnitude = intersection.normal.magnitude();
@@ -462,7 +487,7 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -480,6 +505,6 @@ mod tests {
 
         let result = sphere_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 }

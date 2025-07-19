@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -46,7 +48,7 @@ pub fn cylinder_volume(input: CylinderVolumeInput) -> ToolResponse {
         radius: input.radius,
         height: input.height,
     };
-    
+
     // Call business logic
     match logic::compute_cylinder_volume(logic_input) {
         Ok(logic_result) => {
@@ -69,6 +71,6 @@ pub fn cylinder_volume(input: CylinderVolumeInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

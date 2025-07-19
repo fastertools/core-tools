@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -10,9 +10,7 @@ use ftl_sdk::tool;
 
 // Re-export types from logic module
 pub use logic::{
-    RandomStringInput as LogicInput, 
-    RandomStringOutput as LogicOutput,
-    StringConfig as LogicConfig
+    RandomStringInput as LogicInput, RandomStringOutput as LogicOutput, StringConfig as LogicConfig,
 };
 
 // Define wrapper types with JsonSchema for FTL-SDK
@@ -50,13 +48,13 @@ pub fn random_string(input: RandomStringInput) -> ToolResponse {
         charset: input.charset,
         count: input.count,
     };
-    
+
     // Call logic implementation
     let result = match logic::generate_random_strings(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let output = RandomStringOutput {
         values: result.values,
@@ -66,6 +64,9 @@ pub fn random_string(input: RandomStringInput) -> ToolResponse {
             charset_size: result.config.charset_size,
         },
     };
-    
-    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "Error serializing output".to_string()),
+    )
 }

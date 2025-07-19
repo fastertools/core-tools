@@ -1,12 +1,14 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{cross_product_logic, CrossProductInput as LogicInput, CrossProductResult as LogicResult, Vector3D as LogicVector3D};
+use logic::{CrossProductInput as LogicInput, Vector3D as LogicVector3D, cross_product_logic};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug, PartialEq)]
-struct Vector3D {
+pub struct Vector3D {
     /// X component of the vector
     x: f64,
     /// Y component of the vector
@@ -16,7 +18,7 @@ struct Vector3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct CrossProductInput {
+pub struct CrossProductInput {
     /// First 3D vector
     vector1: Vector3D,
     /// Second 3D vector
@@ -24,7 +26,7 @@ struct CrossProductInput {
 }
 
 #[derive(Serialize, JsonSchema)]
-struct CrossProductResult {
+pub struct CrossProductResult {
     /// The resulting cross product vector
     pub cross_product: Vector3D,
     /// Magnitude of the cross product vector
@@ -37,7 +39,11 @@ struct CrossProductResult {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -52,7 +58,7 @@ impl From<CrossProductInput> for LogicInput {
 
 /// Calculate cross product of two 3D vectors
 #[cfg_attr(not(test), tool)]
-fn cross_product(input: CrossProductInput) -> ToolResponse {
+pub fn cross_product(input: CrossProductInput) -> ToolResponse {
     match cross_product_logic(input.into()) {
         Ok(logic_result) => {
             let result = CrossProductResult {
@@ -67,6 +73,6 @@ fn cross_product(input: CrossProductInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

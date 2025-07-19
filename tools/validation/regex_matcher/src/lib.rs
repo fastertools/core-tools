@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -9,7 +9,10 @@ use ftl_sdk::ToolResponse;
 use ftl_sdk::tool;
 
 // Re-export types from logic module
-pub use logic::{RegexMatcherInput as LogicInput, RegexMatcherResult as LogicOutput, RegexFlags as LogicFlags, Match as LogicMatch, CaptureGroup as LogicGroup, PatternInfo as LogicInfo};
+pub use logic::{
+    CaptureGroup as LogicGroup, Match as LogicMatch, PatternInfo as LogicInfo,
+    RegexFlags as LogicFlags, RegexMatcherInput as LogicInput, RegexMatcherResult as LogicOutput,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -102,31 +105,38 @@ pub fn regex_matcher(input: RegexMatcherInput) -> ToolResponse {
             dot_all: f.dot_all,
         }),
     };
-    
+
     // Call logic implementation
     let result = match logic::match_regex(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error matching regex: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error matching regex: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let regex_result = RegexMatcherResult {
         has_match: result.has_match,
         match_count: result.match_count,
-        matches: result.matches.into_iter().map(|m| Match {
-            text: m.text,
-            start: m.start,
-            end: m.end,
-            groups: m.groups.map(|groups| {
-                groups.into_iter().map(|g| CaptureGroup {
-                    index: g.index,
-                    name: g.name,
-                    text: g.text,
-                    start: g.start,
-                    end: g.end,
-                }).collect()
-            }),
-        }).collect(),
+        matches: result
+            .matches
+            .into_iter()
+            .map(|m| Match {
+                text: m.text,
+                start: m.start,
+                end: m.end,
+                groups: m.groups.map(|groups| {
+                    groups
+                        .into_iter()
+                        .map(|g| CaptureGroup {
+                            index: g.index,
+                            name: g.name,
+                            text: g.text,
+                            start: g.start,
+                            end: g.end,
+                        })
+                        .collect()
+                }),
+            })
+            .collect(),
         pattern_info: PatternInfo {
             pattern: result.pattern_info.pattern,
             is_valid: result.pattern_info.is_valid,
@@ -135,6 +145,9 @@ pub fn regex_matcher(input: RegexMatcherInput) -> ToolResponse {
         },
         error: result.error,
     };
-    
-    ToolResponse::text(serde_json::to_string(&regex_result).unwrap_or_else(|_| "Error serializing result".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string(&regex_result)
+            .unwrap_or_else(|_| "Error serializing result".to_string()),
+    )
 }

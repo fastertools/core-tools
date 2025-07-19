@@ -1,10 +1,7 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
-
+use serde::{Deserialize, Serialize};
 mod logic;
-
 use ftl_sdk::ToolResponse;
-
 #[cfg(not(test))]
 use ftl_sdk::tool;
 
@@ -16,24 +13,24 @@ pub use logic::{StringTrimInput as LogicInput, StringTrimResult as LogicResult};
 pub struct StringTrimInput {
     /// The text to process
     pub text: String,
-    
-    /// Operation type: trim, trim_start, trim_end, trim_char, trim_char_start, 
+
+    /// Operation type: trim, trim_start, trim_end, trim_char, trim_char_start,
     /// trim_char_end, pad, pad_left, pad_right, pad_center
     #[serde(default = "default_operation")]
     pub operation: String,
-    
+
     /// Character to trim (for trim_char operations)
     #[serde(default)]
     pub char_to_trim: Option<String>,
-    
+
     /// Target length for padding operations
     #[serde(default)]
     pub pad_length: Option<usize>,
-    
+
     /// Character to use for padding (defaults to space)
     #[serde(default = "default_pad_char")]
     pub pad_char: String,
-    
+
     /// Side to pad (for pad operation): left, right (default)
     #[serde(default = "default_pad_side")]
     pub pad_side: String,
@@ -76,13 +73,13 @@ pub fn string_trimmer(input: StringTrimInput) -> ToolResponse {
         pad_char: input.pad_char,
         pad_side: input.pad_side,
     };
-    
+
     // Call logic implementation
     let result = match logic::process_string(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let output = StringTrimResult {
         original: result.original,
@@ -91,6 +88,9 @@ pub fn string_trimmer(input: StringTrimInput) -> ToolResponse {
         length_before: result.length_before,
         length_after: result.length_after,
     };
-    
-    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "Error serializing output".to_string()),
+    )
 }

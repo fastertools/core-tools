@@ -1,12 +1,16 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 
 // Re-export types from logic module
-pub use logic::{PolynomialRegressionInput as LogicInput, PolynomialRegressionOutput as LogicOutput};
+pub use logic::{
+    PolynomialRegressionInput as LogicInput, PolynomialRegressionOutput as LogicOutput,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -43,7 +47,7 @@ pub fn polynomial_regression(input: PolynomialRegressionInput) -> ToolResponse {
         y: input.y,
         degree: input.degree,
     };
-    
+
     // Call logic implementation
     match logic::calculate_polynomial_regression(logic_input) {
         Ok(result) => {
@@ -58,6 +62,6 @@ pub fn polynomial_regression(input: PolynomialRegressionInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

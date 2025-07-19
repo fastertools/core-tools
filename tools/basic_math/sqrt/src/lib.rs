@@ -1,11 +1,12 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-#[cfg(not(test))]
+#[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
 
+#[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
@@ -26,13 +27,12 @@ pub struct SquareRootResult {
     pub error: Option<String>,
 }
 
+// Individual component mode - FTL tool
 #[cfg_attr(not(test), tool)]
 pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
     // Convert to logic types
-    let logic_input = LogicInput {
-        value: input.value,
-    };
-    
+    let logic_input = LogicInput { value: input.value };
+
     // Call logic implementation
     match logic::calculate_sqrt(logic_input) {
         Ok(result) => {
@@ -44,6 +44,6 @@ pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

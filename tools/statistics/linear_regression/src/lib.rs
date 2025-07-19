@@ -1,11 +1,13 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
 // Re-export types from logic module
-pub use logic::{RegressionInput as LogicInput, LinearRegressionOutput as LogicOutput};
+pub use logic::{LinearRegressionOutput as LogicOutput, RegressionInput as LogicInput};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -57,7 +59,7 @@ pub fn linear_regression(input: RegressionInput) -> ToolResponse {
         x: input.x,
         y: input.y,
     };
-    
+
     // Call logic implementation
     match logic::calculate_linear_regression(logic_input) {
         Ok(result) => {
@@ -81,6 +83,6 @@ pub fn linear_regression(input: RegressionInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

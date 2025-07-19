@@ -1,9 +1,14 @@
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ftl_sdk::{tool, ToolResponse};
 
 mod logic;
-use logic::{point_plane_distance_logic, PointPlaneInput as LogicInput, Vector3D as LogicVector3D, Plane3D as LogicPlane3D};
+use logic::{
+    Plane3D as LogicPlane3D, PointPlaneInput as LogicInput, Vector3D as LogicVector3D,
+    point_plane_distance_logic,
+};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug)]
 struct Vector3D {
@@ -21,7 +26,7 @@ struct Plane3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct PointPlaneInput {
+pub struct PointPlaneInput {
     /// The point to measure distance from
     point: Vector3D,
     /// The plane to measure distance to
@@ -30,7 +35,11 @@ struct PointPlaneInput {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -68,8 +77,8 @@ struct PointPlaneResult {
 
 /// Calculate the distance from a point to a plane in 3D space
 /// Returns both signed and unsigned distance, the closest point on the plane, and which side of the plane the point is on
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
     match point_plane_distance_logic(input.into()) {
         Ok(logic_result) => {
             let result = PointPlaneResult {
@@ -85,6 +94,6 @@ fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

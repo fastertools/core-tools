@@ -45,6 +45,7 @@ impl Vector3D {
         self.magnitude() < EPSILON
     }
 
+    #[allow(dead_code)]
     pub fn dot(&self, other: &Vector3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -71,6 +72,7 @@ impl Vector3D {
 }
 
 impl Line3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, direction: Vector3D) -> Result<Self, String> {
         if direction.is_zero() {
             return Err("Direction vector cannot be zero".to_string());
@@ -95,19 +97,19 @@ fn solve_3x3_system(a: &[[f64; 3]; 3], b: &[f64; 3]) -> Result<[f64; 3], String>
     if det_a.abs() < EPSILON {
         return Err("Matrix is singular".to_string());
     }
-    
+
     // Cramer's rule
     let mut x = [0.0; 3];
-    
-    for i in 0..3 {
+
+    for (i, x_i) in x.iter_mut().enumerate().take(3) {
         let mut a_i = *a;
         a_i[0][i] = b[0];
         a_i[1][i] = b[1];
         a_i[2][i] = b[2];
-        
-        x[i] = determinant_3x3(&a_i) / det_a;
+
+        *x_i = determinant_3x3(&a_i) / det_a;
     }
-    
+
     Ok(x)
 }
 
@@ -117,79 +119,95 @@ fn point_to_line_distance(point: &Vector3D, line: &Line3D) -> f64 {
     cross.magnitude() / line.direction.magnitude()
 }
 
-pub fn multiple_line_intersection_logic(input: MultipleLinesInput) -> Result<MultipleLineIntersectionResult, String> {
+pub fn multiple_line_intersection_logic(
+    input: MultipleLinesInput,
+) -> Result<MultipleLineIntersectionResult, String> {
     if input.lines.len() < 2 {
         return Err("At least 2 lines required".to_string());
     }
-    
+
     // Validate all lines
     for (i, line) in input.lines.iter().enumerate() {
         if !line.is_valid() {
-            return Err(format!("Line {} contains invalid values (NaN or Infinite)", i));
+            return Err(format!(
+                "Line {i} contains invalid values (NaN or Infinite)"
+            ));
         }
         if line.direction.is_zero() {
-            return Err(format!("Line {} has zero direction vector", i));
+            return Err(format!("Line {i} has zero direction vector"));
         }
     }
-    
+
     // Find the point that minimizes sum of squared distances to all lines
     // This is solved using least squares: (A^T A)x = A^T b
     let mut ata = [[0.0; 3]; 3]; // A^T A matrix
-    let mut atb = [0.0; 3];      // A^T b vector
-    
+    let mut atb = [0.0; 3]; // A^T b vector
+
     for line in &input.lines {
         let d = &line.direction;
         let p = &line.point;
-        
+
         // For each line: (I - dd^T/|d|^2) * (x - p) = 0
         // Rearranged: (I - dd^T/|d|^2) * x = (I - dd^T/|d|^2) * p
         let d_mag_sq = d.magnitude_squared();
-        
+
         // Create projection matrix: I - dd^T/|d|^2
         let proj = [
-            [1.0 - d.x * d.x / d_mag_sq, -d.x * d.y / d_mag_sq, -d.x * d.z / d_mag_sq],
-            [-d.y * d.x / d_mag_sq, 1.0 - d.y * d.y / d_mag_sq, -d.y * d.z / d_mag_sq],
-            [-d.z * d.x / d_mag_sq, -d.z * d.y / d_mag_sq, 1.0 - d.z * d.z / d_mag_sq],
+            [
+                1.0 - d.x * d.x / d_mag_sq,
+                -d.x * d.y / d_mag_sq,
+                -d.x * d.z / d_mag_sq,
+            ],
+            [
+                -d.y * d.x / d_mag_sq,
+                1.0 - d.y * d.y / d_mag_sq,
+                -d.y * d.z / d_mag_sq,
+            ],
+            [
+                -d.z * d.x / d_mag_sq,
+                -d.z * d.y / d_mag_sq,
+                1.0 - d.z * d.z / d_mag_sq,
+            ],
         ];
-        
+
         // Add to A^T A
         for i in 0..3 {
             for j in 0..3 {
                 ata[i][j] += proj[i][j];
             }
         }
-        
+
         // Add to A^T b
         let proj_p = [
             proj[0][0] * p.x + proj[0][1] * p.y + proj[0][2] * p.z,
             proj[1][0] * p.x + proj[1][1] * p.y + proj[1][2] * p.z,
             proj[2][0] * p.x + proj[2][1] * p.y + proj[2][2] * p.z,
         ];
-        
+
         atb[0] += proj_p[0];
         atb[1] += proj_p[1];
         atb[2] += proj_p[2];
     }
-    
+
     // Solve 3x3 system using Cramer's rule
     let det = determinant_3x3(&ata);
     if det.abs() < EPSILON {
         return Err("System is singular - lines may be parallel or coplanar".to_string());
     }
-    
+
     let x = solve_3x3_system(&ata, &atb)?;
     let best_point = Vector3D::new(x[0], x[1], x[2]);
-    
+
     // Calculate individual distances and total squared distance
     let mut individual_distances = Vec::new();
     let mut total_squared_distance = 0.0;
-    
+
     for line in &input.lines {
         let distance = point_to_line_distance(&best_point, line);
         individual_distances.push(distance);
         total_squared_distance += distance * distance;
     }
-    
+
     Ok(MultipleLineIntersectionResult {
         best_intersection_point: best_point,
         total_squared_distance,
@@ -212,14 +230,8 @@ mod tests {
 
     #[test]
     fn test_two_intersecting_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(0.0, -1.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(0.0, -1.0, 0.0));
 
         let input = MultipleLinesInput {
             lines: vec![line1, line2],
@@ -228,7 +240,7 @@ mod tests {
         let result = multiple_line_intersection_logic(input).unwrap();
         assert_eq!(result.lines_processed, 2);
         assert!(result.total_squared_distance < EPSILON);
-        
+
         // Should intersect at origin
         assert!(result.best_intersection_point.x.abs() < EPSILON);
         assert!(result.best_intersection_point.y.abs() < EPSILON);
@@ -237,18 +249,9 @@ mod tests {
 
     #[test]
     fn test_three_lines_perfect_intersection() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(0.0, -1.0, 0.0),
-        );
-        let line3 = create_line(
-            create_vector(0.0, 0.0, 1.0),
-            create_vector(0.0, 0.0, -1.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(0.0, -1.0, 0.0));
+        let line3 = create_line(create_vector(0.0, 0.0, 1.0), create_vector(0.0, 0.0, -1.0));
 
         let input = MultipleLinesInput {
             lines: vec![line1, line2, line3],
@@ -267,14 +270,8 @@ mod tests {
 
     #[test]
     fn test_skew_lines_best_fit() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 1.0),
-            create_vector(0.0, 0.0, 1.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 1.0), create_vector(0.0, 0.0, 1.0));
 
         let input = MultipleLinesInput {
             lines: vec![line1, line2],
@@ -291,14 +288,8 @@ mod tests {
 
     #[test]
     fn test_parallel_lines_error() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(1.0, 0.0, 0.0));
 
         let input = MultipleLinesInput {
             lines: vec![line1, line2],
@@ -311,14 +302,9 @@ mod tests {
 
     #[test]
     fn test_insufficient_lines_error() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
 
-        let input = MultipleLinesInput {
-            lines: vec![line1],
-        };
+        let input = MultipleLinesInput { lines: vec![line1] };
 
         let result = multiple_line_intersection_logic(input);
         assert!(result.is_err());
@@ -327,10 +313,7 @@ mod tests {
 
     #[test]
     fn test_zero_direction_vector_error() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
         // This should fail when creating, but let's test the validation
         let line2 = Line3D {
             point: create_vector(1.0, 1.0, 1.0),
@@ -348,10 +331,7 @@ mod tests {
 
     #[test]
     fn test_invalid_coordinates_nan() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
         let line2 = Line3D {
             point: create_vector(f64::NAN, 1.0, 1.0),
             direction: create_vector(0.0, 1.0, 0.0),
@@ -368,10 +348,7 @@ mod tests {
 
     #[test]
     fn test_invalid_coordinates_infinite() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
         let line2 = Line3D {
             point: create_vector(1.0, f64::INFINITY, 1.0),
             direction: create_vector(0.0, 1.0, 0.0),
@@ -388,29 +365,18 @@ mod tests {
 
     #[test]
     fn test_determinant_calculation() {
-        let matrix = [
-            [1.0, 2.0, 3.0],
-            [4.0, 5.0, 6.0],
-            [7.0, 8.0, 9.0],
-        ];
+        let matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
         let det = determinant_3x3(&matrix);
         assert!(det.abs() < EPSILON); // This matrix is singular
 
-        let identity = [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ];
+        let identity = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
         let det_identity = determinant_3x3(&identity);
         assert!((det_identity - 1.0).abs() < EPSILON);
     }
 
     #[test]
     fn test_point_to_line_distance() {
-        let line = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
         let point = create_vector(0.0, 1.0, 0.0);
 
         let distance = point_to_line_distance(&point, &line);
@@ -453,7 +419,7 @@ mod tests {
     fn test_line_creation() {
         let point = create_vector(1.0, 2.0, 3.0);
         let direction = create_vector(1.0, 0.0, 0.0);
-        
+
         let line = Line3D::new(point, direction);
         assert!(line.is_ok());
 
@@ -465,24 +431,16 @@ mod tests {
     #[test]
     fn test_solve_3x3_system() {
         // Test identity system: x = b
-        let identity = [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ];
+        let identity = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
         let b = [1.0, 2.0, 3.0];
         let solution = solve_3x3_system(&identity, &b).unwrap();
-        
+
         assert!((solution[0] - 1.0).abs() < EPSILON);
         assert!((solution[1] - 2.0).abs() < EPSILON);
         assert!((solution[2] - 3.0).abs() < EPSILON);
 
         // Test singular matrix
-        let singular = [
-            [1.0, 2.0, 3.0],
-            [2.0, 4.0, 6.0],
-            [3.0, 6.0, 9.0],
-        ];
+        let singular = [[1.0, 2.0, 3.0], [2.0, 4.0, 6.0], [3.0, 6.0, 9.0]];
         let result = solve_3x3_system(&singular, &b);
         assert!(result.is_err());
     }
@@ -490,22 +448,10 @@ mod tests {
     #[test]
     fn test_complex_intersection_case() {
         // Test with 4 lines that don't perfectly intersect
-        let line1 = create_line(
-            create_vector(1.0, 0.0, 0.0),
-            create_vector(0.0, 1.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line3 = create_line(
-            create_vector(0.0, 0.0, 1.0),
-            create_vector(1.0, 1.0, 0.0),
-        );
-        let line4 = create_line(
-            create_vector(1.0, 1.0, 1.0),
-            create_vector(-1.0, -1.0, 0.0),
-        );
+        let line1 = create_line(create_vector(1.0, 0.0, 0.0), create_vector(0.0, 1.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line3 = create_line(create_vector(0.0, 0.0, 1.0), create_vector(1.0, 1.0, 0.0));
+        let line4 = create_line(create_vector(1.0, 1.0, 1.0), create_vector(-1.0, -1.0, 0.0));
 
         let input = MultipleLinesInput {
             lines: vec![line1, line2, line3, line4],

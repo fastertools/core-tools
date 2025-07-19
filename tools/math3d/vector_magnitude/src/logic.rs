@@ -46,25 +46,31 @@ impl Vector3D {
     }
 }
 
-pub fn compute_vector_magnitude(input: VectorMagnitudeInput) -> Result<VectorMagnitudeOutput, String> {
+pub fn compute_vector_magnitude(
+    input: VectorMagnitudeInput,
+) -> Result<VectorMagnitudeOutput, String> {
     let vector = input.vector;
-    
+
     // Validate input - check for invalid values
-    if vector.x.is_nan() || vector.x.is_infinite() ||
-       vector.y.is_nan() || vector.y.is_infinite() ||
-       vector.z.is_nan() || vector.z.is_infinite() {
+    if vector.x.is_nan()
+        || vector.x.is_infinite()
+        || vector.y.is_nan()
+        || vector.y.is_infinite()
+        || vector.z.is_nan()
+        || vector.z.is_infinite()
+    {
         return Err("Input vector contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let magnitude = vector.magnitude();
     let is_zero_vector = vector.is_zero();
-    
+
     let unit_vector = if is_zero_vector {
         Vector3D::new(0.0, 0.0, 0.0)
     } else {
         vector.normalize()?
     };
-    
+
     Ok(VectorMagnitudeOutput {
         magnitude,
         unit_vector,
@@ -97,9 +103,9 @@ mod tests {
         let result = compute_vector_magnitude(input).unwrap();
         assert!((result.magnitude - 3.0).abs() < 1e-10);
         assert!(!result.is_zero_vector);
-        assert!((result.unit_vector.x - 1.0/3.0).abs() < 1e-10);
-        assert!((result.unit_vector.y - 2.0/3.0).abs() < 1e-10);
-        assert!((result.unit_vector.z - 2.0/3.0).abs() < 1e-10);
+        assert!((result.unit_vector.x - 1.0 / 3.0).abs() < 1e-10);
+        assert!((result.unit_vector.y - 2.0 / 3.0).abs() < 1e-10);
+        assert!((result.unit_vector.z - 2.0 / 3.0).abs() < 1e-10);
     }
 
     #[test]
@@ -182,7 +188,10 @@ mod tests {
         };
         let result = compute_vector_magnitude(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input vector contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input vector contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
@@ -192,7 +201,10 @@ mod tests {
         };
         let result = compute_vector_magnitude(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input vector contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input vector contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
@@ -202,7 +214,10 @@ mod tests {
         };
         let result = compute_vector_magnitude(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input vector contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input vector contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
@@ -221,8 +236,10 @@ mod tests {
                 vector: Vector3D::new(x, y, z),
             };
             let result = compute_vector_magnitude(input).unwrap();
-            assert!((result.magnitude - expected_magnitude).abs() < 1e-10, 
-                   "Failed for vector ({}, {}, {})", x, y, z);
+            assert!(
+                (result.magnitude - expected_magnitude).abs() < 1e-10,
+                "Failed for vector ({x}, {y}, {z})"
+            );
         }
     }
 

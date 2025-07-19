@@ -46,10 +46,10 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
         Err(e) => {
             // Extract line and column from error
             let (error_line, error_column) = extract_error_position(&e);
-            
+
             return Ok(JsonValidatorResult {
                 is_valid: false,
-                error: Some(format!("Invalid JSON: {}", e)),
+                error: Some(format!("Invalid JSON: {e}")),
                 details: ValidationDetails {
                     root_type: "unknown".to_string(),
                     key_count: None,
@@ -63,12 +63,12 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
             });
         }
     };
-    
+
     // Analyze the JSON structure
     let mut details = analyze_json(&parsed);
     details.error_line = None;
     details.error_column = None;
-    
+
     // If schema provided, validate against it
     let schema_validated = if let Some(schema_str) = input.schema {
         match validate_against_schema(&parsed, &schema_str) {
@@ -84,7 +84,7 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
             Err(e) => {
                 return Ok(JsonValidatorResult {
                     is_valid: false,
-                    error: Some(format!("Schema validation error: {}", e)),
+                    error: Some(format!("Schema validation error: {e}")),
                     details,
                     schema_validated: false,
                 });
@@ -93,7 +93,7 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
     } else {
         false
     };
-    
+
     Ok(JsonValidatorResult {
         is_valid: true,
         error: None,
@@ -104,7 +104,7 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
 
 fn extract_error_position(error: &serde_json::Error) -> (Option<usize>, Option<usize>) {
     let error_str = error.to_string();
-    
+
     // Try to extract line and column from error message
     if let Some(pos) = error_str.find("line ") {
         let rest = &error_str[pos + 5..];
@@ -123,7 +123,7 @@ fn extract_error_position(error: &serde_json::Error) -> (Option<usize>, Option<u
             }
         }
     }
-    
+
     (None, None)
 }
 
@@ -135,22 +135,23 @@ fn analyze_json(value: &Value) -> ValidationDetails {
         Value::String(_) => "string",
         Value::Array(_) => "array",
         Value::Object(_) => "object",
-    }.to_string();
-    
+    }
+    .to_string();
+
     let key_count = if let Value::Object(map) = value {
         Some(map.len())
     } else {
         None
     };
-    
+
     let element_count = if let Value::Array(arr) = value {
         Some(arr.len())
     } else {
         None
     };
-    
+
     let (max_depth, total_values) = calculate_depth_and_count(value, 0);
-    
+
     ValidationDetails {
         root_type,
         key_count,
@@ -167,40 +168,40 @@ fn calculate_depth_and_count(value: &Value, current_depth: usize) -> (usize, usi
         Value::Object(map) => {
             let mut max_depth = current_depth + 1;
             let mut total_count = 1;
-            
+
             for (_, v) in map {
                 let (child_depth, child_count) = calculate_depth_and_count(v, current_depth + 1);
                 max_depth = max_depth.max(child_depth);
                 total_count += child_count;
             }
-            
+
             (max_depth, total_count)
         }
         Value::Array(arr) => {
             let mut max_depth = current_depth + 1;
             let mut total_count = 1;
-            
+
             for v in arr {
                 let (child_depth, child_count) = calculate_depth_and_count(v, current_depth + 1);
                 max_depth = max_depth.max(child_depth);
                 total_count += child_count;
             }
-            
+
             (max_depth, total_count)
         }
         _ => (current_depth + 1, 1),
     }
 }
 
-fn validate_against_schema(value: &Value, schema_str: &str) -> Result<bool, String> {
+fn validate_against_schema(_value: &Value, schema_str: &str) -> Result<bool, String> {
     // Parse the schema
-    let _schema: Value = serde_json::from_str(schema_str)
-        .map_err(|e| format!("Invalid schema JSON: {}", e))?;
-    
+    let _schema: Value =
+        serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {e}"))?;
+
     // Note: Full JSON Schema validation is complex and would require a dedicated library.
     // For this basic implementation, we'll just check if the schema is valid JSON.
     // In a real implementation, you'd use a JSON Schema validation library.
-    
+
     // For now, just return true if both are valid JSON
     Ok(true)
 }

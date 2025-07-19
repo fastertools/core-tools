@@ -1,11 +1,13 @@
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
-use ftl_sdk::{tool, ToolResponse};
 
 mod logic;
 use logic::{QuaternionSlerpInput, quaternion_slerp_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     q1: logic::Quaternion,
     q2: logic::Quaternion,
     t: f64,
@@ -17,14 +19,14 @@ struct ToolOutput {
     result: logic::Quaternion,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn quaternion_slerp(input: ToolInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn quaternion_slerp(input: ToolInput) -> ToolResponse {
     let logic_input = QuaternionSlerpInput {
         q1: input.q1,
         q2: input.q2,
         t: input.t,
     };
-    
+
     match quaternion_slerp_logic(logic_input) {
         Ok(output) => {
             let result = ToolOutput {
@@ -32,6 +34,6 @@ fn quaternion_slerp(input: ToolInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

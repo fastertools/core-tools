@@ -1,0 +1,226 @@
+name: Publish Tools to GHCR
+
+# DISABLED: Replaced by main-ci.yml
+on:
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'tools/**'
+  #     - '.github/workflows/publish-tools.yml'
+  workflow_dispatch:
+    inputs:
+      tools:
+        description: 'Comma-separated list of tools to publish (leave empty for changed tools)'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  CARGO_TERM_COLOR: always
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Detect changed tools
+        id: changes
+        run: |
+          if [ -n "${{ github.event.inputs.tools }}" ]; then
+            # Manual input provided
+            IFS=',' read -ra TOOLS <<< "${{ github.event.inputs.tools }}"
+            echo "tools=${TOOLS[@]}" >> $GITHUB_OUTPUT
+          else
+            # Detect changed tools
+            chmod +x build_all.sh
+            CHANGED_TOOLS=$(./build_all.sh changed --base-ref origin/main | grep -E "^\s*[a-zA-Z_]+/" | sed 's/^\s*//')
+            echo "tools=${CHANGED_TOOLS}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          TOOLS="${{ steps.changes.outputs.tools }}"
+          if [ -z "$TOOLS" ]; then
+            echo "matrix={\"tool\":[]}" >> $GITHUB_OUTPUT
+          else
+            # Convert to JSON array
+            JSON_ARRAY=$(echo "$TOOLS" | tr ' ' '\n' | jq -R . | jq -s . | jq -c .)
+            echo "matrix={\"tool\":${JSON_ARRAY}}" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-publish:
+    needs: detect-changes
+    if: ${{ fromJson(needs.detect-changes.outputs.matrix).tool[0] != null }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          version: "2.0.0"
+      
+      - name: Extract tool info
+        id: tool-info
+        run: |
+          TOOL_PATH="${{ matrix.tool }}"
+          TOOL_NAME=$(basename $TOOL_PATH)
+          CATEGORY=$(basename $(dirname $TOOL_PATH))
+          PACKAGE_NAME=$(grep '^name = ' $TOOL_PATH/Cargo.toml | cut -d'"' -f2)
+          VERSION=$(grep '^version = ' $TOOL_PATH/Cargo.toml | cut -d'"' -f2)
+          
+          # Replace underscores with hyphens for container naming
+          TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
+          
+          echo "tool_name=${TOOL_NAME}" >> $GITHUB_OUTPUT
+          echo "tool_name_clean=${TOOL_NAME_CLEAN}" >> $GITHUB_OUTPUT
+          echo "category=${CATEGORY}" >> $GITHUB_OUTPUT
+          echo "package_name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      
+      - name: Build tool
+        run: |
+          cargo build --target wasm32-wasip1 --release -p ${{ steps.tool-info.outputs.package_name }}
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create OCI artifact from WASM
+        run: |
+          # Create a minimal spin.toml for this tool
+          cat > tool-spin.toml << EOF
+          spin_manifest_version = 2
+          
+          [application]
+          name = "${{ steps.tool-info.outputs.tool_name }}"
+          version = "${{ steps.tool-info.outputs.version }}"
+          
+          [[trigger.http]]
+          route = "/${{ steps.tool-info.outputs.tool_name }}"
+          component = "${{ steps.tool-info.outputs.tool_name }}"
+          
+          [component.${{ steps.tool-info.outputs.tool_name }}]
+          source = "target/wasm32-wasip1/release/${{ steps.tool-info.outputs.package_name }}.wasm"
+          allowed_outbound_hosts = []
+          EOF
+          
+          # Build and push OCI image
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${{ steps.tool-info.outputs.tool_name_clean }}"
+          
+          spin registry push \
+            --build \
+            -f tool-spin.toml \
+            "${IMAGE_NAME}:${{ steps.tool-info.outputs.version }}"
+          
+          spin registry push \
+            --build \
+            -f tool-spin.toml \
+            "${IMAGE_NAME}:latest"
+          
+          # Also tag with git SHA for immutable reference
+          spin registry push \
+            --build \
+            -f tool-spin.toml \
+            "${IMAGE_NAME}:sha-${{ github.sha }}"
+      
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/core-tools/${{ steps.tool-info.outputs.tool_name }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  publish-bundle:
+    needs: build-and-publish
+    if: always() && needs.build-and-publish.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          version: "2.0.0"
+      
+      - name: Build all tools
+        run: |
+          chmod +x build_all.sh
+          ./build_all.sh --target wasm32-wasip1 build
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push Spin bundle
+        run: |
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/core-tools"
+          
+          # Push with multiple tags
+          spin registry push --build "${IMAGE_NAME}:latest"
+          spin registry push --build "${IMAGE_NAME}:sha-${{ github.sha }}"
+          
+          # Tag with date for daily builds
+          DATE_TAG=$(date +%Y%m%d)
+          spin registry push --build "${IMAGE_NAME}:${DATE_TAG}"
+
+  summary:
+    if: always()
+    needs: [build-and-publish, publish-bundle]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publishing Summary
+        run: |
+          echo "## Publishing Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.build-and-publish.result }}" == "success" ]]; then
+            echo "✅ Individual Tools: **Published Successfully**" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.build-and-publish.result }}" == "skipped" ]]; then
+            echo "⏭️ Individual Tools: **No changes detected**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Individual Tools: **Failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.publish-bundle.result }}" == "success" ]]; then
+            echo "✅ Tool Bundle: **Published Successfully**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tool Bundle: **Failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published to GitHub Container Registry" >> $GITHUB_STEP_SUMMARY
+          echo "- Individual tools: \`ghcr.io/${{ github.repository_owner }}/core-tools/[tool-name]\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Complete bundle: \`ghcr.io/${{ github.repository_owner }}/core-tools\`" >> $GITHUB_STEP_SUMMARY

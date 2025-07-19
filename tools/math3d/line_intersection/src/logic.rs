@@ -112,19 +112,22 @@ impl Line3D {
     }
 }
 
-fn closest_points_skew_lines(line1: &Line3D, line2: &Line3D) -> (f64, f64, Vector3D, Vector3D, f64) {
+fn closest_points_skew_lines(
+    line1: &Line3D,
+    line2: &Line3D,
+) -> (f64, f64, Vector3D, Vector3D, f64) {
     let d1 = &line1.direction;
     let d2 = &line2.direction;
     let w = line1.point.subtract(&line2.point);
-    
+
     let a = d1.dot(d1);
     let b = d1.dot(d2);
     let c = d2.dot(d2);
     let d = d1.dot(&w);
     let e = d2.dot(&w);
-    
+
     let denominator = a * c - b * b;
-    
+
     let (t1, t2) = if denominator.abs() < EPSILON {
         // Lines are parallel (shouldn't happen here, but safety check)
         (0.0, 0.0)
@@ -133,26 +136,28 @@ fn closest_points_skew_lines(line1: &Line3D, line2: &Line3D) -> (f64, f64, Vecto
         let t2 = (a * e - b * d) / denominator;
         (t1, t2)
     };
-    
+
     let closest1 = line1.point_at_parameter(t1);
     let closest2 = line2.point_at_parameter(t2);
     let distance = closest1.distance_to(&closest2);
-    
+
     (t1, t2, closest1, closest2, distance)
 }
 
 fn closest_points_parallel_lines(line1: &Line3D, line2: &Line3D) -> (f64, f64, f64) {
     let w = line2.point.subtract(&line1.point);
     let d1 = &line1.direction;
-    
+
     let t1 = d1.dot(&w) / d1.dot(d1);
     let closest1 = line1.point_at_parameter(t1);
     let distance = closest1.distance_to(&line2.point);
-    
+
     (t1, 0.0, distance)
 }
 
-pub fn line_intersection_logic(input: LineIntersectionInput) -> Result<LineIntersectionResult, String> {
+pub fn line_intersection_logic(
+    input: LineIntersectionInput,
+) -> Result<LineIntersectionResult, String> {
     // Input validation
     if !input.line1.is_valid() {
         return Err("Line1 contains invalid values (NaN or Infinite)".to_string());
@@ -170,12 +175,13 @@ pub fn line_intersection_logic(input: LineIntersectionInput) -> Result<LineInter
     }
 
     let are_parallel = input.line1.is_parallel_to(&input.line2);
-    
+
     if are_parallel {
         // Check if lines are coincident (same line)
         let point_diff = input.line2.point.subtract(&input.line1.point);
-        let are_coincident = point_diff.are_parallel(&input.line1.direction) || point_diff.is_zero();
-        
+        let are_coincident =
+            point_diff.are_parallel(&input.line1.direction) || point_diff.is_zero();
+
         if are_coincident {
             return Ok(LineIntersectionResult {
                 intersection_type: "coincident".to_string(),
@@ -194,7 +200,7 @@ pub fn line_intersection_logic(input: LineIntersectionInput) -> Result<LineInter
             // Parallel but not coincident - find closest points
             let (t1, _t2, dist) = closest_points_parallel_lines(&input.line1, &input.line2);
             let closest1 = input.line1.point_at_parameter(t1);
-            
+
             return Ok(LineIntersectionResult {
                 intersection_type: "parallel".to_string(),
                 intersects: false,
@@ -212,8 +218,9 @@ pub fn line_intersection_logic(input: LineIntersectionInput) -> Result<LineInter
     }
 
     // Lines are not parallel - find closest points
-    let (t1, t2, closest1, closest2, distance) = closest_points_skew_lines(&input.line1, &input.line2);
-    
+    let (t1, t2, closest1, closest2, distance) =
+        closest_points_skew_lines(&input.line1, &input.line2);
+
     let intersects = distance < EPSILON;
     let intersection_point = if intersects {
         Some(closest1.clone())
@@ -256,14 +263,8 @@ mod tests {
 
     #[test]
     fn test_intersecting_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(0.0, -1.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(0.0, -1.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
@@ -279,14 +280,8 @@ mod tests {
 
     #[test]
     fn test_parallel_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(1.0, 0.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
@@ -302,14 +297,8 @@ mod tests {
 
     #[test]
     fn test_coincident_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(1.0, 0.0, 0.0),
-            create_vector(2.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(1.0, 0.0, 0.0), create_vector(2.0, 0.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
@@ -325,14 +314,8 @@ mod tests {
 
     #[test]
     fn test_skew_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 1.0),
-            create_vector(0.0, 0.0, 1.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 1.0), create_vector(0.0, 0.0, 1.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
@@ -348,20 +331,18 @@ mod tests {
 
     #[test]
     fn test_zero_direction_vector_error() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(0.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(1.0, 1.0, 1.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(0.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(1.0, 1.0, 1.0), create_vector(1.0, 0.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input);
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("direction vector cannot be zero"));
+        assert!(
+            result
+                .unwrap_err()
+                .contains("direction vector cannot be zero")
+        );
     }
 
     #[test]
@@ -370,10 +351,7 @@ mod tests {
             create_vector(f64::NAN, 0.0, 0.0),
             create_vector(1.0, 0.0, 0.0),
         );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(0.0, -1.0, 0.0),
-        );
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(0.0, -1.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input);
@@ -384,10 +362,7 @@ mod tests {
 
     #[test]
     fn test_invalid_line_coordinates_infinite() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
         let line2 = create_line(
             create_vector(0.0, f64::INFINITY, 0.0),
             create_vector(0.0, -1.0, 0.0),
@@ -402,14 +377,8 @@ mod tests {
 
     #[test]
     fn test_perpendicular_intersecting_lines() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(2.0, -1.0, 0.0),
-            create_vector(0.0, 1.0, 0.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(2.0, -1.0, 0.0), create_vector(0.0, 1.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
@@ -417,7 +386,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_type, "intersecting");
         assert!(result.intersection_point.is_some());
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.x - 2.0).abs() < EPSILON);
         assert!(intersection.y.abs() < EPSILON);
@@ -426,51 +395,39 @@ mod tests {
 
     #[test]
     fn test_closest_points_calculation() {
-        let line1 = create_line(
-            create_vector(0.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.5, 1.0, 1.0),
-            create_vector(0.0, 0.0, 1.0),
-        );
+        let line1 = create_line(create_vector(0.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.5, 1.0, 1.0), create_vector(0.0, 0.0, 1.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
 
         assert!(!result.intersects);
         assert_eq!(result.intersection_type, "skew");
-        
+
         // Closest point on line1 should be (0.5, 0, 0)
         assert!((result.closest_point_line1.x - 0.5).abs() < EPSILON);
         assert!(result.closest_point_line1.y.abs() < EPSILON);
         assert!(result.closest_point_line1.z.abs() < EPSILON);
-        
+
         // Closest point on line2 should be (0.5, 1, 0)
         assert!((result.closest_point_line2.x - 0.5).abs() < EPSILON);
         assert!((result.closest_point_line2.y - 1.0).abs() < EPSILON);
         assert!(result.closest_point_line2.z.abs() < EPSILON);
-        
+
         assert!((result.minimum_distance - 1.0).abs() < EPSILON);
     }
 
     #[test]
     fn test_line_parameters() {
-        let line1 = create_line(
-            create_vector(1.0, 0.0, 0.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
-        let line2 = create_line(
-            create_vector(0.0, 1.0, 0.0),
-            create_vector(0.0, -1.0, 0.0),
-        );
+        let line1 = create_line(create_vector(1.0, 0.0, 0.0), create_vector(1.0, 0.0, 0.0));
+        let line2 = create_line(create_vector(0.0, 1.0, 0.0), create_vector(0.0, -1.0, 0.0));
 
         let input = LineIntersectionInput { line1, line2 };
         let result = line_intersection_logic(input).unwrap();
 
         assert!(result.intersects);
         // line1 at t=1: (1,0,0) + 1*(1,0,0) = (2,0,0)
-        // line2 at t=1: (0,1,0) + 1*(0,-1,0) = (0,0,0) 
+        // line2 at t=1: (0,1,0) + 1*(0,-1,0) = (0,0,0)
         // They should intersect, verify parameters make sense
         assert!(result.parameter_line1.is_finite());
         assert!(result.parameter_line2.is_finite());
@@ -520,10 +477,7 @@ mod tests {
 
     #[test]
     fn test_line_point_at_parameter() {
-        let line = create_line(
-            create_vector(1.0, 2.0, 3.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let line = create_line(create_vector(1.0, 2.0, 3.0), create_vector(1.0, 0.0, 0.0));
 
         let point = line.point_at_parameter(5.0);
         assert_eq!(point.x, 6.0);
@@ -533,10 +487,7 @@ mod tests {
 
     #[test]
     fn test_line_validation() {
-        let valid_line = create_line(
-            create_vector(1.0, 2.0, 3.0),
-            create_vector(1.0, 0.0, 0.0),
-        );
+        let valid_line = create_line(create_vector(1.0, 2.0, 3.0), create_vector(1.0, 0.0, 0.0));
         assert!(valid_line.is_valid());
 
         let invalid_line = create_line(

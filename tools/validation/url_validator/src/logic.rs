@@ -63,7 +63,7 @@ pub struct ValidationChecks {
 
 pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, String> {
     let url_str = input.url.trim();
-    
+
     // Initialize checks
     let mut checks = ValidationChecks {
         valid_syntax: false,
@@ -74,39 +74,39 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
         no_credentials: true,
         valid_port: true,
     };
-    
+
     // Try to parse the URL
     let parsed_url = match Url::parse(url_str) {
         Ok(url) => url,
         Err(e) => {
             return Ok(UrlValidatorResult {
                 is_valid: false,
-                error: Some(format!("Invalid URL syntax: {}", e)),
+                error: Some(format!("Invalid URL syntax: {e}")),
                 components: None,
                 checks,
             });
         }
     };
-    
+
     checks.valid_syntax = true;
-    
+
     // Check scheme
     let scheme = parsed_url.scheme();
     checks.has_scheme = !scheme.is_empty();
-    
+
     // Check allowed schemes
     if let Some(allowed) = &input.allowed_schemes {
         checks.scheme_allowed = allowed.iter().any(|s| s.eq_ignore_ascii_case(scheme));
         if !checks.scheme_allowed {
             return Ok(UrlValidatorResult {
                 is_valid: false,
-                error: Some(format!("Scheme '{}' is not allowed", scheme)),
+                error: Some(format!("Scheme '{scheme}' is not allowed")),
                 components: None,
                 checks,
             });
         }
     }
-    
+
     // Check HTTPS requirement
     if input.require_https.unwrap_or(false) && scheme != "https" {
         checks.https_required_met = false;
@@ -117,11 +117,11 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
             checks,
         });
     }
-    
+
     // Check host
     let host = parsed_url.host_str().map(|s| s.to_string());
     checks.has_host = host.is_some();
-    
+
     // For most schemes, host is required
     if (scheme == "http" || scheme == "https" || scheme == "ftp") && host.is_none() {
         return Ok(UrlValidatorResult {
@@ -131,16 +131,16 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
             checks,
         });
     }
-    
+
     // Check for credentials
     let has_credentials = !parsed_url.username().is_empty() || parsed_url.password().is_some();
     checks.no_credentials = !has_credentials;
-    
+
     // Check port validity
     if let Some(port) = parsed_url.port() {
         checks.valid_port = port > 0;
     }
-    
+
     // Build components
     let components = UrlComponents {
         scheme: scheme.to_string(),
@@ -149,14 +149,14 @@ pub fn validate_url(input: UrlValidatorInput) -> Result<UrlValidatorResult, Stri
         path: parsed_url.path().to_string(),
         query: parsed_url.query().map(|s| s.to_string()),
         fragment: parsed_url.fragment().map(|s| s.to_string()),
-        username: if parsed_url.username().is_empty() { 
-            None 
-        } else { 
-            Some(parsed_url.username().to_string()) 
+        username: if parsed_url.username().is_empty() {
+            None
+        } else {
+            Some(parsed_url.username().to_string())
         },
         has_password: parsed_url.password().is_some(),
     };
-    
+
     Ok(UrlValidatorResult {
         is_valid: true,
         error: None,
@@ -181,7 +181,7 @@ mod tests {
             "file:///home/user/document.txt",
             "mailto:user@example.com",
         ];
-        
+
         for url in valid_urls {
             let input = UrlValidatorInput {
                 url: url.to_string(),
@@ -189,7 +189,7 @@ mod tests {
                 allowed_schemes: None,
             };
             let result = validate_url(input).unwrap();
-            assert!(result.is_valid, "URL '{}' should be valid", url);
+            assert!(result.is_valid, "URL '{url}' should be valid");
             assert!(result.components.is_some());
         }
     }
@@ -202,7 +202,7 @@ mod tests {
             ("https://", "empty host"),
             ("//example.com", "Invalid URL syntax"),
         ];
-        
+
         for (url, expected_error) in test_cases {
             let input = UrlValidatorInput {
                 url: url.to_string(),
@@ -210,10 +210,12 @@ mod tests {
                 allowed_schemes: None,
             };
             let result = validate_url(input).unwrap();
-            assert!(!result.is_valid, "URL '{}' should be invalid", url);
+            assert!(!result.is_valid, "URL '{url}' should be invalid");
             assert!(result.error.is_some());
-            assert!(result.error.unwrap().contains(expected_error), 
-                    "URL '{}' should have error containing '{}'", url, expected_error);
+            assert!(
+                result.error.unwrap().contains(expected_error),
+                "URL '{url}' should have error containing '{expected_error}'"
+            );
         }
     }
 
@@ -239,7 +241,12 @@ mod tests {
         };
         let result = validate_url(input).unwrap();
         assert!(!result.is_valid);
-        assert!(result.error.unwrap().contains("Scheme 'ftp' is not allowed"));
+        assert!(
+            result
+                .error
+                .unwrap()
+                .contains("Scheme 'ftp' is not allowed")
+        );
         assert!(!result.checks.scheme_allowed);
     }
 
@@ -252,7 +259,7 @@ mod tests {
         };
         let result = validate_url(input).unwrap();
         assert!(result.is_valid);
-        
+
         let components = result.components.unwrap();
         assert_eq!(components.scheme, "https");
         assert_eq!(components.host, Some("example.com".to_string()));
@@ -273,7 +280,7 @@ mod tests {
         };
         let result = validate_url(input).unwrap();
         assert!(result.is_valid);
-        
+
         let components = result.components.unwrap();
         assert_eq!(components.username, Some("user".to_string()));
         assert!(components.has_password);
@@ -289,7 +296,10 @@ mod tests {
         };
         let result = validate_url(input).unwrap();
         assert!(result.is_valid);
-        assert_eq!(result.components.unwrap().host, Some("localhost".to_string()));
+        assert_eq!(
+            result.components.unwrap().host,
+            Some("localhost".to_string())
+        );
     }
 
     #[test]
@@ -301,7 +311,10 @@ mod tests {
         };
         let result = validate_url(input).unwrap();
         assert!(result.is_valid);
-        assert_eq!(result.components.unwrap().host, Some("192.168.1.1".to_string()));
+        assert_eq!(
+            result.components.unwrap().host,
+            Some("192.168.1.1".to_string())
+        );
     }
 
     #[test]
@@ -324,7 +337,7 @@ mod tests {
             allowed_schemes: None,
         };
         let result = validate_url(input).unwrap();
-        
+
         assert!(result.checks.valid_syntax);
         assert!(result.checks.has_scheme);
         assert!(result.checks.has_host);

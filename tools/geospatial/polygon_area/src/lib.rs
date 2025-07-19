@@ -1,6 +1,6 @@
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ftl_sdk::ToolResponse;
 
 mod logic;
 use logic::{Coordinate as LogicCoordinate, PolygonInput as LogicInput, get_polygon_area};
@@ -15,12 +15,15 @@ struct Coordinate {
 
 impl From<Coordinate> for LogicCoordinate {
     fn from(c: Coordinate) -> Self {
-        LogicCoordinate { lat: c.lat, lon: c.lon }
+        LogicCoordinate {
+            lat: c.lat,
+            lon: c.lon,
+        }
     }
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct PolygonInput {
+pub struct PolygonInput {
     /// Array of coordinates defining the polygon
     coordinates: Vec<Coordinate>,
 }
@@ -49,14 +52,14 @@ impl From<PolygonInput> for LogicInput {
 
 /// Calculate area of a GPS polygon
 #[cfg_attr(not(test), ftl_sdk::tool)]
-fn polygon_area(input: PolygonInput) -> ToolResponse {
+pub fn polygon_area(input: PolygonInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
-    
+
     let result = match get_polygon_area(logic_input.coordinates) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error calculating polygon area: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error calculating polygon area: {e}")),
     };
-    
+
     let output = PolygonAreaResult {
         area_square_meters: result.area_square_meters,
         area_square_kilometers: result.area_square_kilometers,
@@ -64,7 +67,8 @@ fn polygon_area(input: PolygonInput) -> ToolResponse {
         area_hectares: result.area_hectares,
         area_acres: result.area_acres,
     };
-    
-    ToolResponse::text(serde_json::to_string(&output).unwrap_or_else(|_| "Error serializing result".to_string()))
-}
 
+    ToolResponse::text(
+        serde_json::to_string(&output).unwrap_or_else(|_| "Error serializing result".to_string()),
+    )
+}

@@ -1,11 +1,13 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 
 mod logic;
 use logic::{MatrixVectorInput, matrix_vector_multiply_logic};
 
 #[derive(serde::Deserialize, JsonSchema)]
-struct ToolInput {
+pub struct ToolInput {
     matrix: logic::Matrix3x3,
     vector: logic::Vector3D,
 }
@@ -16,20 +18,20 @@ struct ToolOutput {
     result: logic::Vector3D,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn matrix_vector_multiply(input: ToolInput) -> ftl_sdk::ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn matrix_vector_multiply(input: ToolInput) -> ToolResponse {
     let logic_input = MatrixVectorInput {
         matrix: input.matrix,
         vector: input.vector,
     };
-    
+
     match matrix_vector_multiply_logic(logic_input) {
         Ok(output) => {
             let result = ToolOutput {
                 result: output.result,
             };
-            ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

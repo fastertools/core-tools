@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -10,9 +10,8 @@ use ftl_sdk::tool;
 
 // Re-export types from logic module
 pub use logic::{
-    CurrentDatetimeInput as LogicInput, 
-    CurrentDatetimeOutput as LogicOutput,
-    DateTimeComponents as LogicComponents
+    CurrentDatetimeInput as LogicInput, CurrentDatetimeOutput as LogicOutput,
+    DateTimeComponents as LogicComponents,
 };
 
 // Define wrapper types with JsonSchema for FTL-SDK
@@ -65,13 +64,13 @@ pub fn current_datetime(input: CurrentDatetimeInput) -> ToolResponse {
         timezone: input.timezone,
         format: input.format,
     };
-    
+
     // Call logic implementation
     let result = match logic::get_current_datetime(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let output = CurrentDatetimeOutput {
         iso: result.iso,
@@ -93,6 +92,9 @@ pub fn current_datetime(input: CurrentDatetimeInput) -> ToolResponse {
         },
         timezone: result.timezone,
     };
-    
-    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "Error serializing output".to_string()),
+    )
 }

@@ -1,0 +1,110 @@
+name: Build and Test
+
+# DISABLED: Replaced by main-ci.yml and pr-checks.yml
+on:
+  workflow_dispatch:  # Manual trigger only
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      all-changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+      any-changed: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            tools/**/*.rs
+            tools/**/Cargo.toml
+            Cargo.toml
+            spin.toml
+
+  build:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-changed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: wasm32-wasip1
+            rustflags: ""
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache cargo index
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache cargo build
+      uses: actions/cache@v3
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build all tools
+      run: |
+        chmod +x build_all.sh
+        ./build_all.sh --target ${{ matrix.target }} build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: wasm-modules
+        path: target/wasm32-wasip1/release/*.wasm
+        retention-days: 7
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    
+    - name: Run tests
+      run: cargo test --all --all-features
+
+  build-summary:
+    if: always()
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build Summary
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ needs.build.result }}" == "success" ]]; then
+          echo "✅ Build: **Passed**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Build: **Failed**" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [[ "${{ needs.test.result }}" == "success" ]]; then
+          echo "✅ Tests: **Passed**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Tests: **Failed**" >> $GITHUB_STEP_SUMMARY
+        fi

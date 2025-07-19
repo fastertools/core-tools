@@ -1,4 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -7,9 +9,8 @@ use logic::{CartesianCoordinates as LogicInput, cartesian_to_cylindrical_logic};
 
 // Re-export for testing
 pub use logic::{
-    CartesianCoordinates as LogicCartesian,
+    CartesianCoordinates as LogicCartesian, CartesianToCylindricalResult as LogicResult,
     CylindricalCoordinates as LogicCylindrical,
-    CartesianToCylindricalResult as LogicResult,
 };
 
 #[derive(Deserialize, Serialize, JsonSchema)]
@@ -43,7 +44,7 @@ pub struct CartesianToCylindricalResult {
 }
 
 /// Convert Cartesian coordinates (x, y, z) to cylindrical coordinates (ρ, θ, z)
-/// 
+///
 /// Cylindrical coordinates represent a point using:
 /// - ρ (radius): distance from the z-axis
 /// - θ (theta): azimuthal angle in radians around the z-axis
@@ -55,7 +56,7 @@ pub fn cartesian_to_cylindrical(input: CartesianCoordinates) -> ToolResponse {
         y: input.y,
         z: input.z,
     };
-    
+
     match cartesian_to_cylindrical_logic(logic_input) {
         Ok(logic_result) => {
             let result = CartesianToCylindricalResult {
@@ -73,7 +74,7 @@ pub fn cartesian_to_cylindrical(input: CartesianCoordinates) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }
 
@@ -88,7 +89,7 @@ mod tests {
             y: 0.0,
             z: 2.0,
         };
-        
+
         let result = logic::cartesian_to_cylindrical_logic(input).unwrap();
         assert!((result.cylindrical_coordinates.radius - 1.0).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.theta).abs() < 1e-15);
@@ -102,7 +103,7 @@ mod tests {
             y: 1.0,
             z: 0.0,
         };
-        
+
         let result = logic::cartesian_to_cylindrical_logic(input).unwrap();
         assert!((result.cylindrical_coordinates.radius - 2.0_f64.sqrt()).abs() < 1e-15);
         assert!((result.cylindrical_coordinates.theta - std::f64::consts::PI / 4.0).abs() < 1e-15);

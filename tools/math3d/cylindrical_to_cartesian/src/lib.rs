@@ -1,4 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -7,8 +9,7 @@ use logic::{CylindricalCoordinates as LogicInput, cylindrical_to_cartesian_logic
 
 // Re-export for testing
 pub use logic::{
-    CylindricalCoordinates as LogicCylindrical,
-    CartesianCoordinates as LogicCartesian,
+    CartesianCoordinates as LogicCartesian, CylindricalCoordinates as LogicCylindrical,
     CylindricalToCartesianResult as LogicResult,
 };
 
@@ -43,12 +44,12 @@ pub struct CylindricalToCartesianResult {
 }
 
 /// Convert cylindrical coordinates (ρ, θ, z) to Cartesian coordinates (x, y, z)
-/// 
+///
 /// Cylindrical coordinates use:
 /// - ρ (radius): distance from the z-axis
 /// - θ (theta): azimuthal angle in radians around the z-axis
 /// - z: height along the z-axis
-/// 
+///
 /// Conversion formulas:
 /// - x = ρ * cos(θ)
 /// - y = ρ * sin(θ)
@@ -60,7 +61,7 @@ pub fn cylindrical_to_cartesian(input: CylindricalCoordinates) -> ToolResponse {
         theta: input.theta,
         z: input.z,
     };
-    
+
     match cylindrical_to_cartesian_logic(logic_input) {
         Ok(logic_result) => {
             let result = CylindricalToCartesianResult {
@@ -78,7 +79,7 @@ pub fn cylindrical_to_cartesian(input: CylindricalCoordinates) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }
 
@@ -93,7 +94,7 @@ mod tests {
             theta: 0.0,
             z: 2.0,
         };
-        
+
         let result = logic::cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x - 1.0).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y).abs() < 1e-15);
@@ -107,7 +108,7 @@ mod tests {
             theta: std::f64::consts::PI / 4.0,
             z: 0.0,
         };
-        
+
         let result = logic::cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x - 1.0).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y - 1.0).abs() < 1e-15);

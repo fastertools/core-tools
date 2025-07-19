@@ -30,35 +30,33 @@ pub fn summary_statistics_logic(input: StatisticsInput) -> Result<SummaryStatist
     if input.data.is_empty() {
         return Err("Input data cannot be empty".to_string());
     }
-    
+
     let data = &input.data;
     let count = data.len();
-    
+
     // Check for invalid values
     if data.iter().any(|&x| x.is_nan() || x.is_infinite()) {
         return Err("Input data contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     // Basic calculations
     let sum: f64 = data.iter().sum();
     let mean = sum / count as f64;
-    
+
     // Variance and standard deviation
-    let variance = data.iter()
-        .map(|x| (x - mean).powi(2))
-        .sum::<f64>() / count as f64;
+    let variance = data.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / count as f64;
     let std_dev = variance.sqrt();
-    
+
     // Sort data for percentiles
     let mut sorted_data = data.clone();
     sorted_data.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    
+
     let min = sorted_data[0];
     let max = sorted_data[count - 1];
     let q1 = calculate_percentile(&sorted_data, 25.0);
     let median = calculate_percentile(&sorted_data, 50.0);
     let q3 = calculate_percentile(&sorted_data, 75.0);
-    
+
     Ok(SummaryStatisticsOutput {
         count,
         mean,
@@ -76,7 +74,7 @@ fn calculate_percentile(sorted_data: &[f64], percentile: f64) -> f64 {
     let index = (percentile / 100.0) * (n - 1) as f64;
     let lower_index = index.floor() as usize;
     let upper_index = index.ceil() as usize;
-    
+
     if lower_index == upper_index {
         sorted_data[lower_index]
     } else {
@@ -101,14 +99,12 @@ mod tests {
         assert_eq!(result.min, 1.0);
         assert_eq!(result.max, 5.0);
         assert_eq!(result.median, 3.0);
-        assert!((result.std_dev - 1.4142135623730951).abs() < 1e-10);
+        assert!((result.std_dev - std::f64::consts::SQRT_2).abs() < 1e-10);
     }
 
     #[test]
     fn test_single_value() {
-        let input = StatisticsInput {
-            data: vec![42.0],
-        };
+        let input = StatisticsInput { data: vec![42.0] };
 
         let result = summary_statistics_logic(input).unwrap();
         assert_eq!(result.count, 1);
@@ -211,9 +207,7 @@ mod tests {
 
     #[test]
     fn test_empty_data_error() {
-        let input = StatisticsInput {
-            data: vec![],
-        };
+        let input = StatisticsInput { data: vec![] };
 
         let result = summary_statistics_logic(input);
         assert!(result.is_err());

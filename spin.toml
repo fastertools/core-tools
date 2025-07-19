@@ -235,8 +235,8 @@ source = "target/wasm32-wasip1/release/distance_2d_tool.wasm"
 allowed_outbound_hosts = ["http://pythagorean.spin.internal"]
 [component.distance-two-d.build]
 command = "cargo build --target wasm32-wasip1 --release"
-workdir = "tools/basic_math/distance_2d"
-watch = ["tools/basic_math/distance_2d/src/**/*.rs", "tools/basic_math/distance_2d/Cargo.toml"]
+workdir = "tools/basic_math/distance-two-d"
+watch = ["tools/basic_math/distance-two-d/src/**/*.rs", "tools/basic_math/distance-two-d/Cargo.toml"]
 
 [[trigger.http]]
 route = "/line-plane-intersection"
@@ -1026,5 +1026,6 @@ allowed_outbound_hosts = []
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "tools/math3d/cylindrical_to_cartesian"
 watch = ["tools/math3d/cylindrical_to_cartesian/src/**/*.rs", "tools/math3d/cylindrical_to_cartesian/Cargo.toml"]
+
 
 

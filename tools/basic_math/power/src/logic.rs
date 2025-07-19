@@ -15,34 +15,33 @@ pub struct ArithmeticResult {
 
 pub fn power_numbers(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     // Validate input - check for invalid values
-    if input.a.is_nan() || input.a.is_infinite() ||
-       input.b.is_nan() || input.b.is_infinite() {
+    if input.a.is_nan() || input.a.is_infinite() || input.b.is_nan() || input.b.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     // Special cases for power operations
     // 0^0 is mathematically undefined, but most systems return 1
     if input.a == 0.0 && input.b == 0.0 {
         return Err("0^0 is mathematically undefined".to_string());
     }
-    
+
     // 0 raised to negative power is undefined (division by zero)
     if input.a == 0.0 && input.b < 0.0 {
         return Err("0 raised to negative power is undefined".to_string());
     }
-    
+
     // Negative number raised to fractional power may result in complex numbers
     if input.a < 0.0 && input.b.fract() != 0.0 {
         return Err("Negative base with fractional exponent results in complex number".to_string());
     }
-    
+
     let result = input.a.powf(input.b);
-    
+
     // Check if result is valid
     if result.is_nan() || result.is_infinite() {
         return Err("Result is too large or undefined".to_string());
     }
-    
+
     Ok(ArithmeticResult {
         result,
         operation: "exponentiation".to_string(),
@@ -130,7 +129,10 @@ mod tests {
         let input = TwoNumberInput { a: 0.0, b: -2.0 };
         let result = power_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "0 raised to negative power is undefined");
+        assert_eq!(
+            result.unwrap_err(),
+            "0 raised to negative power is undefined"
+        );
     }
 
     #[test]
@@ -138,7 +140,10 @@ mod tests {
         let input = TwoNumberInput { a: -4.0, b: 0.5 };
         let result = power_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Negative base with fractional exponent results in complex number");
+        assert_eq!(
+            result.unwrap_err(),
+            "Negative base with fractional exponent results in complex number"
+        );
     }
 
     #[test]
@@ -179,18 +184,30 @@ mod tests {
 
     #[test]
     fn test_nan_input_error() {
-        let input = TwoNumberInput { a: f64::NAN, b: 3.0 };
+        let input = TwoNumberInput {
+            a: f64::NAN,
+            b: 3.0,
+        };
         let result = power_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = TwoNumberInput { a: 5.0, b: f64::INFINITY };
+        let input = TwoNumberInput {
+            a: 5.0,
+            b: f64::INFINITY,
+        };
         let result = power_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]

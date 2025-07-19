@@ -2,9 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Matrix3x3 {
-    pub m00: f64, pub m01: f64, pub m02: f64,
-    pub m10: f64, pub m11: f64, pub m12: f64,
-    pub m20: f64, pub m21: f64, pub m22: f64,
+    pub m00: f64,
+    pub m01: f64,
+    pub m02: f64,
+    pub m10: f64,
+    pub m11: f64,
+    pub m12: f64,
+    pub m20: f64,
+    pub m21: f64,
+    pub m22: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,9 +29,15 @@ impl Matrix3x3 {
         let cos_a = angle.cos();
         let sin_a = angle.sin();
         Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: cos_a, m12: -sin_a,
-            m20: 0.0, m21: sin_a, m22: cos_a,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: cos_a,
+            m12: -sin_a,
+            m20: 0.0,
+            m21: sin_a,
+            m22: cos_a,
         }
     }
 
@@ -33,9 +45,15 @@ impl Matrix3x3 {
         let cos_a = angle.cos();
         let sin_a = angle.sin();
         Matrix3x3 {
-            m00: cos_a, m01: 0.0, m02: sin_a,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: -sin_a, m21: 0.0, m22: cos_a,
+            m00: cos_a,
+            m01: 0.0,
+            m02: sin_a,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: -sin_a,
+            m21: 0.0,
+            m22: cos_a,
         }
     }
 
@@ -43,14 +61,22 @@ impl Matrix3x3 {
         let cos_a = angle.cos();
         let sin_a = angle.sin();
         Matrix3x3 {
-            m00: cos_a, m01: -sin_a, m02: 0.0,
-            m10: sin_a, m11: cos_a, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: cos_a,
+            m01: -sin_a,
+            m02: 0.0,
+            m10: sin_a,
+            m11: cos_a,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         }
     }
 }
 
-pub fn compute_rotation_matrix(input: RotationMatrixInput) -> Result<RotationMatrixResponse, String> {
+pub fn compute_rotation_matrix(
+    input: RotationMatrixInput,
+) -> Result<RotationMatrixResponse, String> {
     // Validate angle for NaN and infinite values
     if input.angle.is_nan() {
         return Err("Angle cannot be NaN".to_string());
@@ -58,7 +84,7 @@ pub fn compute_rotation_matrix(input: RotationMatrixInput) -> Result<RotationMat
     if input.angle.is_infinite() {
         return Err("Angle cannot be infinite".to_string());
     }
-    
+
     let matrix = match input.axis.to_lowercase().as_str() {
         "x" => Matrix3x3::rotation_x(input.angle),
         "y" => Matrix3x3::rotation_y(input.angle),
@@ -84,9 +110,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -99,9 +131,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: 0.0, m12: -1.0,
-            m20: 0.0, m21: 1.0, m22: 0.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 0.0,
+            m12: -1.0,
+            m20: 0.0,
+            m21: 1.0,
+            m22: 0.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -114,9 +152,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -129,9 +173,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 0.0, m01: 0.0, m02: 1.0,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: -1.0, m21: 0.0, m22: 0.0,
+            m00: 0.0,
+            m01: 0.0,
+            m02: 1.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: -1.0,
+            m21: 0.0,
+            m22: 0.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -144,9 +194,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -159,9 +215,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 0.0, m01: -1.0, m02: 0.0,
-            m10: 1.0, m11: 0.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 0.0,
+            m01: -1.0,
+            m02: 0.0,
+            m10: 1.0,
+            m11: 0.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -174,9 +236,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: -1.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: -1.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: -1.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: -1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -189,9 +257,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 0.0, m01: 1.0, m02: 0.0,
-            m10: -1.0, m11: 0.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 0.0,
+            m01: 1.0,
+            m02: 0.0,
+            m10: -1.0,
+            m11: 0.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -204,9 +278,15 @@ mod tests {
         };
         let result = compute_rotation_matrix(input).unwrap();
         let expected = Matrix3x3 {
-            m00: 1.0, m01: 0.0, m02: 0.0,
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: 0.0, m21: 0.0, m22: 1.0,
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: 0.0,
+            m21: 0.0,
+            m22: 1.0,
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-14);
     }
@@ -220,9 +300,15 @@ mod tests {
         let result = compute_rotation_matrix(input).unwrap();
         // For small angles, cos ≈ 1, sin ≈ angle
         let expected = Matrix3x3 {
-            m00: (0.001_f64).cos(), m01: 0.0, m02: (0.001_f64).sin(),
-            m10: 0.0, m11: 1.0, m12: 0.0,
-            m20: -(0.001_f64).sin(), m21: 0.0, m22: (0.001_f64).cos(),
+            m00: (0.001_f64).cos(),
+            m01: 0.0,
+            m02: (0.001_f64).sin(),
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+            m20: -(0.001_f64).sin(),
+            m21: 0.0,
+            m22: (0.001_f64).cos(),
         };
         assert_matrix_eq(&result.matrix, &expected, 1e-15);
     }
@@ -306,14 +392,59 @@ mod tests {
 
     // Helper function to compare matrices with tolerance
     fn assert_matrix_eq(actual: &Matrix3x3, expected: &Matrix3x3, tolerance: f64) {
-        assert!((actual.m00 - expected.m00).abs() < tolerance, "m00: {} != {}", actual.m00, expected.m00);
-        assert!((actual.m01 - expected.m01).abs() < tolerance, "m01: {} != {}", actual.m01, expected.m01);
-        assert!((actual.m02 - expected.m02).abs() < tolerance, "m02: {} != {}", actual.m02, expected.m02);
-        assert!((actual.m10 - expected.m10).abs() < tolerance, "m10: {} != {}", actual.m10, expected.m10);
-        assert!((actual.m11 - expected.m11).abs() < tolerance, "m11: {} != {}", actual.m11, expected.m11);
-        assert!((actual.m12 - expected.m12).abs() < tolerance, "m12: {} != {}", actual.m12, expected.m12);
-        assert!((actual.m20 - expected.m20).abs() < tolerance, "m20: {} != {}", actual.m20, expected.m20);
-        assert!((actual.m21 - expected.m21).abs() < tolerance, "m21: {} != {}", actual.m21, expected.m21);
-        assert!((actual.m22 - expected.m22).abs() < tolerance, "m22: {} != {}", actual.m22, expected.m22);
+        assert!(
+            (actual.m00 - expected.m00).abs() < tolerance,
+            "m00: {} != {}",
+            actual.m00,
+            expected.m00
+        );
+        assert!(
+            (actual.m01 - expected.m01).abs() < tolerance,
+            "m01: {} != {}",
+            actual.m01,
+            expected.m01
+        );
+        assert!(
+            (actual.m02 - expected.m02).abs() < tolerance,
+            "m02: {} != {}",
+            actual.m02,
+            expected.m02
+        );
+        assert!(
+            (actual.m10 - expected.m10).abs() < tolerance,
+            "m10: {} != {}",
+            actual.m10,
+            expected.m10
+        );
+        assert!(
+            (actual.m11 - expected.m11).abs() < tolerance,
+            "m11: {} != {}",
+            actual.m11,
+            expected.m11
+        );
+        assert!(
+            (actual.m12 - expected.m12).abs() < tolerance,
+            "m12: {} != {}",
+            actual.m12,
+            expected.m12
+        );
+        assert!(
+            (actual.m20 - expected.m20).abs() < tolerance,
+            "m20: {} != {}",
+            actual.m20,
+            expected.m20
+        );
+        assert!(
+            (actual.m21 - expected.m21).abs() < tolerance,
+            "m21: {} != {}",
+            actual.m21,
+            expected.m21
+        );
+        assert!(
+            (actual.m22 - expected.m22).abs() < tolerance,
+            "m22: {} != {}",
+            actual.m22,
+            expected.m22
+        );
     }
 }

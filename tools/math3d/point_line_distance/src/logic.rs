@@ -31,6 +31,7 @@ pub struct PointLineDistanceResult {
 }
 
 impl Vector3D {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3D { x, y, z }
     }
@@ -77,6 +78,7 @@ impl Vector3D {
 }
 
 impl Line3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, direction: Vector3D) -> Self {
         Line3D { point, direction }
     }
@@ -91,21 +93,33 @@ pub fn point_line_distance_logic(input: PointLineInput) -> Result<PointLineDista
     let line = &input.line;
 
     // Validate inputs for NaN and infinite values
-    if point.x.is_nan() || point.x.is_infinite() ||
-       point.y.is_nan() || point.y.is_infinite() ||
-       point.z.is_nan() || point.z.is_infinite() {
+    if point.x.is_nan()
+        || point.x.is_infinite()
+        || point.y.is_nan()
+        || point.y.is_infinite()
+        || point.z.is_nan()
+        || point.z.is_infinite()
+    {
         return Err("Point coordinates must be finite".to_string());
     }
 
-    if line.point.x.is_nan() || line.point.x.is_infinite() ||
-       line.point.y.is_nan() || line.point.y.is_infinite() ||
-       line.point.z.is_nan() || line.point.z.is_infinite() {
+    if line.point.x.is_nan()
+        || line.point.x.is_infinite()
+        || line.point.y.is_nan()
+        || line.point.y.is_infinite()
+        || line.point.z.is_nan()
+        || line.point.z.is_infinite()
+    {
         return Err("Line point coordinates must be finite".to_string());
     }
 
-    if line.direction.x.is_nan() || line.direction.x.is_infinite() ||
-       line.direction.y.is_nan() || line.direction.y.is_infinite() ||
-       line.direction.z.is_nan() || line.direction.z.is_infinite() {
+    if line.direction.x.is_nan()
+        || line.direction.x.is_infinite()
+        || line.direction.y.is_nan()
+        || line.direction.y.is_infinite()
+        || line.direction.z.is_nan()
+        || line.direction.z.is_infinite()
+    {
         return Err("Line direction coordinates must be finite".to_string());
     }
 
@@ -116,18 +130,18 @@ pub fn point_line_distance_logic(input: PointLineInput) -> Result<PointLineDista
 
     // Vector from line point to query point
     let to_point = point.subtract(&line.point);
-    
+
     // Project this vector onto the line direction to find the closest point
     let line_dir_mag_sq = line.direction.magnitude_squared();
     let t = to_point.dot(&line.direction) / line_dir_mag_sq;
-    
+
     // Find closest point on line
     let closest_point_on_line = line.point_at_parameter(t);
-    
+
     // Calculate distance and perpendicular vector
     let perpendicular_vector = point.subtract(&closest_point_on_line);
     let distance = perpendicular_vector.magnitude();
-    
+
     // Check if point is on line
     let point_is_on_line = distance < EPSILON;
 
@@ -148,17 +162,14 @@ mod tests {
     fn test_point_on_line() {
         let input = PointLineInput {
             point: Vector3D::new(2.0, 3.0, 4.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 1.0, 2.0),
-                Vector3D::new(1.0, 1.0, 1.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 1.0, 2.0), Vector3D::new(1.0, 1.0, 1.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
         assert!(result.point_is_on_line);
         assert!((result.distance - 0.0).abs() < EPSILON);
         assert!((result.parameter_on_line - 2.0).abs() < EPSILON);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - 2.0).abs() < EPSILON);
         assert!((closest.y - 3.0).abs() < EPSILON);
@@ -169,17 +180,14 @@ mod tests {
     fn test_point_not_on_line() {
         let input = PointLineInput {
             point: Vector3D::new(1.0, 0.0, 0.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(0.0, 1.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(0.0, 1.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
         assert!(!result.point_is_on_line);
         assert!((result.distance - 1.0).abs() < EPSILON);
         assert!((result.parameter_on_line - 0.0).abs() < EPSILON);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - 0.0).abs() < EPSILON);
         assert!((closest.y - 0.0).abs() < EPSILON);
@@ -190,17 +198,14 @@ mod tests {
     fn test_perpendicular_distance() {
         let input = PointLineInput {
             point: Vector3D::new(0.0, 1.0, 0.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1.0, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
         assert!(!result.point_is_on_line);
         assert!((result.distance - 1.0).abs() < EPSILON);
         assert!((result.parameter_on_line - 0.0).abs() < EPSILON);
-        
+
         let perpendicular = &result.perpendicular_vector;
         assert!((perpendicular.x - 0.0).abs() < EPSILON);
         assert!((perpendicular.y - 1.0).abs() < EPSILON);
@@ -211,16 +216,13 @@ mod tests {
     fn test_diagonal_line() {
         let input = PointLineInput {
             point: Vector3D::new(1.0, 2.0, 3.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1.0, 1.0, 1.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 1.0, 1.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
         let expected_t = (1.0 + 2.0 + 3.0) / 3.0; // dot product / magnitude squared
         assert!((result.parameter_on_line - expected_t).abs() < EPSILON);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - expected_t).abs() < EPSILON);
         assert!((closest.y - expected_t).abs() < EPSILON);
@@ -231,16 +233,13 @@ mod tests {
     fn test_negative_parameter() {
         let input = PointLineInput {
             point: Vector3D::new(-1.0, 0.0, 0.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1.0, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
         assert!((result.parameter_on_line - (-1.0)).abs() < EPSILON);
         assert!(result.point_is_on_line);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - (-1.0)).abs() < EPSILON);
         assert!((closest.y - 0.0).abs() < EPSILON);
@@ -251,10 +250,7 @@ mod tests {
     fn test_zero_direction_error() {
         let input = PointLineInput {
             point: Vector3D::new(1.0, 2.0, 3.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(0.0, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(0.0, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input);
@@ -266,10 +262,7 @@ mod tests {
     fn test_nan_point() {
         let input = PointLineInput {
             point: Vector3D::new(f64::NAN, 2.0, 3.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1.0, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input);
@@ -304,17 +297,17 @@ mod tests {
 
         let result = point_line_distance_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Line direction coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Line direction coordinates must be finite"
+        );
     }
 
     #[test]
     fn test_very_small_direction() {
         let input = PointLineInput {
             point: Vector3D::new(1.0, 2.0, 3.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1e-15, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1e-15, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input);
@@ -326,10 +319,7 @@ mod tests {
     fn test_distance_precision() {
         let input = PointLineInput {
             point: Vector3D::new(0.0, 3.0, 4.0),
-            line: Line3D::new(
-                Vector3D::new(0.0, 0.0, 0.0),
-                Vector3D::new(1.0, 0.0, 0.0),
-            ),
+            line: Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 0.0, 0.0)),
         };
 
         let result = point_line_distance_logic(input).unwrap();
@@ -366,7 +356,7 @@ mod tests {
         let result = point_line_distance_logic(input).unwrap();
         assert!((result.parameter_on_line - 1.0).abs() < EPSILON);
         assert!((result.distance - 1.0).abs() < EPSILON);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - 1.0).abs() < EPSILON);
         assert!((closest.y - 0.0).abs() < EPSILON);
@@ -386,7 +376,7 @@ mod tests {
         let result = point_line_distance_logic(input).unwrap();
         assert!((result.parameter_on_line - 1.0).abs() < EPSILON); // t = 4/4 = 1
         assert!((result.distance - 2.0).abs() < EPSILON);
-        
+
         let closest = &result.closest_point_on_line;
         assert!((closest.x - 2.0).abs() < EPSILON);
         assert!((closest.y - 0.0).abs() < EPSILON);

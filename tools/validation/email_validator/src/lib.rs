@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -9,7 +9,10 @@ use ftl_sdk::ToolResponse;
 use ftl_sdk::tool;
 
 // Re-export types from logic module
-pub use logic::{EmailValidatorInput as LogicInput, EmailValidatorResult as LogicOutput, EmailParts as LogicParts, ValidationChecks as LogicChecks};
+pub use logic::{
+    EmailParts as LogicParts, EmailValidatorInput as LogicInput,
+    EmailValidatorResult as LogicOutput, ValidationChecks as LogicChecks,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -67,13 +70,13 @@ pub fn email_validator(input: EmailValidatorInput) -> ToolResponse {
         email: input.email,
         check_dns: input.check_dns,
     };
-    
+
     // Call logic implementation
     let result = match logic::validate_email(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error validating email: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error validating email: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let email_result = EmailValidatorResult {
         is_valid: result.is_valid,
@@ -93,6 +96,9 @@ pub fn email_validator(input: EmailValidatorInput) -> ToolResponse {
             reasonable_length: result.checks.reasonable_length,
         },
     };
-    
-    ToolResponse::text(serde_json::to_string(&email_result).unwrap_or_else(|_| "Error serializing result".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string(&email_result)
+            .unwrap_or_else(|_| "Error serializing result".to_string()),
+    )
 }

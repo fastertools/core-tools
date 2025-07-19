@@ -25,62 +25,65 @@ pub struct LinearRegressionOutput {
     pub sample_size: usize,
 }
 
-pub fn calculate_linear_regression(input: RegressionInput) -> Result<LinearRegressionOutput, String> {
+pub fn calculate_linear_regression(
+    input: RegressionInput,
+) -> Result<LinearRegressionOutput, String> {
     if input.x.len() != input.y.len() {
         return Err("X and Y series must have the same length".to_string());
     }
-    
+
     if input.x.len() < 2 {
         return Err("Need at least 2 data points for regression".to_string());
     }
-    
+
     // Check for invalid values
-    if input.x.iter().any(|&x| x.is_nan() || x.is_infinite()) ||
-       input.y.iter().any(|&y| y.is_nan() || y.is_infinite()) {
+    if input.x.iter().any(|&x| x.is_nan() || x.is_infinite())
+        || input.y.iter().any(|&y| y.is_nan() || y.is_infinite())
+    {
         return Err("Input data contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let n = input.x.len() as f64;
     let x_mean = input.x.iter().sum::<f64>() / n;
     let y_mean = input.y.iter().sum::<f64>() / n;
-    
+
     // Calculate sums for regression
     let mut sum_xy = 0.0;
     let mut sum_x_squared = 0.0;
     let mut sum_y_squared = 0.0;
-    
+
     for i in 0..input.x.len() {
         let x_dev = input.x[i] - x_mean;
         let y_dev = input.y[i] - y_mean;
-        
+
         sum_xy += x_dev * y_dev;
         sum_x_squared += x_dev * x_dev;
         sum_y_squared += y_dev * y_dev;
     }
-    
+
     // Check for zero variance in X
     if sum_x_squared == 0.0 {
         return Err("X values have zero variance - cannot perform regression".to_string());
     }
-    
+
     // Calculate slope and intercept
     let slope = sum_xy / sum_x_squared;
     let intercept = y_mean - slope * x_mean;
-    
+
     // Calculate predicted values and residuals
     let mut predicted_values = Vec::new();
     let mut residuals = Vec::new();
     let mut residual_sum_squares = 0.0;
-    
+
     for i in 0..input.x.len() {
         let predicted = slope * input.x[i] + intercept;
         let residual = input.y[i] - predicted;
-        
+
         predicted_values.push(predicted);
         residuals.push(residual);
         residual_sum_squares += residual * residual;
     }
-    
+
     // Calculate R-squared
     let total_sum_squares = sum_y_squared;
     let r_squared = if total_sum_squares == 0.0 {
@@ -88,14 +91,14 @@ pub fn calculate_linear_regression(input: RegressionInput) -> Result<LinearRegre
     } else {
         1.0 - (residual_sum_squares / total_sum_squares)
     };
-    
+
     // Calculate correlation coefficient
     let correlation_coefficient = if sum_y_squared == 0.0 {
         0.0
     } else {
         sum_xy / (sum_x_squared * sum_y_squared).sqrt()
     };
-    
+
     // Calculate standard errors
     let degrees_of_freedom = n - 2.0;
     let standard_error = if degrees_of_freedom > 0.0 {
@@ -103,52 +106,55 @@ pub fn calculate_linear_regression(input: RegressionInput) -> Result<LinearRegre
     } else {
         0.0
     };
-    
+
     let slope_std_error = if sum_x_squared > 0.0 {
         standard_error / sum_x_squared.sqrt()
     } else {
         0.0
     };
-    
+
     let intercept_std_error = if sum_x_squared > 0.0 {
         standard_error * ((1.0 / n) + (x_mean * x_mean / sum_x_squared)).sqrt()
     } else {
         0.0
     };
-    
+
     // Calculate t-statistics
     let t_statistic_slope = if slope_std_error > 0.0 {
         slope / slope_std_error
     } else {
         0.0
     };
-    
+
     let t_statistic_intercept = if intercept_std_error > 0.0 {
         intercept / intercept_std_error
     } else {
         0.0
     };
-    
+
     // Calculate p-values (approximate)
     let p_value_slope = if degrees_of_freedom > 0.0 {
         2.0 * (1.0 - t_distribution_cdf(t_statistic_slope.abs(), degrees_of_freedom))
     } else {
         1.0
     };
-    
+
     let p_value_intercept = if degrees_of_freedom > 0.0 {
         2.0 * (1.0 - t_distribution_cdf(t_statistic_intercept.abs(), degrees_of_freedom))
     } else {
         1.0
     };
-    
+
     // Create equation string
     let equation = if intercept >= 0.0 {
-        format!("y = {:.6}x + {:.6}", slope, intercept)
+        format!("y = {slope:.6}x + {intercept:.6}")
     } else {
-        format!("y = {:.6}x - {:.6}", slope, intercept.abs())
+        format!(
+            "y = {slope:.6}x - {intercept_abs:.6}",
+            intercept_abs = intercept.abs()
+        )
     };
-    
+
     Ok(LinearRegressionOutput {
         slope,
         intercept,
@@ -173,12 +179,12 @@ fn t_distribution_cdf(t: f64, df: f64) -> f64 {
     if df <= 0.0 {
         return 0.5;
     }
-    
+
     // For large df, t-distribution approaches normal distribution
     if df > 30.0 {
         return standard_normal_cdf(t);
     }
-    
+
     // Simple approximation for small df
     let x = t / (df + t * t).sqrt();
     0.5 + x * (0.5 - x * x / 12.0)
@@ -192,13 +198,13 @@ fn standard_normal_cdf(x: f64) -> f64 {
     let a4 = -1.453152027;
     let a5 = 1.061405429;
     let p = 0.3275911;
-    
+
     let sign = if x >= 0.0 { 1.0 } else { -1.0 };
     let x = x.abs();
-    
+
     let t = 1.0 / (1.0 + p * x);
     let y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * (-x * x / 2.0).exp();
-    
+
     0.5 * (1.0 + sign * y)
 }
 
@@ -300,7 +306,10 @@ mod tests {
         };
         let result = calculate_linear_regression(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "X values have zero variance - cannot perform regression");
+        assert_eq!(
+            result.unwrap_err(),
+            "X values have zero variance - cannot perform regression"
+        );
     }
 
     #[test]
@@ -311,7 +320,10 @@ mod tests {
         };
         let result = calculate_linear_regression(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "X and Y series must have the same length");
+        assert_eq!(
+            result.unwrap_err(),
+            "X and Y series must have the same length"
+        );
     }
 
     #[test]
@@ -322,7 +334,10 @@ mod tests {
         };
         let result = calculate_linear_regression(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Need at least 2 data points for regression");
+        assert_eq!(
+            result.unwrap_err(),
+            "Need at least 2 data points for regression"
+        );
     }
 
     #[test]
@@ -333,7 +348,10 @@ mod tests {
         };
         let result = calculate_linear_regression(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input data contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input data contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
@@ -343,7 +361,7 @@ mod tests {
             y: vec![3.0, 5.0, 7.0], // y = 2x + 1
         };
         let result = calculate_linear_regression(input.clone()).unwrap();
-        
+
         for i in 0..result.predicted_values.len() {
             let expected = result.slope * input.x[i] + result.intercept;
             assert!((result.predicted_values[i] - expected).abs() < 0.0001);

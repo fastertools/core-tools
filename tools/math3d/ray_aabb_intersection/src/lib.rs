@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::*;
@@ -78,7 +80,8 @@ pub fn ray_aabb_intersection(input: AABBRayInput) -> ToolResponse {
     match ray_aabb_intersection_logic(logic_input) {
         Ok(logic_result) => {
             // Convert logic types back to JsonSchema types
-            let intersection_points = logic_result.intersection_points
+            let intersection_points = logic_result
+                .intersection_points
                 .into_iter()
                 .map(|point| IntersectionPoint {
                     point: Vector3 {
@@ -102,6 +105,6 @@ pub fn ray_aabb_intersection(input: AABBRayInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

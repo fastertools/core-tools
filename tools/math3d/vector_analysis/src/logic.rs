@@ -41,35 +41,50 @@ struct TwoVectorInput {
 #[derive(Deserialize)]
 struct MagnitudeResult {
     magnitude: f64,
+    #[allow(dead_code)]
     unit_vector: Vector3D,
+    #[allow(dead_code)]
     is_zero_vector: bool,
 }
 
 #[derive(Deserialize)]
 struct AngleResult {
     angle_radians: f64,
+    #[allow(dead_code)]
     angle_degrees: f64,
+    #[allow(dead_code)]
     cos_angle: f64,
+    #[allow(dead_code)]
     vector1_magnitude: f64,
+    #[allow(dead_code)]
     vector2_magnitude: f64,
+    #[allow(dead_code)]
     is_perpendicular: bool,
+    #[allow(dead_code)]
     is_parallel: bool,
 }
 
 #[derive(Deserialize)]
 struct DotProductResult {
     dot_product: f64,
+    #[allow(dead_code)]
     angle_radians: f64,
+    #[allow(dead_code)]
     angle_degrees: f64,
+    #[allow(dead_code)]
     are_perpendicular: bool,
+    #[allow(dead_code)]
     are_parallel: bool,
 }
 
 #[derive(Deserialize)]
 struct CrossProductResult {
     cross_product: CrossProductVector,
+    #[allow(dead_code)]
     magnitude: f64,
+    #[allow(dead_code)]
     area_parallelogram: f64,
+    #[allow(dead_code)]
     are_parallel: bool,
 }
 
@@ -88,6 +103,7 @@ struct ToolResponseWrapper<T> {
 #[derive(Deserialize)]
 struct ContentItem<T> {
     #[serde(rename = "type")]
+    #[allow(dead_code)]
     item_type: String,
     text: String,
     #[serde(skip)]
@@ -108,8 +124,8 @@ pub async fn analyze_vectors(input: VectorAnalysisInput) -> Result<VectorAnalysi
     let cross_product = call_cross_product(&input.vector_a, &input.vector_b).await?;
 
     // Calculate derived properties
-    let is_orthogonal = (dot_product.abs() < 1e-10);
-    let is_parallel = (cross_product.iter().all(|&x| x.abs() < 1e-10));
+    let is_orthogonal = dot_product.abs() < 1e-10;
+    let is_parallel = cross_product.iter().all(|&x| x.abs() < 1e-10);
     let vector_similarity = if magnitude_a == 0.0 || magnitude_b == 0.0 {
         0.0
     } else {
@@ -131,55 +147,55 @@ pub async fn analyze_vectors(input: VectorAnalysisInput) -> Result<VectorAnalysi
 
 async fn call_vector_magnitude(vector: &[f64]) -> Result<f64, String> {
     use spin_sdk::http::{Method, Request};
-    
+
     if vector.len() != 3 {
         return Err("Vector must be 3-dimensional".to_string());
     }
-    
-    let input = VectorInput { 
+
+    let input = VectorInput {
         vector: Vector3D {
             x: vector[0],
-            y: vector[1], 
+            y: vector[1],
             z: vector[2],
-        }
+        },
     };
     let request_body = serde_json::to_string(&input)
-        .map_err(|e| format!("Failed to serialize vector input: {}", e))?;
-    
+        .map_err(|e| format!("Failed to serialize vector input: {e}"))?;
+
     let request = Request::builder()
         .method(Method::Post)
         .uri("http://vector-magnitude.spin.internal")
         .header("Content-Type", "application/json")
         .body(request_body.into_bytes())
         .build();
-    
+
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Failed to call vector_magnitude: {:?}", e))?;
-    
+        .map_err(|e| format!("Failed to call vector_magnitude: {e:?}"))?;
+
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
-    
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
+
     // Parse direct ToolResponse format like pythagorean does
     let wrapper: ToolResponseWrapper<String> = serde_json::from_str(&body)
-        .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+
     let result_text = &wrapper.content[0].text;
     let result: MagnitudeResult = serde_json::from_str(result_text)
-        .map_err(|e| format!("Failed to parse magnitude result: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse magnitude result: {e}"))?;
+
     Ok(result.magnitude)
 }
 
 async fn call_vector_angle(vector_a: &[f64], vector_b: &[f64]) -> Result<f64, String> {
     use spin_sdk::http::{Method, Request};
-    
+
     if vector_a.len() != 3 || vector_b.len() != 3 {
         return Err("Vectors must be 3-dimensional".to_string());
     }
-    
-    let input = TwoVectorInput { 
+
+    let input = TwoVectorInput {
         vector1: Vector3D {
             x: vector_a[0],
             y: vector_a[1],
@@ -192,40 +208,40 @@ async fn call_vector_angle(vector_a: &[f64], vector_b: &[f64]) -> Result<f64, St
         },
     };
     let request_body = serde_json::to_string(&input)
-        .map_err(|e| format!("Failed to serialize vector angle input: {}", e))?;
-    
+        .map_err(|e| format!("Failed to serialize vector angle input: {e}"))?;
+
     let request = Request::builder()
         .method(Method::Post)
         .uri("http://vector-angle.spin.internal")
         .header("Content-Type", "application/json")
         .body(request_body.into_bytes())
         .build();
-    
+
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Failed to call vector_angle: {:?}", e))?;
-    
+        .map_err(|e| format!("Failed to call vector_angle: {e:?}"))?;
+
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
-    
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
+
     let wrapper: ToolResponseWrapper<String> = serde_json::from_str(&body)
-        .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+
     let result_text = &wrapper.content[0].text;
     let result: AngleResult = serde_json::from_str(result_text)
-        .map_err(|e| format!("Failed to parse angle result: {}. Response body: {}", e, body))?;
-    
+        .map_err(|e| format!("Failed to parse angle result: {e}. Response body: {body}"))?;
+
     Ok(result.angle_radians)
 }
 
 async fn call_dot_product(vector_a: &[f64], vector_b: &[f64]) -> Result<f64, String> {
     use spin_sdk::http::{Method, Request};
-    
-    let input = TwoVectorInput { 
+
+    let input = TwoVectorInput {
         vector1: Vector3D {
             x: vector_a[0],
-            y: vector_a[1], 
+            y: vector_a[1],
             z: vector_a[2],
         },
         vector2: Vector3D {
@@ -235,40 +251,40 @@ async fn call_dot_product(vector_a: &[f64], vector_b: &[f64]) -> Result<f64, Str
         },
     };
     let request_body = serde_json::to_string(&input)
-        .map_err(|e| format!("Failed to serialize dot product input: {}", e))?;
-    
+        .map_err(|e| format!("Failed to serialize dot product input: {e}"))?;
+
     let request = Request::builder()
         .method(Method::Post)
         .uri("http://dot-product.spin.internal")
         .header("Content-Type", "application/json")
         .body(request_body.into_bytes())
         .build();
-    
+
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Failed to call dot_product: {:?}", e))?;
-    
+        .map_err(|e| format!("Failed to call dot_product: {e:?}"))?;
+
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
-    
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
+
     let wrapper: ToolResponseWrapper<String> = serde_json::from_str(&body)
-        .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+
     let result_text = &wrapper.content[0].text;
     let result: DotProductResult = serde_json::from_str(result_text)
-        .map_err(|e| format!("Failed to parse dot product result: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse dot product result: {e}"))?;
+
     Ok(result.dot_product)
 }
 
 async fn call_cross_product(vector_a: &[f64], vector_b: &[f64]) -> Result<Vec<f64>, String> {
     use spin_sdk::http::{Method, Request};
-    
-    let input = TwoVectorInput { 
+
+    let input = TwoVectorInput {
         vector1: Vector3D {
             x: vector_a[0],
-            y: vector_a[1], 
+            y: vector_a[1],
             z: vector_a[2],
         },
         vector2: Vector3D {
@@ -278,29 +294,33 @@ async fn call_cross_product(vector_a: &[f64], vector_b: &[f64]) -> Result<Vec<f6
         },
     };
     let request_body = serde_json::to_string(&input)
-        .map_err(|e| format!("Failed to serialize cross product input: {}", e))?;
-    
+        .map_err(|e| format!("Failed to serialize cross product input: {e}"))?;
+
     let request = Request::builder()
         .method(Method::Post)
         .uri("http://cross-product.spin.internal")
         .header("Content-Type", "application/json")
         .body(request_body.into_bytes())
         .build();
-    
+
     let response: spin_sdk::http::Response = spin_sdk::http::send(request)
         .await
-        .map_err(|e| format!("Failed to call cross_product: {:?}", e))?;
-    
+        .map_err(|e| format!("Failed to call cross_product: {e:?}"))?;
+
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {}", e))?;
-    
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
+
     let wrapper: ToolResponseWrapper<String> = serde_json::from_str(&body)
-        .map_err(|e| format!("Failed to parse response wrapper: {}", e))?;
-    
+        .map_err(|e| format!("Failed to parse response wrapper: {e}"))?;
+
     let result_text = &wrapper.content[0].text;
     let result: CrossProductResult = serde_json::from_str(result_text)
-        .map_err(|e| format!("Failed to parse cross product result: {}", e))?;
-    
-    Ok(vec![result.cross_product.x, result.cross_product.y, result.cross_product.z])
+        .map_err(|e| format!("Failed to parse cross product result: {e}"))?;
+
+    Ok(vec![
+        result.cross_product.x,
+        result.cross_product.y,
+        result.cross_product.z,
+    ])
 }

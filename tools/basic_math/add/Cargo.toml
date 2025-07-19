@@ -6,11 +6,15 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+default = ["individual"]
+individual = ["ftl-sdk/macros", "spin-sdk"]
+library = []
+
 [dependencies]
-ftl-sdk = { version = "0.2.3", features = ["macros"] }
+ftl-sdk = { version = "0.2.3", features = ["macros"], optional = true }
+spin-sdk = { version = "4.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 schemars = "0.8"
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-spin-sdk = "4.0"

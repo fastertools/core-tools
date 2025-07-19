@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 const EPSILON: f64 = 1e-10;
 
@@ -123,6 +123,7 @@ impl Line3D {
 }
 
 impl Plane3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, normal: Vector3D) -> Result<Self, String> {
         if !point.is_valid() || !normal.is_valid() {
             return Err("Plane3D contains invalid coordinates".to_string());
@@ -146,7 +147,7 @@ impl Plane3D {
         let n1 = self.normal.normalize()?;
         let n2 = other.normal.normalize()?;
         let dot = n1.dot(&n2);
-        let clamped = dot.max(-1.0).min(1.0);
+        let clamped = dot.clamp(-1.0, 1.0);
         Ok(clamped.acos())
     }
 
@@ -155,13 +156,15 @@ impl Plane3D {
             Ok(n) => n,
             Err(_) => return 0.0,
         };
-        
+
         let to_point = point.subtract(&self.point);
         to_point.dot(&normal_unit).abs()
     }
 }
 
-pub fn plane_plane_intersection_logic(input: PlanePlaneIntersectionInput) -> Result<PlanePlaneIntersectionOutput, String> {
+pub fn plane_plane_intersection_logic(
+    input: PlanePlaneIntersectionInput,
+) -> Result<PlanePlaneIntersectionOutput, String> {
     let plane1 = &input.plane1;
     let plane2 = &input.plane2;
 
@@ -183,10 +186,10 @@ pub fn plane_plane_intersection_logic(input: PlanePlaneIntersectionInput) -> Res
         let are_coincident = distance < EPSILON;
 
         return Ok(PlanePlaneIntersectionOutput {
-            intersection_type: if are_coincident { 
-                "coincident".to_string() 
-            } else { 
-                "parallel".to_string() 
+            intersection_type: if are_coincident {
+                "coincident".to_string()
+            } else {
+                "parallel".to_string()
             },
             intersects: are_coincident,
             intersection_line: None,
@@ -199,7 +202,7 @@ pub fn plane_plane_intersection_logic(input: PlanePlaneIntersectionInput) -> Res
 
     // Planes intersect in a line
     let direction = plane1.normal.cross(&plane2.normal);
-    
+
     // Find a point on the intersection line
     // We'll find the point closest to the origin that lies on both planes
     let n1 = &plane1.normal;
@@ -209,7 +212,7 @@ pub fn plane_plane_intersection_logic(input: PlanePlaneIntersectionInput) -> Res
 
     // Find the direction with the largest component to avoid division by small numbers
     let abs_dir = Vector3D::new(direction.x.abs(), direction.y.abs(), direction.z.abs());
-    
+
     let intersection_point = if abs_dir.z >= abs_dir.x && abs_dir.z >= abs_dir.y {
         // Solve for x and y, set z = 0
         let det = n1.x * n2.y - n1.y * n2.x;
@@ -271,10 +274,10 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 1.0),
             normal: Vector3D::new(0.0, 0.0, 1.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         assert_eq!(result.intersection_type, "parallel");
         assert!(!result.intersects);
         assert!(result.are_parallel);
@@ -293,10 +296,10 @@ mod tests {
             point: Vector3D::new(1.0, 1.0, 0.0),
             normal: Vector3D::new(0.0, 0.0, 1.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         assert_eq!(result.intersection_type, "coincident");
         assert!(result.intersects);
         assert!(result.are_parallel);
@@ -314,22 +317,22 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(0.0, 1.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         assert_eq!(result.intersection_type, "intersecting");
         assert!(result.intersects);
         assert!(!result.are_parallel);
         assert!(!result.are_coincident);
         assert!(result.intersection_line.is_some());
-        
+
         let line = result.intersection_line.unwrap();
         // Should be along z-axis
         assert!(line.direction.x.abs() < 1e-15);
         assert!(line.direction.y.abs() < 1e-15);
         assert!(line.direction.z.abs() > 1e-15);
-        
+
         // Angle should be 90 degrees
         assert!((result.angle_radians - std::f64::consts::PI / 2.0).abs() < 1e-14);
         assert!((result.angle_degrees - 90.0).abs() < 1e-12);
@@ -345,10 +348,10 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(0.0, 1.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         // Should be perpendicular (90 degrees)
         assert!((result.angle_degrees - 90.0).abs() < 1e-12);
         assert!((result.angle_radians - std::f64::consts::PI / 2.0).abs() < 1e-14);
@@ -364,10 +367,10 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(1.0, 1.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         // Should be 45 degrees
         assert!((result.angle_degrees - 45.0).abs() < 1e-12);
         assert!((result.angle_radians - std::f64::consts::PI / 4.0).abs() < 1e-14);
@@ -383,12 +386,15 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(1.0, 0.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input);
-        
+
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Plane1 is invalid: contains NaN/infinite values or zero normal");
+        assert_eq!(
+            result.unwrap_err(),
+            "Plane1 is invalid: contains NaN/infinite values or zero normal"
+        );
     }
 
     #[test]
@@ -401,33 +407,36 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(0.0, 1.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input);
-        
+
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Plane1 is invalid: contains NaN/infinite values or zero normal");
+        assert_eq!(
+            result.unwrap_err(),
+            "Plane1 is invalid: contains NaN/infinite values or zero normal"
+        );
     }
 
     #[test]
     fn test_vector_operations() {
         let v1 = Vector3D::new(1.0, 2.0, 3.0);
         let v2 = Vector3D::new(4.0, 5.0, 6.0);
-        
+
         // Test dot product
         let dot = v1.dot(&v2);
         assert!((dot - 32.0).abs() < 1e-15); // 1*4 + 2*5 + 3*6 = 32
-        
+
         // Test cross product
         let cross = v1.cross(&v2);
         assert!((cross.x - (-3.0)).abs() < 1e-15); // 2*6 - 3*5 = -3
-        assert!((cross.y - 6.0).abs() < 1e-15);    // 3*4 - 1*6 = 6
+        assert!((cross.y - 6.0).abs() < 1e-15); // 3*4 - 1*6 = 6
         assert!((cross.z - (-3.0)).abs() < 1e-15); // 1*5 - 2*4 = -3
-        
+
         // Test magnitude
         let mag = v1.magnitude();
         assert!((mag - (14.0_f64).sqrt()).abs() < 1e-15);
-        
+
         // Test normalization
         let normalized = v1.normalize().unwrap();
         assert!((normalized.magnitude() - 1.0).abs() < 1e-15);
@@ -437,42 +446,36 @@ mod tests {
     fn test_vector_validation() {
         let valid_vector = Vector3D::new(1.0, 2.0, 3.0);
         assert!(valid_vector.is_valid());
-        
+
         let invalid_vector = Vector3D::new(f64::NAN, 2.0, 3.0);
         assert!(!invalid_vector.is_valid());
-        
+
         let infinite_vector = Vector3D::new(f64::INFINITY, 2.0, 3.0);
         assert!(!infinite_vector.is_valid());
     }
 
     #[test]
     fn test_line_validation() {
-        let valid_line = Line3D::new(
-            Vector3D::new(0.0, 0.0, 0.0),
-            Vector3D::new(1.0, 0.0, 0.0)
-        ).unwrap();
+        let valid_line =
+            Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(1.0, 0.0, 0.0)).unwrap();
         assert!(valid_line.is_valid());
-        
-        let zero_direction = Line3D::new(
-            Vector3D::new(0.0, 0.0, 0.0),
-            Vector3D::new(0.0, 0.0, 0.0)
-        );
+
+        let zero_direction =
+            Line3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(0.0, 0.0, 0.0));
         assert!(zero_direction.is_err());
-        assert_eq!(zero_direction.unwrap_err(), "Direction vector cannot be zero");
+        assert_eq!(
+            zero_direction.unwrap_err(),
+            "Direction vector cannot be zero"
+        );
     }
 
     #[test]
     fn test_plane_validation() {
-        let valid_plane = Plane3D::new(
-            Vector3D::new(0.0, 0.0, 0.0),
-            Vector3D::new(0.0, 0.0, 1.0)
-        ).unwrap();
+        let valid_plane =
+            Plane3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(0.0, 0.0, 1.0)).unwrap();
         assert!(valid_plane.is_valid());
-        
-        let zero_normal = Plane3D::new(
-            Vector3D::new(0.0, 0.0, 0.0),
-            Vector3D::new(0.0, 0.0, 0.0)
-        );
+
+        let zero_normal = Plane3D::new(Vector3D::new(0.0, 0.0, 0.0), Vector3D::new(0.0, 0.0, 0.0));
         assert!(zero_normal.is_err());
         assert_eq!(zero_normal.unwrap_err(), "Normal vector cannot be zero");
     }
@@ -483,11 +486,11 @@ mod tests {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(0.0, 0.0, 1.0),
         };
-        
+
         let point = Vector3D::new(1.0, 1.0, 5.0);
         let distance = plane.distance_to_point(&point);
         assert!((distance - 5.0).abs() < 1e-15);
-        
+
         let point_on_plane = Vector3D::new(1.0, 1.0, 0.0);
         let distance = plane.distance_to_point(&point_on_plane);
         assert!(distance.abs() < 1e-15);
@@ -504,19 +507,19 @@ mod tests {
             point: Vector3D::new(2.0, 1.0, 3.0),
             normal: Vector3D::new(1.0, -1.0, 0.0),
         };
-        
+
         let input = PlanePlaneIntersectionInput { plane1, plane2 };
         let result = plane_plane_intersection_logic(input).unwrap();
-        
+
         assert_eq!(result.intersection_type, "intersecting");
         assert!(result.intersects);
         assert!(!result.are_parallel);
         assert!(!result.are_coincident);
         assert!(result.intersection_line.is_some());
-        
+
         let line = result.intersection_line.unwrap();
         assert!(line.is_valid());
-        
+
         // The intersection line should be along z-axis (normal1 × normal2 = (0,0,-2))
         assert!(line.direction.x.abs() < 1e-15);
         assert!(line.direction.y.abs() < 1e-15);
@@ -527,7 +530,7 @@ mod tests {
     fn test_zero_vector_normalization() {
         let zero_vector = Vector3D::new(0.0, 0.0, 0.0);
         let result = zero_vector.normalize();
-        
+
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Cannot normalize zero vector");
     }
@@ -542,14 +545,14 @@ mod tests {
             point: Vector3D::new(1.0, 1.0, 1.0),
             normal: Vector3D::new(2.0, 4.0, 6.0), // Parallel normal (2x)
         };
-        
+
         assert!(plane1.is_parallel_to(&plane2));
-        
+
         let plane3 = Plane3D {
             point: Vector3D::new(0.0, 0.0, 0.0),
             normal: Vector3D::new(1.0, 0.0, 0.0),
         };
-        
+
         assert!(!plane1.is_parallel_to(&plane3));
     }
 }

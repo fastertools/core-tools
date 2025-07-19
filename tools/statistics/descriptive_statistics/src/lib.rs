@@ -1,9 +1,11 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{descriptive_statistics_logic, StatisticsInput as LogicInput, DescriptiveStatisticsOutput};
+use logic::{StatisticsInput as LogicInput, descriptive_statistics_logic};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct StatisticsInput {
@@ -13,9 +15,7 @@ pub struct StatisticsInput {
 
 impl From<StatisticsInput> for LogicInput {
     fn from(input: StatisticsInput) -> Self {
-        LogicInput {
-            data: input.data,
-        }
+        LogicInput { data: input.data }
     }
 }
 
@@ -23,6 +23,6 @@ impl From<StatisticsInput> for LogicInput {
 pub fn descriptive_statistics(input: StatisticsInput) -> ToolResponse {
     match descriptive_statistics_logic(input.into()) {
         Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

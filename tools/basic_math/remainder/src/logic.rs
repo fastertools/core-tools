@@ -15,21 +15,20 @@ pub struct ArithmeticResult {
 
 pub fn remainder_numbers(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     // Validate input - check for invalid values
-    if input.a.is_nan() || input.a.is_infinite() ||
-       input.b.is_nan() || input.b.is_infinite() {
+    if input.a.is_nan() || input.a.is_infinite() || input.b.is_nan() || input.b.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     // Check for remainder by zero
     if input.b == 0.0 {
         return Err("Remainder by zero is not allowed".to_string());
     }
-    
+
     // Rust's % operator is remainder (truncated division), not mathematical modulus
     // Result follows the sign of the dividend (left operand)
     // For example: -21 % 4 = -1 (remainder), not 3 (modulus)
     let result = input.a % input.b;
-    
+
     Ok(ArithmeticResult {
         result,
         operation: "remainder".to_string(),
@@ -126,7 +125,10 @@ mod tests {
 
     #[test]
     fn test_large_numbers() {
-        let input = TwoNumberInput { a: 9876543210.0, b: 12345.0 };
+        let input = TwoNumberInput {
+            a: 9876543210.0,
+            b: 12345.0,
+        };
         let result = remainder_numbers(input).unwrap();
         assert_eq!(result.result, 30.0);
         assert_eq!(result.operation, "remainder");
@@ -135,18 +137,30 @@ mod tests {
 
     #[test]
     fn test_nan_input_error() {
-        let input = TwoNumberInput { a: f64::NAN, b: 3.0 };
+        let input = TwoNumberInput {
+            a: f64::NAN,
+            b: 3.0,
+        };
         let result = remainder_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = TwoNumberInput { a: 5.0, b: f64::INFINITY };
+        let input = TwoNumberInput {
+            a: 5.0,
+            b: f64::INFINITY,
+        };
         let result = remainder_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]

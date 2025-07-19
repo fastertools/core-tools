@@ -1,14 +1,22 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Matrix3x3 {
-    pub m00: f64, pub m01: f64, pub m02: f64,
-    pub m10: f64, pub m11: f64, pub m12: f64,
-    pub m20: f64, pub m21: f64, pub m22: f64,
+    pub m00: f64,
+    pub m01: f64,
+    pub m02: f64,
+    pub m10: f64,
+    pub m11: f64,
+    pub m12: f64,
+    pub m20: f64,
+    pub m21: f64,
+    pub m22: f64,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -29,7 +37,7 @@ pub fn rotation_matrix(input: RotationMatrixInput) -> ToolResponse {
         axis: input.axis,
         angle: input.angle,
     };
-    
+
     // Call business logic
     match logic::compute_rotation_matrix(logic_input) {
         Ok(logic_result) => {
@@ -49,6 +57,6 @@ pub fn rotation_matrix(input: RotationMatrixInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

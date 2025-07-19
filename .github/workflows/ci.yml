@@ -1,0 +1,475 @@
+name: CI
+# Runs on both PRs and main branch pushes
+# Consolidates: pr-validation.yml, test-pr.yml, PR parts of build-and-test.yml and build-and-publish.yml
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  SPIN_VERSION: v3.3.1
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ===== CHANGE DETECTION =====
+  # From: pr-validation.yml (using dorny/paths-filter)
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      tools: ${{ steps.filter.outputs.tools }}
+      rust: ${{ steps.filter.outputs.rust }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            tools:
+              - 'tools/**'
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - 'Cargo.lock'
+            workflows:
+              - '.github/workflows/**'
+
+  # ===== CHECK LINT STATUS =====
+  # Only on main branch to avoid duplicate linting
+  check-lint-status:
+    name: Check Lint Status
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.lint-status.outputs.skip }}
+    steps:
+      - name: Check if lint already passed
+        id: lint-status
+        run: |
+          # Query GitHub API for commit status
+          STATUS=$(gh api repos/${{ github.repository }}/commits/${{ github.sha }}/status \
+            --jq '.statuses[] | select(.context == "lint") | .state' | head -1)
+          
+          if [[ "$STATUS" == "success" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "✅ Lint already passed for this commit (${{ github.sha }})"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "🔍 Lint needed for this commit (${{ github.sha }})"
+          fi
+
+  # ===== CONDITIONAL LINTING =====
+  lint:
+    name: Lint Code
+    needs: [changes, check-lint-status]
+    if: |
+      needs.changes.outputs.rust == 'true' && 
+      (github.event_name == 'pull_request' || needs.check-lint-status.outputs.skip == 'false')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ===== BUILD CHANGED TOOLS (PR ONLY) =====
+  # From: pr-validation.yml build-changed + test-pr.yml test-changed-tools
+  build-changed:
+    name: Build Changed Tools (PR)
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.tools == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.changed.outputs.count }}
+      tools: ${{ steps.changed.outputs.tools }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Get changed tools
+        id: changed
+        run: |
+          chmod +x build_all.sh
+          CHANGED_TOOLS=$(./build_all.sh changed --base-ref origin/${{ github.base_ref }})
+          CHANGED_COUNT=$(echo "$CHANGED_TOOLS" | grep -E "^\s*[a-zA-Z_]+/" | wc -l)
+          echo "count=${CHANGED_COUNT}" >> $GITHUB_OUTPUT
+          echo "tools<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_TOOLS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "Changed tools (${CHANGED_COUNT}):"
+          echo "$CHANGED_TOOLS"
+      
+      - name: Build changed tools
+        if: steps.changed.outputs.count > 0
+        run: ./build_all.sh changed --base-ref origin/${{ github.base_ref }}
+      
+      # From: test-pr.yml - Validate spin.toml
+      - name: Validate spin.toml
+        run: |
+          echo "Checking for naming consistency..."
+          
+          # Verify all tools in spin.toml exist
+          echo "Verifying all tools referenced in spin.toml exist..."
+          grep -o 'workdir = "tools/[^"]*"' spin.toml | sed 's/workdir = "//' | sed 's/"//' | while read tool_dir; do
+            if [ ! -d "$tool_dir" ]; then
+              echo "ERROR: Tool directory $tool_dir referenced in spin.toml does not exist"
+              exit 1
+            fi
+            if [ ! -f "$tool_dir/Cargo.toml" ]; then
+              echo "ERROR: Tool directory $tool_dir missing Cargo.toml"
+              exit 1
+            fi
+          done
+          
+          echo "All spin.toml checks passed!"
+      
+      - name: Upload build artifacts
+        if: steps.changed.outputs.count > 0
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-wasm-modules
+          path: target/wasm32-wasip1/release/*.wasm
+          retention-days: 1
+
+  # ===== BUILD ALL TOOLS (MAIN BRANCH ONLY) =====
+  # Builds ALL tools and uploads artifacts for downstream consumption
+  build-all:
+    name: Build All Tools (Main)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        batch: [1, 2, 3, 4]
+    outputs:
+      tool-count: ${{ steps.count.outputs.total }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            tools/*/target
+          key: ${{ runner.os }}-cargo-main-${{ hashFiles('tools/**/Cargo.toml') }}-batch-${{ matrix.batch }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-main-${{ hashFiles('tools/**/Cargo.toml') }}-
+            ${{ runner.os }}-cargo-main-
+      
+      - name: Count total tools (first batch only)
+        id: count
+        if: matrix.batch == 1
+        run: |
+          TOTAL=$(./build_all.sh list | grep "^  " | wc -l)
+          echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+          echo "Total tools to build: ${TOTAL}"
+      
+      - name: Build tools (batch ${{ matrix.batch }})
+        run: |
+          # Get all tools and split into batches
+          ALL_TOOLS=($(./build_all.sh list | grep "^  " | sed 's/^  //'))
+          TOTAL_TOOLS=${#ALL_TOOLS[@]}
+          TOOLS_PER_BATCH=$(( (TOTAL_TOOLS + 3) / 4 ))  # Round up division by 4
+          
+          START_INDEX=$(( (${{ matrix.batch }} - 1) * TOOLS_PER_BATCH ))
+          END_INDEX=$(( START_INDEX + TOOLS_PER_BATCH ))
+          
+          if [ $END_INDEX -gt $TOTAL_TOOLS ]; then
+            END_INDEX=$TOTAL_TOOLS
+          fi
+          
+          echo "Building batch ${{ matrix.batch }}: tools $START_INDEX to $((END_INDEX-1))"
+          
+          # Build tools in this batch
+          for i in $(seq $START_INDEX $((END_INDEX-1))); do
+            if [ $i -lt $TOTAL_TOOLS ]; then
+              TOOL=${ALL_TOOLS[$i]}
+              echo "Building $TOOL..."
+              TOOL_PATH="tools/${TOOL}"
+              if [ -d "$TOOL_PATH" ] && [ -f "$TOOL_PATH/Cargo.toml" ]; then
+                PACKAGE_NAME=$(grep '^name = ' "$TOOL_PATH/Cargo.toml" | cut -d'"' -f2)
+                echo "Building package $PACKAGE_NAME in $TOOL_PATH"
+                # Use single-threaded builds to avoid OOM
+                cargo build -p "$PACKAGE_NAME" --target wasm32-wasip1 --release --jobs 1
+              fi
+            fi
+          done
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-tools-batch-${{ matrix.batch }}
+          path: target/wasm32-wasip1/release/*.wasm
+          retention-days: 7
+
+  # ===== UNIT TESTS (PR - CHANGED ONLY) =====
+  # From: build-and-test.yml test job
+  test-changed:
+    name: Test Changed Tools (PR)
+    needs: [changes, build-changed]
+    if: github.event_name == 'pull_request' && needs.changes.outputs.tools == 'true' && needs.build-changed.outputs.count > 0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo test
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run tests for changed packages
+        run: |
+          # Parse the changed tools and run tests for each
+          echo "${{ needs.build-changed.outputs.tools }}" | grep -E "^\s*[a-zA-Z_]+/" | while read tool_path; do
+            tool_path=$(echo $tool_path | xargs) # trim whitespace
+            if [ -n "$tool_path" ] && [ -d "tools/$tool_path" ]; then
+              package_name=$(grep '^name = ' "tools/$tool_path/Cargo.toml" | cut -d'"' -f2)
+              echo "Testing package: $package_name"
+              cargo test -p "$package_name" --lib
+            fi
+          done
+
+  # ===== UNIT TESTS (MAIN - ALL TOOLS) =====
+  # Tests ALL tools when pushing to main
+  test-all:
+    name: Test All Tools (Main)
+    needs: build-all
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo test
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-main-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run all unit tests
+        run: cargo test --all --all-features
+
+  # ===== INTEGRATION TESTS =====
+  # From: build-and-publish.yml test-tools job (critical integration tests!)
+  integration-test:
+    name: Integration Tests
+    needs: [changes, build-changed, build-all]
+    if: |
+      (github.event_name == 'pull_request' && needs.changes.outputs.tools == 'true' && needs.build-changed.outputs.count > 0) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download build artifacts (PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-wasm-modules
+          path: target/wasm32-wasip1/release/
+      
+      - name: Download build artifacts (Main)
+        if: github.event_name == 'push'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wasm-tools-batch-*
+          merge-multiple: true
+          path: target/wasm32-wasip1/release/
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          # TODO: This was v2.0.1, now updated to v3.3.1
+          version: ${{ env.SPIN_VERSION }}
+      
+      - name: Run integration tests with Spin server
+        run: |
+          echo "Starting Spin server for integration testing..."
+          
+          # Start Spin server in background
+          spin up --listen 127.0.0.1:3000 > spin_test.log 2>&1 &
+          SPIN_PID=$!
+          
+          # Wait for server to start (extended timeout for 84 tools)
+          echo "Waiting for Spin server to start..."
+          for i in {1..90}; do
+            if curl -s http://127.0.0.1:3000/mcp >/dev/null 2>&1; then
+              echo "✅ Spin server is ready after $i seconds"
+              break
+            fi
+            if [ $i -eq 90 ]; then
+              echo "❌ Spin server failed to start within 90 seconds"
+              echo "=== Spin server logs ==="
+              cat spin_test.log
+              exit 1
+            fi
+            # Show progress every 10 seconds
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "⏳ Still waiting for Spin server... (${i}s elapsed)"
+            fi
+            sleep 1
+          done
+          
+          # Test basic connectivity
+          echo "Testing MCP gateway connectivity..."
+          curl -s http://127.0.0.1:3000/mcp || {
+            echo "❌ MCP gateway not responding"
+            cat spin_test.log
+            exit 1
+          }
+          
+          # Test tool composition: distance_2d → pythagorean → [square, add, sqrt]
+          echo "Testing tool composition chain: distance_2d → pythagorean → [square, add, sqrt]"
+          RESPONSE=$(curl -s -X POST http://127.0.0.1:3000/distance-two-d \
+            -H "Content-Type: application/json" \
+            -d '{"x1": 0, "y1": 0, "x2": 3, "y2": 4}')
+          
+          echo "Distance 2D response: $RESPONSE"
+          
+          # Check if response contains expected distance of 5.0 in ToolResponse format
+          if echo "$RESPONSE" | grep -q '"distance":5'; then
+            echo "✅ Tool composition working correctly"
+          else
+            echo "❌ Tool composition failed - unexpected response"
+            cat spin_test.log
+            exit 1
+          fi
+          
+          # Cleanup
+          kill $SPIN_PID || true
+          wait $SPIN_PID 2>/dev/null || true
+          
+          echo "✅ Integration tests completed successfully!"
+
+  # ===== CI SUMMARY =====
+  ci-summary:
+    name: CI Summary
+    if: always()
+    needs: [lint, build-changed, build-all, test-changed, test-all, integration-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create CI Summary
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "## PR Check Summary" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Main CI Summary" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Lint results
+          if [[ "${{ needs.lint.result }}" == "success" ]]; then
+            echo "✅ **Lint**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.lint.result }}" == "skipped" ]]; then
+            echo "⏭️ **Lint**: Skipped (no Rust changes)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Lint**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Build results
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ needs.build-changed.result }}" == "success" ]]; then
+              echo "✅ **Build**: Passed (${{ needs.build-changed.outputs.count || 0 }} changed tools)" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.build-changed.result }}" == "skipped" ]]; then
+              echo "⏭️ **Build**: Skipped (no tool changes)" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Build**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            if [[ "${{ needs.build-all.result }}" == "success" ]]; then
+              echo "✅ **Build**: Successfully built ${{ needs.build-all.outputs.tool-count || '84' }} tools" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Build**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          # Test results
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ needs.test-changed.result }}" == "success" ]]; then
+              echo "✅ **Unit Tests**: Passed (changed tools)" >> $GITHUB_STEP_SUMMARY
+            elif [[ "${{ needs.test-changed.result }}" == "skipped" ]]; then
+              echo "⏭️ **Unit Tests**: Skipped" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Unit Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            if [[ "${{ needs.test-all.result }}" == "success" ]]; then
+              echo "✅ **Unit Tests**: All tests passed" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Unit Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          # Integration test results
+          if [[ "${{ needs.integration-test.result }}" == "success" ]]; then
+            echo "✅ **Integration Tests**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.integration-test.result }}" == "skipped" ]]; then
+            echo "⏭️ **Integration Tests**: Skipped" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Integration Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+            echo "WASM artifacts have been uploaded and are available for 7 days." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Note**: PR commenting disabled due to permission limitations" >> $GITHUB_STEP_SUMMARY
+          fi

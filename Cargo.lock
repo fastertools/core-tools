@@ -124,6 +124,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "basic_math_types"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "bearing-tool"
 version = "0.1.0"
 dependencies = [
@@ -1029,6 +1037,7 @@ dependencies = [
 name = "multiply_tool"
 version = "0.1.0"
 dependencies = [
+ "basic_math_types",
  "ftl-sdk",
  "schemars",
  "serde",
@@ -1770,6 +1779,7 @@ dependencies = [
 name = "subtract_tool"
 version = "0.1.0"
 dependencies = [
+ "basic_math_types",
  "ftl-sdk",
  "schemars",
  "serde",

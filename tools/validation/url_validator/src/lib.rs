@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -9,7 +9,10 @@ use ftl_sdk::ToolResponse;
 use ftl_sdk::tool;
 
 // Re-export types from logic module
-pub use logic::{UrlValidatorInput as LogicInput, UrlValidatorResult as LogicOutput, UrlComponents as LogicComponents, ValidationChecks as LogicChecks};
+pub use logic::{
+    UrlComponents as LogicComponents, UrlValidatorInput as LogicInput,
+    UrlValidatorResult as LogicOutput, ValidationChecks as LogicChecks,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -80,13 +83,13 @@ pub fn url_validator(input: UrlValidatorInput) -> ToolResponse {
         require_https: input.require_https,
         allowed_schemes: input.allowed_schemes,
     };
-    
+
     // Call logic implementation
     let result = match logic::validate_url(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error validating URL: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error validating URL: {e}")),
     };
-    
+
     // Convert back to wrapper types
     let url_result = UrlValidatorResult {
         is_valid: result.is_valid,
@@ -111,6 +114,9 @@ pub fn url_validator(input: UrlValidatorInput) -> ToolResponse {
             valid_port: result.checks.valid_port,
         },
     };
-    
-    ToolResponse::text(serde_json::to_string(&url_result).unwrap_or_else(|_| "Error serializing result".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string(&url_result)
+            .unwrap_or_else(|_| "Error serializing result".to_string()),
+    )
 }

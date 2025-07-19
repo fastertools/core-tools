@@ -18,7 +18,7 @@ pub fn calculate_sqrt(input: SingleNumberInput) -> Result<SquareRootResult, Stri
     if input.value.is_nan() || input.value.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let result = if input.value < 0.0 {
         SquareRootResult {
             result: f64::NAN,
@@ -34,7 +34,7 @@ pub fn calculate_sqrt(input: SingleNumberInput) -> Result<SquareRootResult, Stri
             error: None,
         }
     };
-    
+
     Ok(result)
 }
 
@@ -129,7 +129,10 @@ mod tests {
         assert!(result.result.is_nan());
         assert_eq!(result.input, -4.0);
         assert!(!result.is_valid);
-        assert_eq!(result.error, Some("Cannot compute square root of negative number".to_string()));
+        assert_eq!(
+            result.error,
+            Some("Cannot compute square root of negative number".to_string())
+        );
     }
 
     #[test]
@@ -147,15 +150,23 @@ mod tests {
         let input = SingleNumberInput { value: f64::NAN };
         let result = calculate_sqrt(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = SingleNumberInput { value: f64::INFINITY };
+        let input = SingleNumberInput {
+            value: f64::INFINITY,
+        };
         let result = calculate_sqrt(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]

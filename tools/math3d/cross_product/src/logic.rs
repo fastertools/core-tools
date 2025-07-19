@@ -60,7 +60,7 @@ pub fn cross_product_logic(input: CrossProductInput) -> Result<CrossProductResul
     let magnitude = cross_product.magnitude();
     let area_parallelogram = magnitude;
     let are_parallel = input.vector1.are_parallel(&input.vector2);
-    
+
     Ok(CrossProductResult {
         cross_product,
         magnitude,
@@ -256,7 +256,7 @@ mod tests {
     fn test_cross_product_orthogonality() {
         let v1 = create_test_vector(1.0, 2.0, 3.0);
         let v2 = create_test_vector(4.0, 5.0, 6.0);
-        
+
         let input = CrossProductInput {
             vector1: v1.clone(),
             vector2: v2.clone(),

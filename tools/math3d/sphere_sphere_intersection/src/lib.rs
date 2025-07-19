@@ -1,6 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::*;
@@ -65,19 +67,22 @@ pub fn sphere_sphere_intersection(input: SphereSphereInput) -> ToolResponse {
     match sphere_sphere_intersection_logic(logic_input) {
         Ok(logic_result) => {
             // Convert logic types back to JsonSchema types
-            let intersection_circle = logic_result.intersection_circle.map(|circle| IntersectionCircle {
-                center: Vector3 {
-                    x: circle.center.x,
-                    y: circle.center.y,
-                    z: circle.center.z,
-                },
-                radius: circle.radius,
-                normal: Vector3 {
-                    x: circle.normal.x,
-                    y: circle.normal.y,
-                    z: circle.normal.z,
-                },
-            });
+            let intersection_circle =
+                logic_result
+                    .intersection_circle
+                    .map(|circle| IntersectionCircle {
+                        center: Vector3 {
+                            x: circle.center.x,
+                            y: circle.center.y,
+                            z: circle.center.z,
+                        },
+                        radius: circle.radius,
+                        normal: Vector3 {
+                            x: circle.normal.x,
+                            y: circle.normal.y,
+                            z: circle.normal.z,
+                        },
+                    });
 
             let result = SphereSphereResult {
                 intersects: logic_result.intersects,
@@ -87,6 +92,6 @@ pub fn sphere_sphere_intersection(input: SphereSphereInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }

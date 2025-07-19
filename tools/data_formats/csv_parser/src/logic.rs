@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use csv::ReaderBuilder;
+use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,61 +48,75 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
     let has_headers = input.has_headers.unwrap_or(true);
     let skip_empty = input.skip_empty_lines.unwrap_or(true);
     let trim_fields = input.trim_fields.unwrap_or(true);
-    
+
     // Get delimiter (default to comma)
     let delimiter = match input.delimiter.as_deref() {
         Some(d) if d.len() == 1 => d.chars().next().unwrap() as u8,
-        Some(d) if d == "\\t" => b'\t',
-        Some(d) => return Err(format!("Invalid delimiter: '{}'. Must be a single character.", d)),
+        Some("\\t") => b'\t',
+        Some(d) => {
+            return Err(format!(
+                "Invalid delimiter: '{d}'. Must be a single character."
+            ));
+        }
         None => b',',
     };
-    
+
     let delimiter_str = match delimiter {
         b'\t' => "\\t".to_string(),
         d => (d as char).to_string(),
     };
-    
+
     // Create CSV reader
     let mut reader = ReaderBuilder::new()
         .delimiter(delimiter)
         .has_headers(has_headers)
         .trim(csv::Trim::All)
-        .flexible(true)  // Allow variable number of fields per record
+        .flexible(true) // Allow variable number of fields per record
         .from_reader(Cursor::new(input.content.as_bytes()));
-    
+
     // Parse headers if present
     let headers = if has_headers {
         match reader.headers() {
-            Ok(h) => Some(h.iter().map(|s| {
-                if trim_fields { s.trim().to_string() } else { s.to_string() }
-            }).collect::<Vec<String>>()),
-            Err(e) => return Ok(CsvParserResult {
-                headers: None,
-                rows: vec![],
-                row_count: 0,
-                column_count: 0,
-                stats: ParsingStats {
-                    lines_processed: 0,
-                    lines_skipped: 0,
-                    uniform_columns: true,
-                    delimiter_used: delimiter_str,
-                },
-                error: Some(format!("Failed to parse headers: {}", e)),
-            }),
+            Ok(h) => Some(
+                h.iter()
+                    .map(|s| {
+                        if trim_fields {
+                            s.trim().to_string()
+                        } else {
+                            s.to_string()
+                        }
+                    })
+                    .collect::<Vec<String>>(),
+            ),
+            Err(e) => {
+                return Ok(CsvParserResult {
+                    headers: None,
+                    rows: vec![],
+                    row_count: 0,
+                    column_count: 0,
+                    stats: ParsingStats {
+                        lines_processed: 0,
+                        lines_skipped: 0,
+                        uniform_columns: true,
+                        delimiter_used: delimiter_str,
+                    },
+                    error: Some(format!("Failed to parse headers: {e}")),
+                });
+            }
         }
     } else {
         None
     };
-    
+
     // Parse rows
     let mut rows = Vec::new();
     let mut lines_processed = 0;
     let mut lines_skipped = 0;
     let mut column_counts = Vec::new();
-    
+
     for result in reader.records() {
         lines_processed += 1;
-        
+
         match result {
             Ok(record) => {
                 // Skip empty records if requested
@@ -110,22 +124,29 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
                     lines_skipped += 1;
                     continue;
                 }
-                
-                let row: Vec<String> = record.iter().map(|field| {
-                    if trim_fields { field.trim().to_string() } else { field.to_string() }
-                }).collect();
-                
+
+                let row: Vec<String> = record
+                    .iter()
+                    .map(|field| {
+                        if trim_fields {
+                            field.trim().to_string()
+                        } else {
+                            field.to_string()
+                        }
+                    })
+                    .collect();
+
                 column_counts.push(row.len());
                 rows.push(row);
             }
             Err(e) => {
                 // Skip malformed rows but track them
                 lines_skipped += 1;
-                eprintln!("Skipping malformed row: {}", e);
+                eprintln!("Skipping malformed row: {e}");
             }
         }
     }
-    
+
     // Calculate statistics
     let column_count = if let Some(ref h) = headers {
         h.len()
@@ -134,13 +155,13 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
     } else {
         0
     };
-    
+
     let uniform_columns = if column_counts.is_empty() {
         true
     } else {
         column_counts.iter().all(|&count| count == column_count)
     };
-    
+
     Ok(CsvParserResult {
         headers,
         row_count: rows.len(),
@@ -170,8 +191,15 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
-        assert_eq!(result.headers, Some(vec!["Name".to_string(), "Age".to_string(), "City".to_string()]));
+
+        assert_eq!(
+            result.headers,
+            Some(vec![
+                "Name".to_string(),
+                "Age".to_string(),
+                "City".to_string()
+            ])
+        );
         assert_eq!(result.row_count, 2);
         assert_eq!(result.column_count, 3);
         assert_eq!(result.rows[0], vec!["John", "30", "New York"]);
@@ -188,7 +216,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.headers, None);
         assert_eq!(result.row_count, 2);
         assert_eq!(result.rows[0], vec!["John", "30", "New York"]);
@@ -204,8 +232,15 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
-        assert_eq!(result.headers, Some(vec!["Name".to_string(), "Age".to_string(), "City".to_string()]));
+
+        assert_eq!(
+            result.headers,
+            Some(vec![
+                "Name".to_string(),
+                "Age".to_string(),
+                "City".to_string()
+            ])
+        );
         assert_eq!(result.rows[0], vec!["John", "30", "New York"]);
         assert_eq!(result.stats.delimiter_used, "\\t");
     }
@@ -220,8 +255,15 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
-        assert_eq!(result.headers, Some(vec!["Name".to_string(), "Age".to_string(), "City".to_string()]));
+
+        assert_eq!(
+            result.headers,
+            Some(vec![
+                "Name".to_string(),
+                "Age".to_string(),
+                "City".to_string()
+            ])
+        );
         assert_eq!(result.rows[0], vec!["John", "30", "New York"]);
         assert_eq!(result.stats.delimiter_used, "|");
     }
@@ -236,8 +278,15 @@ mod tests {
             trim_fields: Some(true),
         };
         let result = parse_csv(input).unwrap();
-        
-        assert_eq!(result.headers, Some(vec!["Name".to_string(), "Age".to_string(), "City".to_string()]));
+
+        assert_eq!(
+            result.headers,
+            Some(vec![
+                "Name".to_string(),
+                "Age".to_string(),
+                "City".to_string()
+            ])
+        );
         assert_eq!(result.rows[0], vec!["John", "30", "New York"]);
     }
 
@@ -251,7 +300,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.row_count, 2);
         assert_eq!(result.rows[0], vec!["John", "30"]);
         assert_eq!(result.rows[1], vec!["Jane", "25"]);
@@ -262,16 +311,20 @@ mod tests {
         let input = CsvParserInput {
             content: r#"Name,Description,Price
 "Product A","Contains, comma",10.99
-"Product B","Has ""quotes""",20.50"#.to_string(),
+"Product B","Has ""quotes""",20.50"#
+                .to_string(),
             has_headers: Some(true),
             delimiter: None,
             skip_empty_lines: None,
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.row_count, 2);
-        assert_eq!(result.rows[0], vec!["Product A", "Contains, comma", "10.99"]);
+        assert_eq!(
+            result.rows[0],
+            vec!["Product A", "Contains, comma", "10.99"]
+        );
         assert_eq!(result.rows[1], vec!["Product B", "Has \"quotes\"", "20.50"]);
     }
 
@@ -285,7 +338,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert!(!result.stats.uniform_columns);
         assert_eq!(result.column_count, 3); // Based on headers
         assert_eq!(result.rows[0].len(), 3);
@@ -303,7 +356,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.row_count, 0);
         assert_eq!(result.column_count, 0);
         assert!(result.headers.is_none());
@@ -319,8 +372,15 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
-        assert_eq!(result.headers, Some(vec!["Name".to_string(), "Age".to_string(), "City".to_string()]));
+
+        assert_eq!(
+            result.headers,
+            Some(vec![
+                "Name".to_string(),
+                "Age".to_string(),
+                "City".to_string()
+            ])
+        );
         assert_eq!(result.row_count, 0);
         assert_eq!(result.column_count, 3);
     }
@@ -335,7 +395,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input);
-        
+
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Invalid delimiter"));
     }
@@ -350,7 +410,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.row_count, 1);
         assert_eq!(result.rows[0], vec!["John", "123 Main St\nApt 4"]);
     }
@@ -365,7 +425,7 @@ mod tests {
             trim_fields: None,
         };
         let result = parse_csv(input).unwrap();
-        
+
         assert_eq!(result.row_count, 3); // 1,2 | 3,4 | 5
         assert!(!result.stats.uniform_columns); // Different column counts
         // With flexible parsing, empty lines are handled internally by the CSV parser

@@ -1,9 +1,11 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::ToolResponse;
+#[cfg(not(test))]
+use ftl_sdk::tool;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{vector_angle_logic, TwoVectorInput as LogicInput, VectorAngleResult, Vector3D as LogicVector3D};
+use logic::{TwoVectorInput as LogicInput, Vector3D as LogicVector3D, vector_angle_logic};
 
 #[derive(Deserialize, Serialize, Clone, JsonSchema)]
 pub struct Vector3D {
@@ -20,7 +22,11 @@ pub struct TwoVectorInput {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -37,6 +43,6 @@ impl From<TwoVectorInput> for LogicInput {
 pub fn vector_angle(input: TwoVectorInput) -> ToolResponse {
     match vector_angle_logic(input.into()) {
         Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {e}")),
     }
 }
