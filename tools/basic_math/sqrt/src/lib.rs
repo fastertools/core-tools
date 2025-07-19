@@ -28,7 +28,6 @@ pub struct SquareRootResult {
 }
 
 // Individual component mode - FTL tool
-#[cfg(all(feature = "individual", not(test)))]
 #[cfg_attr(not(test), tool)]
 pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
     // Convert to logic types
@@ -48,30 +47,5 @@ pub fn sqrt(input: SingleNumberInput) -> ToolResponse {
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
         Err(e) => ToolResponse::text(format!("Error: {}", e))
-    }
-}
-
-// Library mode - pure function for category use
-#[cfg(feature = "library")]
-pub fn sqrt_pure(input: SingleNumberInput) -> SquareRootResult {
-    // Convert to logic types
-    let logic_input = LogicInput {
-        value: input.value,
-    };
-    
-    // Call logic implementation
-    match logic::calculate_sqrt(logic_input) {
-        Ok(result) => SquareRootResult {
-            result: result.result,
-            input: result.input,
-            is_valid: result.is_valid,
-            error: result.error,
-        },
-        Err(_e) => SquareRootResult {
-            result: 0.0,
-            input: input.value,
-            is_valid: false,
-            error: Some("Calculation failed".to_string()),
-        }
     }
 }

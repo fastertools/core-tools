@@ -1,30 +1,25 @@
 #!/bin/bash
 
-# Architecture Improvements Initiative - Focused Testing
-# Testing only tools being worked on in current initiative
+# Code Quality and Architecture Cleanup Initiative - Critical Tools Testing
+# Testing the 5 critical tools that were fixed for anti-patterns
 
 BASE_URL="http://127.0.0.1:3000"
 
-echo "=== Architecture Improvements Initiative - Focused Testing ==="
+echo "=== Code Quality Cleanup Initiative - Critical Tools Testing ==="
 echo "Base URL: $BASE_URL"
 echo "Date: $(date)"
 echo
 
-# === LINE INTERSECTION TOOLS ===
-echo "=== LINE INTERSECTION TOOLS ==="
+# === DISTANCE_2D TOOL ===
+echo "=== DISTANCE_2D TOOL (Fixed: removed unused functions, now uses logic.rs) ==="
 echo
 
-# Test Single Line Intersection (recently fixed from ToolResponse to Result pattern)
-echo "--- Test: Line Intersection (intersecting lines) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/line-intersection -H "Content-Type: application/json" -d '{
-  "line1": {
-    "point": {"x": 0, "y": 0, "z": 0}, 
-    "direction": {"x": 1, "y": 0, "z": 0}
-  }, 
-  "line2": {
-    "point": {"x": 0, "y": 1, "z": 0}, 
-    "direction": {"x": 0, "y": -1, "z": 0}
-  }
+echo "--- Test: Distance 2D (Pythagorean distance calculation) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/distance-two-d -H "Content-Type: application/json" -d '{
+  "x1": 0,
+  "y1": 0,
+  "x2": 3,
+  "y2": 4
 }')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
@@ -32,23 +27,14 @@ echo "HTTP Code: $http_code"
 echo "Response: $response_body"
 echo
 
-# Test Multiple Line Intersection (already extracted tool)
-echo "--- Test: Multiple Line Intersection (3 lines) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/multiple-line-intersection -H "Content-Type: application/json" -d '{
-  "lines": [
-    {
-      "point": {"x": 0, "y": 0, "z": 0}, 
-      "direction": {"x": 1, "y": 0, "z": 0}
-    },
-    {
-      "point": {"x": 1, "y": 1, "z": 0}, 
-      "direction": {"x": 0, "y": -1, "z": 0}
-    },
-    {
-      "point": {"x": 0, "y": 0, "z": 1}, 
-      "direction": {"x": 0, "y": 0, "z": -1}
-    }
-  ]
+# === PYTHAGOREAN TOOL ===
+echo "=== PYTHAGOREAN TOOL (Fixed: removed HTTP composition, eliminated unused function) ==="
+echo
+
+echo "--- Test: Pythagorean (Calculate hypotenuse from two legs) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/pythagorean -H "Content-Type: application/json" -d '{
+  "a": 3,
+  "b": 4
 }')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
@@ -56,16 +42,14 @@ echo "HTTP Code: $http_code"
 echo "Response: $response_body"
 echo
 
-# === COORDINATE CONVERSION TOOLS ===
-echo "=== COORDINATE CONVERSION TOOLS ==="
+# === ADD TOOL ===
+echo "=== ADD TOOL (Fixed: removed WASM dependencies, now uses logic.rs) ==="
 echo
 
-# Test bundled coordinate conversion (to be extracted)
-echo "--- Test: Coordinate Conversion (bundled tool) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{
-  "from_type": "cartesian",
-  "to_type": "spherical",
-  "coordinates": {"x": 1, "y": 1, "z": 1}
+echo "--- Test: Add (Simple addition) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/add -H "Content-Type: application/json" -d '{
+  "a": 7,
+  "b": 8
 }')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
@@ -73,13 +57,14 @@ echo "HTTP Code: $http_code"
 echo "Response: $response_body"
 echo
 
-# Test already extracted tools
-# Test cylindrical conversions to identify what needs extraction
-echo "--- Test: Cartesian to Cylindrical (bundled - needs extraction) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{
-  "from_type": "cartesian",
-  "to_type": "cylindrical",
-  "coordinates": {"x": 1, "y": 1, "z": 2}
+# === MULTIPLY TOOL ===
+echo "=== MULTIPLY TOOL (Fixed: removed unused functions, now uses logic.rs) ==="
+echo
+
+echo "--- Test: Multiply (Simple multiplication) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/multiply -H "Content-Type: application/json" -d '{
+  "a": 6,
+  "b": 7
 }')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
@@ -87,64 +72,14 @@ echo "HTTP Code: $http_code"
 echo "Response: $response_body"
 echo
 
-echo "--- Test: Cylindrical to Cartesian (bundled - needs extraction) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/coordinate-conversion-three-d -H "Content-Type: application/json" -d '{
-  "from_type": "cylindrical",
-  "to_type": "cartesian",
-  "coordinates": {"x": 1.414, "y": 0.785, "z": 2}
-}')
-http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
-echo "HTTP Code: $http_code"
-echo "Response: $response_body"
+# === SUBTRACT TOOL ===
+echo "=== SUBTRACT TOOL (Fixed: removed unused functions, now uses logic.rs) ==="
 echo
 
-echo "--- Test: Cartesian to Spherical (extracted tool) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/cartesian-to-spherical -H "Content-Type: application/json" -d '{
-  "x": 1,
-  "y": 1, 
-  "z": 1
-}')
-http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
-echo "HTTP Code: $http_code"
-echo "Response: $response_body"
-echo
-
-# Test newly extracted cylindrical conversion tools
-echo "--- Test: Cartesian to Cylindrical (newly extracted tool) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/cartesian-to-cylindrical -H "Content-Type: application/json" -d '{
-  "x": 1,
-  "y": 1,
-  "z": 2
-}')
-http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
-echo "HTTP Code: $http_code"
-echo "Response: $response_body"
-echo
-
-echo "--- Test: Cylindrical to Cartesian (newly extracted tool) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/cylindrical-to-cartesian -H "Content-Type: application/json" -d '{
-  "radius": 1.414,
-  "theta": 0.785,
-  "z": 2
-}')
-http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
-response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
-echo "HTTP Code: $http_code"
-echo "Response: $response_body"
-echo
-
-# === VECTOR ANALYSIS COMPOSITE TOOL ===
-echo "=== VECTOR ANALYSIS COMPOSITE TOOL ==="
-echo
-
-# Test Vector Analysis (composite tool demonstrating HTTP composition pattern)
-echo "--- Test: Vector Analysis (composite tool - calls vector_magnitude, vector_angle, dot_product, cross_product) ---"
-response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/vector-analysis -H "Content-Type: application/json" -d '{
-  "vector_a": [1, 0, 0],
-  "vector_b": [0, 1, 0]
+echo "--- Test: Subtract (Simple subtraction) ---"
+response=$(curl -s -w "HTTP_CODE:%{http_code}" -X POST $BASE_URL/subtract -H "Content-Type: application/json" -d '{
+  "a": 10,
+  "b": 3
 }')
 http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 response_body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
@@ -153,11 +88,11 @@ echo "Response: $response_body"
 echo
 
 echo "=== SUMMARY ==="
-echo "This script tests tools in the Architecture Improvements Initiative:"
-echo "1. line-intersection (pattern fixed)"
-echo "2. multiple-line-intersection (already extracted)"
-echo "3. coordinate conversion tools (coordinate-conversion-three-d fixed)"
-echo "4. cartesian-to-cylindrical (newly extracted)"
-echo "5. cylindrical-to-cartesian (newly extracted)"
-echo "6. vector-analysis (composite tool demonstrating HTTP composition pattern)"
+echo "This script tests the 5 critical tools fixed in Code Quality Cleanup Initiative:"
+echo "1. distance-two-d (removed dead files, unused functions, now uses logic.rs)"
+echo "2. pythagorean (removed HTTP composition, eliminated unused function)"
+echo "3. add (removed WASM dependencies, now properly uses logic.rs)" 
+echo "4. multiply (removed unused functions, now properly uses logic.rs)"
+echo "5. subtract (removed unused functions, now properly uses logic.rs)"
+echo "All tools should return HTTP 200 and valid JSON responses."
 echo

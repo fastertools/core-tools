@@ -1,0 +1,144 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      tools: ${{ steps.filter.outputs.tools }}
+      rust: ${{ steps.filter.outputs.rust }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            tools:
+              - 'tools/**'
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - 'Cargo.lock'
+
+  lint:
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  build-changed:
+    needs: changes
+    if: needs.changes.outputs.tools == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
+      - name: Get changed tools
+        id: changed
+        run: |
+          chmod +x build_all.sh
+          CHANGED=$(./build_all.sh changed --base-ref origin/${{ github.base_ref }} | wc -l)
+          echo "count=${CHANGED}" >> $GITHUB_OUTPUT
+      
+      - name: Build changed tools
+        run: ./build_all.sh changed --base-ref origin/${{ github.base_ref }}
+      
+      - name: Comment PR
+        uses: actions/github-script@v7
+        if: steps.changed.outputs.count > 0
+        with:
+          script: |
+            const count = ${{ steps.changed.outputs.count }};
+            const body = `🔨 Successfully built ${count} changed tool${count !== 1 ? 's' : ''}.`;
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('🔨 Successfully built')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+  test-samples:
+    needs: build-changed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Spin
+        uses: fermyon/actions/spin/setup@v1
+        with:
+          version: "2.0.0"
+      
+      - name: Download artifacts if available
+        continue-on-error: true
+        uses: actions/download-artifact@v3
+        with:
+          name: wasm-modules
+          path: target/wasm32-wasip1/release/
+      
+      - name: Quick API test
+        run: |
+          # Start server in background
+          chmod +x test_server
+          ./test_server start
+          sleep 5
+          
+          # Test basic endpoint
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/add -X POST -H "Content-Type: application/json" -d '{"a": 1, "b": 2}')
+          
+          ./test_server stop
+          
+          if [ "$response" = "200" ]; then
+            echo "✅ API test passed"
+          else
+            echo "❌ API test failed with response code: $response"
+            exit 1
+          fi

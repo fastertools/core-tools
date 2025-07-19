@@ -28,7 +28,6 @@ pub struct ArithmeticResult {
     pub inputs: Vec<f64>,
 }
 
-#[cfg(feature = "individual")]
 #[cfg_attr(not(test), tool)]
 pub fn remainder(input: TwoNumberInput) -> ToolResponse {
     // Convert to logic types
@@ -48,14 +47,5 @@ pub fn remainder(input: TwoNumberInput) -> ToolResponse {
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
         Err(e) => ToolResponse::text(format!("Error: {}", e))
-    }
-}
-
-#[cfg(feature = "library")]
-pub fn remainder_pure(a: f64, b: f64) -> Result<f64, String> {
-    if b == 0.0 {
-        Err("Cannot calculate remainder with zero divisor".to_string())
-    } else {
-        Ok(a % b)
     }
 }

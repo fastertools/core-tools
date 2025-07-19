@@ -17,7 +17,6 @@ dependencies = [
 name = "add_tool"
 version = "0.1.0"
 dependencies = [
- "basic_math_types",
  "ftl-sdk",
  "schemars",
  "serde",
@@ -122,21 +121,6 @@ dependencies = [
  "serde",
  "serde_json",
  "spin-sdk",
-]
-
-[[package]]
-name = "basic_math_category"
-version = "0.1.0"
-dependencies = [
- "add_tool",
- "basic_math_types",
- "ftl-sdk",
- "multiply_tool",
- "schemars",
- "serde",
- "serde_json",
- "spin-sdk",
- "subtract_tool",
 ]
 
 [[package]]

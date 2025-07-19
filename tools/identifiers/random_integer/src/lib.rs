@@ -3,10 +3,7 @@ use schemars::JsonSchema;
 
 mod logic;
 
-use ftl_sdk::ToolResponse;
-
-#[cfg(not(test))]
-use ftl_sdk::tool;
+use ftl_sdk::{tool, ToolResponse};
 
 // Re-export types from logic module
 pub use logic::{

@@ -1,11 +1,7 @@
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
-
 mod logic;
-
 use ftl_sdk::ToolResponse;
-
-#[cfg(not(test))]
 use ftl_sdk::tool;
 
 // Re-export types from logic module
