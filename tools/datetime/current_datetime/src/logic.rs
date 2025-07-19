@@ -129,10 +129,10 @@ fn parse_timezone_offset(offset_str: &str) -> Result<FixedOffset, String> {
         .parse()
         .map_err(|_| "Invalid minutes in timezone offset".to_string())?;
 
-    if hours < 0 || hours > 14 {
+    if !(0..=14).contains(&hours) {
         return Err("Timezone offset hours must be between 0 and 14".to_string());
     }
-    if minutes < 0 || minutes > 59 {
+    if !(0..=59).contains(&minutes) {
         return Err("Timezone offset minutes must be between 0 and 59".to_string());
     }
 

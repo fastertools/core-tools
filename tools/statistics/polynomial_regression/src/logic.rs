@@ -53,8 +53,8 @@ pub fn calculate_polynomial_regression(
     // Create design matrix (Vandermonde matrix)
     let mut design_matrix = vec![vec![0.0; degree + 1]; n];
     for (i, row) in design_matrix.iter_mut().enumerate().take(n) {
-        for j in 0..=degree {
-            row[j] = input.x[i].powi(j as i32);
+        for (j, item) in row.iter_mut().enumerate().take(degree + 1) {
+            *item = input.x[i].powi(j as i32);
         }
     }
 
@@ -88,8 +88,8 @@ pub fn calculate_polynomial_regression(
 
     for i in 0..n {
         let mut predicted = 0.0;
-        for j in 0..=degree {
-            predicted += coefficients[j] * input.x[i].powi(j as i32);
+        for (j, &coeff) in coefficients.iter().enumerate().take(degree + 1) {
+            predicted += coeff * input.x[i].powi(j as i32);
         }
 
         let residual = input.y[i] - predicted;
@@ -112,7 +112,7 @@ pub fn calculate_polynomial_regression(
     let mut equation = String::new();
     for (i, &coeff) in coefficients.iter().enumerate() {
         if i == 0 {
-            equation.push_str(&format!("{:.6}", coeff));
+            equation.push_str(&format!("{coeff:.6}"));
         } else {
             let sign = if coeff >= 0.0 { " + " } else { " - " };
             equation.push_str(sign);

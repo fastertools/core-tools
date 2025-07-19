@@ -44,7 +44,7 @@ pub fn generate_histogram(input: HistogramInput) -> Result<HistogramOutput, Stri
     // Determine number of bins (use Sturges' rule if not specified)
     let num_bins = input.num_bins.unwrap_or_else(|| {
         let n = data.len() as f64;
-        ((n.ln() / 2.0_f64.ln()).ceil() as usize + 1).max(1).min(50)
+        ((n.ln() / 2.0_f64.ln()).ceil() as usize + 1).clamp(1, 50)
     });
 
     let range = max_val - min_val;
@@ -79,15 +79,13 @@ pub fn generate_histogram(input: HistogramInput) -> Result<HistogramOutput, Stri
     }
 
     // Create histogram bins
-    for i in 0..num_bins {
+    for (i, &count) in counts.iter().enumerate() {
         let lower_bound = min_val + i as f64 * bin_width;
         let upper_bound = if i == num_bins - 1 {
             max_val
         } else {
             min_val + (i + 1) as f64 * bin_width
         };
-
-        let count = counts[i];
         let frequency = count as f64 / data.len() as f64;
         let density = frequency / bin_width;
 

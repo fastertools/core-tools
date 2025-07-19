@@ -41,6 +41,7 @@ impl Vector3D {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    #[allow(dead_code)]
     pub fn normalize(&self) -> Result<Self, String> {
         let magnitude = self.magnitude();
         if magnitude < 1e-10 {
@@ -106,6 +107,7 @@ impl Matrix3x3 {
         Ok(matrix)
     }
 
+    #[allow(dead_code)]
     pub fn multiply_vector(&self, v: &Vector3D) -> Vector3D {
         Vector3D {
             x: self.m00 * v.x + self.m01 * v.y + self.m02 * v.z,
@@ -114,6 +116,7 @@ impl Matrix3x3 {
         }
     }
 
+    #[allow(dead_code)]
     pub fn determinant(&self) -> f64 {
         self.m00 * (self.m11 * self.m22 - self.m12 * self.m21)
             - self.m01 * (self.m10 * self.m22 - self.m12 * self.m20)

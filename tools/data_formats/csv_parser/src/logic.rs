@@ -52,11 +52,10 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
     // Get delimiter (default to comma)
     let delimiter = match input.delimiter.as_deref() {
         Some(d) if d.len() == 1 => d.chars().next().unwrap() as u8,
-        Some(d) if d == "\\t" => b'\t',
+        Some("\\t") => b'\t',
         Some(d) => {
             return Err(format!(
-                "Invalid delimiter: '{}'. Must be a single character.",
-                d
+                "Invalid delimiter: '{d}'. Must be a single character."
             ));
         }
         None => b',',
@@ -101,7 +100,7 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
                         uniform_columns: true,
                         delimiter_used: delimiter_str,
                     },
-                    error: Some(format!("Failed to parse headers: {}", e)),
+                    error: Some(format!("Failed to parse headers: {e}")),
                 });
             }
         }
@@ -143,7 +142,7 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
             Err(e) => {
                 // Skip malformed rows but track them
                 lines_skipped += 1;
-                eprintln!("Skipping malformed row: {}", e);
+                eprintln!("Skipping malformed row: {e}");
             }
         }
     }

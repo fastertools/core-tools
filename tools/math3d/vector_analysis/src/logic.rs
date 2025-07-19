@@ -41,35 +41,50 @@ struct TwoVectorInput {
 #[derive(Deserialize)]
 struct MagnitudeResult {
     magnitude: f64,
+    #[allow(dead_code)]
     unit_vector: Vector3D,
+    #[allow(dead_code)]
     is_zero_vector: bool,
 }
 
 #[derive(Deserialize)]
 struct AngleResult {
     angle_radians: f64,
+    #[allow(dead_code)]
     angle_degrees: f64,
+    #[allow(dead_code)]
     cos_angle: f64,
+    #[allow(dead_code)]
     vector1_magnitude: f64,
+    #[allow(dead_code)]
     vector2_magnitude: f64,
+    #[allow(dead_code)]
     is_perpendicular: bool,
+    #[allow(dead_code)]
     is_parallel: bool,
 }
 
 #[derive(Deserialize)]
 struct DotProductResult {
     dot_product: f64,
+    #[allow(dead_code)]
     angle_radians: f64,
+    #[allow(dead_code)]
     angle_degrees: f64,
+    #[allow(dead_code)]
     are_perpendicular: bool,
+    #[allow(dead_code)]
     are_parallel: bool,
 }
 
 #[derive(Deserialize)]
 struct CrossProductResult {
     cross_product: CrossProductVector,
+    #[allow(dead_code)]
     magnitude: f64,
+    #[allow(dead_code)]
     area_parallelogram: f64,
+    #[allow(dead_code)]
     are_parallel: bool,
 }
 
@@ -88,6 +103,7 @@ struct ToolResponseWrapper<T> {
 #[derive(Deserialize)]
 struct ContentItem<T> {
     #[serde(rename = "type")]
+    #[allow(dead_code)]
     item_type: String,
     text: String,
     #[serde(skip)]
@@ -215,8 +231,7 @@ async fn call_vector_angle(vector_a: &[f64], vector_b: &[f64]) -> Result<f64, St
     let result_text = &wrapper.content[0].text;
     let result: AngleResult = serde_json::from_str(result_text).map_err(|e| {
         format!(
-            "Failed to parse angle result: {}. Response body: {}",
-            e, body
+            "Failed to parse angle result: {e}. Response body: {body}"
         )
     })?;
 

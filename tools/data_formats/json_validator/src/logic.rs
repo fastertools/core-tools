@@ -49,7 +49,7 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
 
             return Ok(JsonValidatorResult {
                 is_valid: false,
-                error: Some(format!("Invalid JSON: {}", e)),
+                error: Some(format!("Invalid JSON: {e}")),
                 details: ValidationDetails {
                     root_type: "unknown".to_string(),
                     key_count: None,
@@ -84,7 +84,7 @@ pub fn validate_json(input: JsonValidatorInput) -> Result<JsonValidatorResult, S
             Err(e) => {
                 return Ok(JsonValidatorResult {
                     is_valid: false,
-                    error: Some(format!("Schema validation error: {}", e)),
+                    error: Some(format!("Schema validation error: {e}")),
                     details,
                     schema_validated: false,
                 });
@@ -196,7 +196,7 @@ fn calculate_depth_and_count(value: &Value, current_depth: usize) -> (usize, usi
 fn validate_against_schema(_value: &Value, schema_str: &str) -> Result<bool, String> {
     // Parse the schema
     let _schema: Value =
-        serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {}", e))?;
+        serde_json::from_str(schema_str).map_err(|e| format!("Invalid schema JSON: {e}"))?;
 
     // Note: Full JSON Schema validation is complex and would require a dedicated library.
     // For this basic implementation, we'll just check if the schema is valid JSON.

@@ -57,7 +57,7 @@ fn polygon_area(input: PolygonInput) -> ToolResponse {
 
     let result = match get_polygon_area(logic_input.coordinates) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error calculating polygon area: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error calculating polygon area: {e}")),
     };
 
     let output = PolygonAreaResult {

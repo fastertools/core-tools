@@ -68,7 +68,7 @@ pub fn csv_parser(input: CsvParserInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::parse_csv(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error parsing CSV: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error parsing CSV: {e}")),
     };
 
     // Convert back to wrapper types
@@ -87,6 +87,6 @@ pub fn csv_parser(input: CsvParserInput) -> ToolResponse {
     };
 
     ToolResponse::text(
-        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {e}")),
     )
 }

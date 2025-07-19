@@ -42,6 +42,7 @@ pub struct CylinderRayResult {
 }
 
 impl Vector3 {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3 { x, y, z }
     }
@@ -97,6 +98,7 @@ impl Vector3 {
 }
 
 impl Cylinder {
+    #[allow(dead_code)]
     pub fn new(center: Vector3, axis: Vector3, radius: f64, height: f64) -> Self {
         Cylinder {
             center,
@@ -108,6 +110,7 @@ impl Cylinder {
 }
 
 impl Ray {
+    #[allow(dead_code)]
     pub fn new(origin: Vector3, direction: Vector3) -> Self {
         Ray { origin, direction }
     }

@@ -36,6 +36,7 @@ pub struct LineSegmentIntersectionResult {
 const EPSILON: f64 = 1e-10;
 
 impl Vector3D {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3D { x, y, z }
     }
@@ -52,6 +53,7 @@ impl Vector3D {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
+    #[allow(dead_code)]
     pub fn cross(&self, other: &Vector3D) -> Vector3D {
         Vector3D {
             x: self.y * other.z - self.z * other.y,

@@ -51,8 +51,7 @@ pub fn calculate_correlation_matrix(
         // Check for invalid values
         if series.iter().any(|&x| x.is_nan() || x.is_infinite()) {
             return Err(format!(
-                "Series {} contains invalid values (NaN or Infinite)",
-                i
+                "Series {i} contains invalid values (NaN or Infinite)"
             ));
         }
     }
@@ -64,7 +63,7 @@ pub fn calculate_correlation_matrix(
     // Create correlation matrix
     let mut correlation_matrix = vec![vec![0.0; num_variables]; num_variables];
 
-    for i in 0..num_variables {
+    for (i, row) in correlation_matrix.iter_mut().enumerate().take(num_variables) {
         for j in 0..num_variables {
             if i == j {
                 correlation_matrix[i][j] = 1.0;
@@ -214,7 +213,7 @@ fn calculate_t_test_p_value(t_stat: f64, df: f64) -> f64 {
     } else {
         // Simple approximation for small df
         let p = 2.0 * (1.0 - (1.0 / (1.0 + (t_stat * t_stat) / df)).powf(df / 2.0));
-        p.min(1.0).max(0.0)
+        p.clamp(0.0, 1.0)
     }
 }
 
