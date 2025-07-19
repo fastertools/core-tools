@@ -387,18 +387,17 @@ jobs:
             fi
             
             echo "Tool publishing simulation: ${IMAGE_NAME}:${VERSION}"
-      
-      # TESTING: Original publishing commented out
-      #       # Publish with version
-      #       IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
-      #       spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
-      #       
-      #       # Update latest for non-prerelease
-      #       if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
-      #         spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
-      #       fi
-      #       
-      #       echo "Published ${IMAGE_NAME}:${VERSION}"
+            
+            # TESTING: Original publishing commented out
+            # IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
+            # spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
+            # 
+            # # Update latest for non-prerelease
+            # if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
+            #   spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
+            # fi
+            # 
+            # echo "Published ${IMAGE_NAME}:${VERSION}"
           done
 
   # ===== RELEASE SUMMARY =====
