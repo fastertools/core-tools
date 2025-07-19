@@ -258,24 +258,15 @@ mod tests {
 
             assert!(
                 (result.cartesian_coordinates.x - expected_x).abs() < 1e-14,
-                "X mismatch for (ρ={}, θ={}, z={})",
-                radius,
-                theta,
-                z
+                "X mismatch for (ρ={radius}, θ={theta}, z={z})"
             );
             assert!(
                 (result.cartesian_coordinates.y - expected_y).abs() < 1e-14,
-                "Y mismatch for (ρ={}, θ={}, z={})",
-                radius,
-                theta,
-                z
+                "Y mismatch for (ρ={radius}, θ={theta}, z={z})"
             );
             assert!(
                 (result.cartesian_coordinates.z - expected_z).abs() < 1e-14,
-                "Z mismatch for (ρ={}, θ={}, z={})",
-                radius,
-                theta,
-                z
+                "Z mismatch for (ρ={radius}, θ={theta}, z={z})"
             );
         }
     }

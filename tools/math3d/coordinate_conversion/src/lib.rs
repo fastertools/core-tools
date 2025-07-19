@@ -114,8 +114,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to serialize cartesian input: {}",
-                        e
+                        "Error: Failed to serialize cartesian input: {e}"
                     ));
                 }
             };
@@ -131,8 +130,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Error calling cartesian-to-spherical tool: {:?}",
-                        e
+                        "Error: Error calling cartesian-to-spherical tool: {e:?}"
                     ));
                 }
             };
@@ -151,8 +149,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse cartesian-to-spherical response wrapper: {}",
-                        e
+                        "Error: Failed to parse cartesian-to-spherical response wrapper: {e}"
                     ));
                 }
             };
@@ -162,8 +159,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                     Ok(result) => result,
                     Err(e) => {
                         return ToolResponse::text(format!(
-                            "Error: Failed to parse cartesian-to-spherical result: {}",
-                            e
+                            "Error: Failed to parse cartesian-to-spherical result: {e}"
                         ));
                     }
                 };
@@ -185,8 +181,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to serialize spherical input: {}",
-                        e
+                        "Error: Failed to serialize spherical input: {e}"
                     ));
                 }
             };
@@ -202,8 +197,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Error calling spherical-to-cartesian tool: {:?}",
-                        e
+                        "Error: Error calling spherical-to-cartesian tool: {e:?}"
                     ));
                 }
             };
@@ -222,8 +216,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to parse spherical-to-cartesian response wrapper: {}",
-                        e
+                        "Error: Failed to parse spherical-to-cartesian response wrapper: {e}"
                     ));
                 }
             };
@@ -233,8 +226,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                     Ok(result) => result,
                     Err(e) => {
                         return ToolResponse::text(format!(
-                            "Error: Failed to parse spherical-to-cartesian result: {}",
-                            e
+                            "Error: Failed to parse spherical-to-cartesian result: {e}"
                         ));
                     }
                 };
@@ -256,8 +248,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(body) => body,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Failed to serialize cartesian input: {}",
-                        e
+                        "Error: Failed to serialize cartesian input: {e}"
                     ));
                 }
             };
@@ -273,8 +264,7 @@ pub async fn coordinate_conversion(input: CoordinateConversionInput) -> ToolResp
                 Ok(resp) => resp,
                 Err(e) => {
                     return ToolResponse::text(format!(
-                        "Error: Error calling cartesian-to-cylindrical tool: {:?}",
-                        e
+                        "Error: Error calling cartesian-to-cylindrical tool: {e:?}"
                     ));
                 }
             };

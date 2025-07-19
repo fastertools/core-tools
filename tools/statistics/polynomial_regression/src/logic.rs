@@ -230,7 +230,7 @@ mod tests {
         let x_vals = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
         let y_vals: Vec<f64> = x_vals
             .iter()
-            .map(|&x| (x as f64).powi(3) + 2.0 * (x as f64).powi(2) + 3.0 * x + 4.0)
+            .map(|&x: &f64| x.powi(3) + 2.0 * x.powi(2) + 3.0 * x + 4.0)
             .collect();
 
         let input = PolynomialRegressionInput {

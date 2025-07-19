@@ -111,7 +111,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
 
     // Format the YAML
     let formatted_values: Vec<Value> = if sort_keys {
-        values.into_iter().map(|v| sort_value_keys(v)).collect()
+        values.into_iter().map(sort_value_keys).collect()
     } else {
         values
     };
@@ -204,10 +204,7 @@ fn sort_value_keys(value: Value) -> Value {
 fn format_with_quoted_strings(value: &Value, _indent_spaces: usize) -> String {
     // For simplicity, use the default formatter but ensure strings are quoted
     // In a real implementation, we'd implement a custom emitter
-    match serde_yml::to_string(value) {
-        Ok(s) => s,
-        Err(_) => String::new(),
-    }
+    serde_yml::to_string(value).unwrap_or_default()
 }
 
 #[cfg(test)]

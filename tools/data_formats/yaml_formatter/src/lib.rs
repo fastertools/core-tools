@@ -64,7 +64,7 @@ pub fn yaml_formatter(input: YamlFormatterInput) -> ToolResponse {
     // Call logic implementation
     let result = match logic::format_yaml(logic_input) {
         Ok(result) => result,
-        Err(e) => return ToolResponse::text(format!("Error formatting YAML: {}", e)),
+        Err(e) => return ToolResponse::text(format!("Error formatting YAML: {e}")),
     };
 
     // Convert back to wrapper types
@@ -81,6 +81,6 @@ pub fn yaml_formatter(input: YamlFormatterInput) -> ToolResponse {
     };
 
     ToolResponse::text(
-        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {e}")),
     )
 }

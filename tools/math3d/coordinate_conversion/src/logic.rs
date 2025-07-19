@@ -38,10 +38,12 @@ pub struct CoordinateConversionOutput {
 }
 
 impl Vector3D {
+    #[cfg(test)]
     pub fn is_valid(&self) -> bool {
         self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
     }
 
+    #[cfg(test)]
     pub fn to_spherical(&self) -> SphericalCoord {
         let radius = (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
         let theta = self.y.atan2(self.x);
@@ -54,6 +56,7 @@ impl Vector3D {
         SphericalCoord { radius, theta, phi }
     }
 
+    #[cfg(test)]
     pub fn to_cylindrical(&self) -> CylindricalCoord {
         let radius = (self.x * self.x + self.y * self.y).sqrt();
         let theta = self.y.atan2(self.x);
@@ -67,6 +70,7 @@ impl Vector3D {
 }
 
 impl SphericalCoord {
+    #[cfg(test)]
     pub fn is_valid(&self) -> bool {
         self.radius.is_finite()
             && self.theta.is_finite()
@@ -74,6 +78,7 @@ impl SphericalCoord {
             && self.radius >= 0.0
     }
 
+    #[cfg(test)]
     pub fn to_cartesian(&self) -> Vector3D {
         let sin_phi = self.phi.sin();
         let cos_phi = self.phi.cos();
@@ -89,6 +94,7 @@ impl SphericalCoord {
 }
 
 impl CylindricalCoord {
+    #[cfg(test)]
     pub fn is_valid(&self) -> bool {
         self.radius.is_finite()
             && self.theta.is_finite()
@@ -96,6 +102,7 @@ impl CylindricalCoord {
             && self.radius >= 0.0
     }
 
+    #[cfg(test)]
     pub fn to_cartesian(&self) -> Vector3D {
         let cos_theta = self.theta.cos();
         let sin_theta = self.theta.sin();
@@ -108,6 +115,7 @@ impl CylindricalCoord {
     }
 }
 
+#[cfg(test)]
 pub fn coordinate_conversion_logic(
     input: CoordinateConversionInput,
 ) -> Result<CoordinateConversionOutput, String> {
@@ -559,27 +567,18 @@ mod tests {
             let result = coordinate_conversion_logic(input).unwrap();
             assert!(
                 (result.converted.x - expected_r).abs() < 1e-14,
-                "Radius mismatch for ({}, {}, {})",
-                x,
-                y,
-                z
+                "Radius mismatch for ({x}, {y}, {z})"
             );
             // Note: theta can vary for points on z-axis, so we only check it for off-axis points
             if x != 0.0 || y != 0.0 {
                 assert!(
                     (result.converted.y - expected_theta).abs() < 1e-14,
-                    "Theta mismatch for ({}, {}, {})",
-                    x,
-                    y,
-                    z
+                    "Theta mismatch for ({x}, {y}, {z})"
                 );
             }
             assert!(
                 (result.converted.z - expected_phi).abs() < 1e-14,
-                "Phi mismatch for ({}, {}, {})",
-                x,
-                y,
-                z
+                "Phi mismatch for ({x}, {y}, {z})"
             );
         }
     }

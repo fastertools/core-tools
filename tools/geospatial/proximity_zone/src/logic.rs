@@ -662,7 +662,7 @@ mod tests {
 
         assert_eq!(result.summary.total_points, 100);
         assert!(result.summary.points_inside > 0);
-        assert!(result.summary.points_outside >= 0);
+        // points_outside is a usize, so it's always >= 0
         assert_eq!(
             result.summary.points_inside + result.summary.points_outside,
             100

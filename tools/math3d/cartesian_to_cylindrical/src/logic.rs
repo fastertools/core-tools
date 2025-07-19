@@ -245,24 +245,15 @@ mod tests {
 
             assert!(
                 (result.cylindrical_coordinates.radius - expected_radius).abs() < 1e-14,
-                "Radius mismatch for ({}, {}, {})",
-                x,
-                y,
-                z
+                "Radius mismatch for ({x}, {y}, {z})"
             );
             assert!(
                 (result.cylindrical_coordinates.theta - expected_theta).abs() < 1e-14,
-                "Theta mismatch for ({}, {}, {})",
-                x,
-                y,
-                z
+                "Theta mismatch for ({x}, {y}, {z})"
             );
             assert!(
                 (result.cylindrical_coordinates.z - z).abs() < 1e-14,
-                "Z mismatch for ({}, {}, {})",
-                x,
-                y,
-                z
+                "Z mismatch for ({x}, {y}, {z})"
             );
         }
     }

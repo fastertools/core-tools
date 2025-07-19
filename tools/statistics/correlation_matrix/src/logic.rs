@@ -63,7 +63,8 @@ pub fn calculate_correlation_matrix(
     // Create correlation matrix
     let mut correlation_matrix = vec![vec![0.0; num_variables]; num_variables];
 
-    for (i, row) in correlation_matrix.iter_mut().enumerate().take(num_variables) {
+    #[allow(clippy::needless_range_loop)]
+    for i in 0..num_variables {
         for j in 0..num_variables {
             if i == j {
                 correlation_matrix[i][j] = 1.0;

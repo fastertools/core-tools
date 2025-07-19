@@ -253,7 +253,8 @@ mod tests {
         let result = calculate_test_normality(input).unwrap();
 
         // Check all fields are present and reasonable
-        assert!(result.is_normal == true || result.is_normal == false);
+        // is_normal must be either true or false, this is always true
+        let _ = result.is_normal;
         assert!(result.shapiro_wilk_statistic.is_none()); // Currently not implemented
         assert!(result.jarque_bera_statistic >= 0.0);
         assert!(result.p_value >= 0.0 && result.p_value <= 1.0);

@@ -23,7 +23,7 @@ impl From<Coordinate> for LogicCoordinate {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct PolygonInput {
+pub struct PolygonInput {
     /// Array of coordinates defining the polygon
     coordinates: Vec<Coordinate>,
 }
@@ -52,7 +52,7 @@ impl From<PolygonInput> for LogicInput {
 
 /// Calculate area of a GPS polygon
 #[cfg_attr(not(test), ftl_sdk::tool)]
-fn polygon_area(input: PolygonInput) -> ToolResponse {
+pub fn polygon_area(input: PolygonInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 
     let result = match get_polygon_area(logic_input.coordinates) {
