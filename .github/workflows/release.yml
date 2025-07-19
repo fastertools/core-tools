@@ -2,6 +2,7 @@ name: Release
 # New workflow for manual/tagged releases
 # Incorporates versioning from publish-tools.yml with manual dispatch
 
+# TESTING: Temporarily disable automatic triggers for validation
 on:
   workflow_dispatch:
     inputs:
@@ -14,9 +15,10 @@ on:
         required: false
         type: boolean
         default: false
-  push:
-    tags:
-      - 'v*'
+  # TESTING: Tag triggers disabled for validation
+  # push:
+  #   tags:
+  #     - 'v*'
 
 env:
   CARGO_TERM_COLOR: always
