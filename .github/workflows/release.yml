@@ -188,23 +188,39 @@ jobs:
           mkdir -p target/wasm32-wasip1/release
           cp artifacts/*.wasm target/wasm32-wasip1/release/
       
-      - name: Log in to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      # TESTING: Login disabled for validation
+      # - name: Log in to GHCR
+      #   run: |
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
       
-      - name: Publish versioned bundle
+      - name: Simulate versioned bundle publishing (TESTING)
         run: |
           VERSION="${{ needs.prepare.outputs.version }}"
           
-          # Publish with version tag
-          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${VERSION}"
+          echo "✅ Bundle publishing simulation for release ${VERSION}"
+          echo "Would publish: ghcr.io/${{ env.IMAGE_NAME }}:${VERSION}"
           
           # Update latest only for non-prerelease
           if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
-            spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+            echo "Would publish: ghcr.io/${{ env.IMAGE_NAME }}:latest"
           fi
           
-          echo "Published release ${VERSION} to GHCR"
+          echo "Release ${VERSION} publishing simulation completed"
+      
+      # TESTING: Original publishing commented out
+      # - name: Publish versioned bundle
+      #   run: |
+      #     VERSION="${{ needs.prepare.outputs.version }}"
+      #     
+      #     # Publish with version tag
+      #     spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${VERSION}"
+      #     
+      #     # Update latest only for non-prerelease
+      #     if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
+      #       spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+      #     fi
+      #     
+      #     echo "Published release ${VERSION} to GHCR"
       
       - name: Create release package
         run: |
@@ -323,9 +339,10 @@ jobs:
           merge-multiple: true
           path: target/wasm32-wasip1/release/
       
-      - name: Log in to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      # TESTING: Login disabled for validation
+      # - name: Log in to GHCR
+      #   run: |
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
       
       - name: Publish category tools
         run: |
@@ -358,16 +375,28 @@ jobs:
           allowed_outbound_hosts = []
           EOF
             
-            # Publish with version
+            # TESTING: Simulate publishing
             IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
-            spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
+            echo "Would publish: ${IMAGE_NAME}:${VERSION}"
             
             # Update latest for non-prerelease
             if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
-              spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
+              echo "Would publish: ${IMAGE_NAME}:latest"
             fi
             
-            echo "Published ${IMAGE_NAME}:${VERSION}"
+            echo "Tool publishing simulation: ${IMAGE_NAME}:${VERSION}"
+      
+      # TESTING: Original publishing commented out
+      #       # Publish with version
+      #       IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
+      #       spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
+      #       
+      #       # Update latest for non-prerelease
+      #       if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "false" ]]; then
+      #         spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
+      #       fi
+      #       
+      #       echo "Published ${IMAGE_NAME}:${VERSION}"
           done
 
   # ===== RELEASE SUMMARY =====

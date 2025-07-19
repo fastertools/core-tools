@@ -200,21 +200,31 @@ jobs:
           cp artifacts/*.wasm target/wasm32-wasip1/release/
           echo "Found $(ls -1 target/wasm32-wasip1/release/*.wasm | wc -l) WASM files"
       
-      - name: Log in to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      # TESTING: Temporarily disabled for validation
+      # - name: Log in to GHCR
+      #   run: |
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
       
-      - name: Push bundle
+      # TESTING: Temporarily disabled for validation
+      # - name: Push bundle
+      #   run: |
+      #     # Push with multiple tags
+      #     spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+      #     spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
+      #     
+      #     # Daily tag
+      #     DATE_TAG=$(date +%Y%m%d)
+      #     spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${DATE_TAG}"
+      #     
+      #     echo "Bundle published to ghcr.io/${{ env.IMAGE_NAME }}"
+      
+      - name: Simulate bundle publishing (TESTING)
         run: |
-          # Push with multiple tags
-          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:latest"
-          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
-          
-          # Daily tag
+          echo "✅ Bundle publishing simulation completed"
+          echo "Would publish to: ghcr.io/${{ env.IMAGE_NAME }}:latest"
+          echo "Would publish to: ghcr.io/${{ env.IMAGE_NAME }}:sha-$(echo "${{ github.sha }}" | cut -c1-7)"
           DATE_TAG=$(date +%Y%m%d)
-          spin registry push "ghcr.io/${{ env.IMAGE_NAME }}:${DATE_TAG}"
-          
-          echo "Bundle published to ghcr.io/${{ env.IMAGE_NAME }}"
+          echo "Would publish to: ghcr.io/${{ env.IMAGE_NAME }}:${DATE_TAG}"
 
   # ===== PUBLISH INDIVIDUAL TOOLS =====
   # From: publish-tools.yml build-and-publish (only for changed tools on main)
@@ -264,15 +274,17 @@ jobs:
           merge-multiple: true
           path: target/wasm32-wasip1/release/
       
-      - name: Log in to GHCR
-        if: steps.changes.outputs.has-changes == 'true'
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
+      # TESTING: Temporarily disabled for validation
+      # - name: Log in to GHCR
+      #   if: steps.changes.outputs.has-changes == 'true'
+      #   run: |
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | spin registry login ghcr.io -u ${{ github.actor }} --password-stdin
       
-      - name: Publish changed tools
+      - name: Simulate individual tool publishing (TESTING)
         if: steps.changes.outputs.has-changes == 'true'
         run: |
-          # Parse matrix and publish each tool
+          echo "✅ Individual tool publishing simulation"
+          # Parse matrix and simulate publishing each tool
           echo '${{ steps.changes.outputs.matrix }}' | jq -r '.tool[]' | while read tool_path; do
             if [ -n "$tool_path" ] && [ -d "$tool_path" ]; then
               TOOL_NAME=$(basename $tool_path)
@@ -283,31 +295,50 @@ jobs:
               # Clean name for container
               TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
               
-              # Create minimal spin.toml
-              cat > tool-spin.toml << EOF
-          spin_manifest_version = 2
-          
-          [application]
-          name = "$TOOL_NAME"
-          version = "$VERSION"
-          
-          [[trigger.http]]
-          route = "/$TOOL_NAME"
-          component = "$TOOL_NAME"
-          
-          [component.$TOOL_NAME]
-          source = "target/wasm32-wasip1/release/${PACKAGE_NAME}.wasm"
-          allowed_outbound_hosts = []
-          EOF
-              
-              # Publish individual tool
-              IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
-              spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
-              spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
-              
-              echo "Published ${IMAGE_NAME}"
+              echo "Would publish: ghcr.io/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}:${VERSION}"
             fi
           done
+      
+      # TESTING: Original publishing code commented out
+      # - name: Publish changed tools
+      #   if: steps.changes.outputs.has-changes == 'true'
+      #   run: |
+      #     # Parse matrix and publish each tool
+      #     echo '${{ steps.changes.outputs.matrix }}' | jq -r '.tool[]' | while read tool_path; do
+      #       if [ -n "$tool_path" ] && [ -d "$tool_path" ]; then
+      #         TOOL_NAME=$(basename $tool_path)
+      #         CATEGORY=$(basename $(dirname $tool_path))
+      #         PACKAGE_NAME=$(grep '^name = ' $tool_path/Cargo.toml | cut -d'"' -f2)
+      #         VERSION=$(grep '^version = ' $tool_path/Cargo.toml | cut -d'"' -f2)
+      #         
+      #         # Clean name for container
+      #         TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
+      #         
+      #         # Create minimal spin.toml
+      #         cat > tool-spin.toml << EOF
+      # spin_manifest_version = 2
+      #       
+      #       [application]
+      #       name = "$TOOL_NAME"
+      #       version = "$VERSION"
+      #       
+      #       [[trigger.http]]
+      #       route = "/$TOOL_NAME"
+      #       component = "$TOOL_NAME"
+      #       
+      #       [component.$TOOL_NAME]
+      #       source = "target/wasm32-wasip1/release/${PACKAGE_NAME}.wasm"
+      #       allowed_outbound_hosts = []
+      #       EOF
+      #           
+      #           # Publish individual tool
+      #           IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${TOOL_NAME_CLEAN}"
+      #           spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:${VERSION}"
+      #           spin registry push --build -f tool-spin.toml "${IMAGE_NAME}:latest"
+      #           
+      #           echo "Published ${IMAGE_NAME}"
+      #         fi
+      #       done
 
   # ===== CREATE SPIN APP PACKAGE =====
   # From: build-and-publish.yml publish-spin-app
