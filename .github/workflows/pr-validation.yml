@@ -2,8 +2,7 @@ name: PR Validation
 
 # DISABLED: Replaced by pr-checks.yml
 on:
-  # pull_request:
-  #   types: [opened, synchronize, reopened]
+  workflow_dispatch:  # Manual trigger only
 
 env:
   CARGO_TERM_COLOR: always

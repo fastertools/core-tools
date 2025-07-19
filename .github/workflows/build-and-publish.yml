@@ -2,10 +2,7 @@ name: Build and Publish Tools
 
 # DISABLED: Replaced by main-ci.yml and pr-checks.yml
 on:
-  # push:
-  #   branches: [ main, feat/core-tools, feat/llm-standard-library ]
-  # pull_request:
-  #   branches: [ main ]
+  workflow_dispatch:  # Manual trigger only
 
 env:
   REGISTRY: ghcr.io
