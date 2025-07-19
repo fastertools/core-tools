@@ -73,6 +73,7 @@ jobs:
         run: ./build_all.sh changed --base-ref origin/${{ github.base_ref }}
       
       - name: Comment PR
+        continue-on-error: true
         uses: actions/github-script@v7
         if: steps.changed.outputs.count > 0
         with:
