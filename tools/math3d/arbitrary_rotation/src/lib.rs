@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 
 mod logic;
@@ -17,7 +19,7 @@ struct ToolOutput {
 }
 
 #[cfg_attr(not(test), tool)]
-fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
+pub fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
     let logic_input = ArbitraryRotationInput {
         axis: input.axis,
         angle: input.angle,

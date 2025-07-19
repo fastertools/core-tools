@@ -99,7 +99,7 @@ mod tests {
         assert_eq!(result.min, 1.0);
         assert_eq!(result.max, 5.0);
         assert_eq!(result.median, 3.0);
-        assert!((result.std_dev - 1.4142135623730951).abs() < 1e-10);
+        assert!((result.std_dev - std::f64::consts::SQRT_2).abs() < 1e-10);
     }
 
     #[test]

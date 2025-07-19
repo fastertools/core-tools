@@ -1,9 +1,11 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{StatisticsInput as LogicInput, SummaryStatisticsOutput, summary_statistics_logic};
+use logic::{summary_statistics_logic, StatisticsInput as LogicInput};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct StatisticsInput {

@@ -1,11 +1,12 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    CrossProductInput as LogicInput, CrossProductResult as LogicResult, Vector3D as LogicVector3D,
-    cross_product_logic,
+    cross_product_logic, CrossProductInput as LogicInput, Vector3D as LogicVector3D,
 };
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug, PartialEq)]
