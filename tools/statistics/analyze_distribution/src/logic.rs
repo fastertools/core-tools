@@ -126,8 +126,8 @@ async fn call_histogram_tool(
         .map_err(|e| format!("Error calling histogram tool: {e:?}"))?;
 
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
 
     let wrapper: ToolResponseWrapper<HistogramOutput> =
         serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {e}"))?;
@@ -159,8 +159,8 @@ async fn call_test_normality_tool(data: &[f64]) -> Result<NormalityTestOutput, S
         .map_err(|e| format!("Error calling test_normality tool: {e:?}"))?;
 
     let body_bytes = response.into_body();
-    let body = String::from_utf8(body_bytes)
-        .map_err(|e| format!("Failed to parse response body: {e}"))?;
+    let body =
+        String::from_utf8(body_bytes).map_err(|e| format!("Failed to parse response body: {e}"))?;
 
     let wrapper: ToolResponseWrapper<NormalityTestOutput> =
         serde_json::from_str(&body).map_err(|e| format!("Failed to parse tool response: {e}"))?;

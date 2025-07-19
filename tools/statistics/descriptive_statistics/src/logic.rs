@@ -177,9 +177,8 @@ fn calculate_skewness(data: &[f64], mean: f64, std_dev: f64) -> f64 {
     }
 
     let n = data.len() as f64;
-    
-    data
-        .iter()
+
+    data.iter()
         .map(|x| ((x - mean) / std_dev).powi(3))
         .sum::<f64>()
         / n

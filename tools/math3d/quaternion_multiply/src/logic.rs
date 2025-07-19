@@ -411,7 +411,6 @@ mod tests {
 
     #[test]
     fn test_unit_quaternion_multiplication() {
-
         // Two 90-degree rotations around different axes
         let sqrt2_inv = 1.0 / 2.0_f64.sqrt();
         let input = QuaternionMultiplyInput {

@@ -60,7 +60,7 @@ fn calculate_bearing(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let x = lat1_rad.cos() * lat2_rad.sin() - lat1_rad.sin() * lat2_rad.cos() * delta_lon.cos();
 
     let bearing_rad = y.atan2(x);
-    
+
     (bearing_rad * 180.0 / PI + 360.0) % 360.0
 }
 

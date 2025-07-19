@@ -149,7 +149,10 @@ pub fn calculate_linear_regression(
     let equation = if intercept >= 0.0 {
         format!("y = {slope:.6}x + {intercept:.6}")
     } else {
-        format!("y = {slope:.6}x - {intercept_abs:.6}", intercept_abs = intercept.abs())
+        format!(
+            "y = {slope:.6}x - {intercept_abs:.6}",
+            intercept_abs = intercept.abs()
+        )
     };
 
     Ok(LinearRegressionOutput {

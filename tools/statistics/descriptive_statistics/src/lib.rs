@@ -5,9 +5,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{
-    StatisticsInput as LogicInput, descriptive_statistics_logic,
-};
+use logic::{StatisticsInput as LogicInput, descriptive_statistics_logic};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct StatisticsInput {

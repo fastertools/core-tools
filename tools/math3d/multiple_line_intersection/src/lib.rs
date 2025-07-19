@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    Line3D as LogicLine3D, MultipleLinesInput as LogicInput,
-    Vector3D as LogicVector3D, multiple_line_intersection_logic,
+    Line3D as LogicLine3D, MultipleLinesInput as LogicInput, Vector3D as LogicVector3D,
+    multiple_line_intersection_logic,
 };
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
