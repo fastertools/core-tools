@@ -1,12 +1,13 @@
 name: Test PR Changes
 
+# DISABLED: Replaced by pr-checks.yml
 on:
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'tools/**'
-      - 'spin.toml'
-      - '.github/workflows/**'
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'tools/**'
+  #     - 'spin.toml'
+  #     - '.github/workflows/**'
 
 jobs:
   test-changed-tools:

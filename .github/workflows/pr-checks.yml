@@ -7,7 +7,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # TODO: Update Spin version from v2.0.1 to v3.3.1
   SPIN_VERSION: v3.3.1
 
 permissions:
