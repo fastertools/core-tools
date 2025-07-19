@@ -1,9 +1,12 @@
-name: PR Checks
+name: CI
+# Runs on both PRs and main branch pushes
 # Consolidates: pr-validation.yml, test-pr.yml, PR parts of build-and-test.yml and build-and-publish.yml
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
