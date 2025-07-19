@@ -261,6 +261,11 @@ jobs:
           mkdir -p target/wasm32-wasip1/release
           cp artifacts/*.wasm target/wasm32-wasip1/release/
       
+      - name: Install Rust with wasm32-wasip1 target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      
       - name: Log in to GHCR
         if: github.event.inputs.dry_run != 'true'
         run: |
@@ -391,7 +396,7 @@ jobs:
             TOOL_NAME=$(basename $tool_dir)
             PACKAGE_NAME=$(grep '^name = ' "$cargo_file" | cut -d'"' -f2)
             
-            # Clean name for container registry
+            # Clean name for container registry and component names
             TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
             
             # Create minimal spin.toml for this tool
@@ -399,14 +404,14 @@ jobs:
           spin_manifest_version = 2
           
           [application]
-          name = "$TOOL_NAME"
+          name = "$TOOL_NAME_CLEAN"
           version = "${VERSION#v}"
           
           [[trigger.http]]
-          route = "/$TOOL_NAME"
-          component = "$TOOL_NAME"
+          route = "/$TOOL_NAME_CLEAN"
+          component = "$TOOL_NAME_CLEAN"
           
-          [component.$TOOL_NAME]
+          [component.$TOOL_NAME_CLEAN]
           source = "target/wasm32-wasip1/release/${PACKAGE_NAME}.wasm"
           allowed_outbound_hosts = []
           EOF
