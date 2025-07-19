@@ -7,6 +7,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -119,7 +123,7 @@ jobs:
       
       - name: Download artifacts if available
         continue-on-error: true
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: wasm-modules
           path: target/wasm32-wasip1/release/

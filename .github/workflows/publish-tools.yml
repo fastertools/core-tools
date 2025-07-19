@@ -84,7 +84,11 @@ jobs:
           PACKAGE_NAME=$(grep '^name = ' $TOOL_PATH/Cargo.toml | cut -d'"' -f2)
           VERSION=$(grep '^version = ' $TOOL_PATH/Cargo.toml | cut -d'"' -f2)
           
+          # Replace underscores with hyphens for container naming
+          TOOL_NAME_CLEAN=$(echo "$TOOL_NAME" | tr '_' '-')
+          
           echo "tool_name=${TOOL_NAME}" >> $GITHUB_OUTPUT
+          echo "tool_name_clean=${TOOL_NAME_CLEAN}" >> $GITHUB_OUTPUT
           echo "category=${CATEGORY}" >> $GITHUB_OUTPUT
           echo "package_name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -120,7 +124,7 @@ jobs:
           EOF
           
           # Build and push OCI image
-          IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/core-tools/${{ steps.tool-info.outputs.tool_name }}"
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ github.repository_owner }}/ftl-tool-${{ steps.tool-info.outputs.tool_name_clean }}"
           
           spin registry push \
             --build \
