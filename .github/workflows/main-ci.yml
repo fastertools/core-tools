@@ -9,7 +9,6 @@ env:
   CARGO_TERM_COLOR: always
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # TODO: Update Spin version from mixed versions to v3.3.1
   SPIN_VERSION: v3.3.1
 
 jobs:
