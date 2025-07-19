@@ -1,11 +1,12 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    DotProductInput as LogicInput, DotProductResult as LogicDotProductResult,
-    Vector3D as LogicVector3D, dot_product_logic,
+    dot_product_logic, DotProductInput as LogicInput, Vector3D as LogicVector3D,
 };
 
 #[derive(Deserialize, JsonSchema, Clone, Debug, PartialEq)]
@@ -61,7 +62,7 @@ impl From<DotProductInput> for LogicInput {
 
 /// Calculate dot product of two 3D vectors
 #[cfg_attr(not(test), tool)]
-fn dot_product(input: DotProductInput) -> ToolResponse {
+pub fn dot_product(input: DotProductInput) -> ToolResponse {
     match dot_product_logic(input.into()) {
         Ok(logic_result) => {
             let result = DotProductResult {

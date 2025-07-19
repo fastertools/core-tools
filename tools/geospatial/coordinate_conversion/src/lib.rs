@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -39,8 +41,8 @@ struct CoordinateConversionResult {
 }
 
 /// Convert decimal degrees to degrees, minutes, seconds (DMS) format
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn coordinate_conversion(input: DecimalDegreesInput) -> ftl_sdk::ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn coordinate_conversion(input: DecimalDegreesInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 
     match convert_to_dms(logic_input.latitude, logic_input.longitude) {

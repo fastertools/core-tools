@@ -35,12 +35,10 @@ pub fn decimal_to_dms(decimal: f64, is_latitude: bool) -> DMSCoordinate {
         } else {
             "S".to_string()
         }
+    } else if decimal >= 0.0 {
+        "E".to_string()
     } else {
-        if decimal >= 0.0 {
-            "E".to_string()
-        } else {
-            "W".to_string()
-        }
+        "W".to_string()
     };
 
     DMSCoordinate {

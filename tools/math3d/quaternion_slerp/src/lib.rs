@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 
 mod logic;
@@ -17,8 +19,8 @@ struct ToolOutput {
     result: logic::Quaternion,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn quaternion_slerp(input: ToolInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn quaternion_slerp(input: ToolInput) -> ToolResponse {
     let logic_input = QuaternionSlerpInput {
         q1: input.q1,
         q2: input.q2,

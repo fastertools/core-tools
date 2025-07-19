@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 
 mod logic;
@@ -16,8 +18,8 @@ struct ToolOutput {
     result: logic::Vector3D,
 }
 
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn matrix_vector_multiply(input: ToolInput) -> ftl_sdk::ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn matrix_vector_multiply(input: ToolInput) -> ToolResponse {
     let logic_input = MatrixVectorInput {
         matrix: input.matrix,
         vector: input.vector,
@@ -28,8 +30,8 @@ fn matrix_vector_multiply(input: ToolInput) -> ftl_sdk::ToolResponse {
             let result = ToolOutput {
                 result: output.result,
             };
-            ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }
