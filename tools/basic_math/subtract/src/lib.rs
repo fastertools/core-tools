@@ -1,13 +1,13 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "individual")]
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 
 mod logic;
 
 // Re-export types from logic module
-pub use logic::{TwoNumberInput as LogicInput, ArithmeticResult as LogicOutput};
+pub use logic::{ArithmeticResult as LogicOutput, TwoNumberInput as LogicInput};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -36,7 +36,7 @@ pub fn subtract(input: TwoNumberInput) -> ToolResponse {
         a: input.a,
         b: input.b,
     };
-    
+
     // Call logic implementation
     match logic::subtract_numbers(logic_input) {
         Ok(result) => {
@@ -48,6 +48,6 @@ pub fn subtract(input: TwoNumberInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

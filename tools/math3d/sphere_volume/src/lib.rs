@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -36,7 +36,7 @@ pub fn sphere_volume(input: SphereVolumeInput) -> ToolResponse {
         },
         radius: input.radius,
     };
-    
+
     // Call business logic
     match logic::compute_sphere_volume(logic_input) {
         Ok(logic_result) => {
@@ -53,6 +53,6 @@ pub fn sphere_volume(input: SphereVolumeInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

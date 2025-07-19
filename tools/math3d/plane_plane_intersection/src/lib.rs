@@ -1,4 +1,4 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 
 mod logic;
@@ -38,7 +38,7 @@ fn plane_plane_intersection(input: ToolInput) -> ftl_sdk::ToolResponse {
         plane1: input.plane1,
         plane2: input.plane2,
     };
-    
+
     match plane_plane_intersection_logic(logic_input) {
         Ok(output) => {
             let result = ToolOutput {
@@ -52,6 +52,6 @@ fn plane_plane_intersection(input: ToolInput) -> ftl_sdk::ToolResponse {
             };
             ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
     }
 }

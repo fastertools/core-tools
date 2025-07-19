@@ -1,5 +1,5 @@
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
-use ftl_sdk::{tool, ToolResponse};
 
 mod logic;
 use logic::{QuaternionSlerpInput, quaternion_slerp_logic};
@@ -24,7 +24,7 @@ fn quaternion_slerp(input: ToolInput) -> ToolResponse {
         q2: input.q2,
         t: input.t,
     };
-    
+
     match quaternion_slerp_logic(logic_input) {
         Ok(output) => {
             let result = ToolOutput {
@@ -32,6 +32,6 @@ fn quaternion_slerp(input: ToolInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

@@ -95,7 +95,7 @@ impl Plane3D {
             Ok(n) => n,
             Err(_) => return 0.0,
         };
-        
+
         let to_point = point.subtract(&self.point);
         to_point.dot(&normal_unit).abs()
     }
@@ -105,7 +105,7 @@ impl Plane3D {
             Ok(n) => n,
             Err(_) => return 0.0,
         };
-        
+
         let to_point = point.subtract(&self.point);
         to_point.dot(&normal_unit)
     }
@@ -115,7 +115,7 @@ impl Plane3D {
             Ok(n) => n,
             Err(_) => return point.clone(),
         };
-        
+
         let signed_dist = self.signed_distance_to_point(point);
         point.subtract(&normal_unit.scale(signed_dist))
     }
@@ -132,14 +132,17 @@ pub fn point_plane_distance_logic(input: PointPlaneInput) -> Result<PointPlaneRe
     }
 
     if !input.plane.is_valid() {
-        return Err("Invalid plane: normal vector cannot be zero and coordinates must be finite".to_string());
+        return Err(
+            "Invalid plane: normal vector cannot be zero and coordinates must be finite"
+                .to_string(),
+        );
     }
 
     let distance = input.plane.distance_to_point(&input.point);
     let signed_distance = input.plane.signed_distance_to_point(&input.point);
     let closest_point_on_plane = input.plane.project_point(&input.point);
     let is_on_plane = distance < EPSILON;
-    
+
     let side_of_plane = if is_on_plane {
         "on_plane".to_string()
     } else if signed_distance > 0.0 {

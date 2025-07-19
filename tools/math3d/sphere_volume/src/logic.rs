@@ -26,7 +26,7 @@ pub fn compute_sphere_volume(input: SphereVolumeInput) -> Result<SphereVolumeRes
     if input.radius < 0.0 {
         return Err("Radius cannot be negative".to_string());
     }
-    
+
     // Check for NaN and infinite values
     if input.radius.is_nan() {
         return Err("Radius cannot be NaN".to_string());
@@ -37,13 +37,14 @@ pub fn compute_sphere_volume(input: SphereVolumeInput) -> Result<SphereVolumeRes
     if input.center.x.is_nan() || input.center.y.is_nan() || input.center.z.is_nan() {
         return Err("Center coordinates cannot contain NaN values".to_string());
     }
-    if input.center.x.is_infinite() || input.center.y.is_infinite() || input.center.z.is_infinite() {
+    if input.center.x.is_infinite() || input.center.y.is_infinite() || input.center.z.is_infinite()
+    {
         return Err("Center coordinates cannot contain infinite values".to_string());
     }
-    
+
     // Volume = (4/3) * π * r³
     let volume = (4.0 / 3.0) * std::f64::consts::PI * input.radius.powi(3);
-    
+
     Ok(SphereVolumeResponse {
         volume,
         calculation_method: "Sphere formula: (4/3)πr³".to_string(),
@@ -59,7 +60,11 @@ mod tests {
     #[test]
     fn test_unit_radius_sphere() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 1.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -74,7 +79,11 @@ mod tests {
     #[test]
     fn test_radius_2_sphere() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 1.0, y: 2.0, z: 3.0 },
+            center: Vector3D {
+                x: 1.0,
+                y: 2.0,
+                z: 3.0,
+            },
             radius: 2.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -89,7 +98,11 @@ mod tests {
     #[test]
     fn test_zero_radius_sphere() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 5.0, y: 10.0, z: 15.0 },
+            center: Vector3D {
+                x: 5.0,
+                y: 10.0,
+                z: 15.0,
+            },
             radius: 0.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -100,7 +113,11 @@ mod tests {
     #[test]
     fn test_fractional_radius() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 0.5,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -112,7 +129,11 @@ mod tests {
     #[test]
     fn test_large_radius() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 100.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -124,7 +145,11 @@ mod tests {
     #[test]
     fn test_small_radius() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 0.001,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -136,7 +161,11 @@ mod tests {
     #[test]
     fn test_negative_center_coordinates() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: -5.0, y: -10.0, z: -15.0 },
+            center: Vector3D {
+                x: -5.0,
+                y: -10.0,
+                z: -15.0,
+            },
             radius: 3.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -150,7 +179,11 @@ mod tests {
     #[test]
     fn test_calculation_method_field() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 1.0,
         };
         let result = compute_sphere_volume(input).unwrap();
@@ -160,7 +193,11 @@ mod tests {
     #[test]
     fn test_negative_radius_error() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: -1.0,
         };
         let result = compute_sphere_volume(input);
@@ -171,7 +208,11 @@ mod tests {
     #[test]
     fn test_nan_radius_error() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: f64::NAN,
         };
         let result = compute_sphere_volume(input);
@@ -182,7 +223,11 @@ mod tests {
     #[test]
     fn test_infinite_radius_error() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: f64::INFINITY,
         };
         let result = compute_sphere_volume(input);
@@ -193,7 +238,11 @@ mod tests {
     #[test]
     fn test_nan_center_error() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: f64::NAN, y: 0.0, z: 0.0 },
+            center: Vector3D {
+                x: f64::NAN,
+                y: 0.0,
+                z: 0.0,
+            },
             radius: 1.0,
         };
         let result = compute_sphere_volume(input);
@@ -204,7 +253,11 @@ mod tests {
     #[test]
     fn test_infinite_center_error() {
         let input = SphereVolumeInput {
-            center: Vector3D { x: 0.0, y: f64::INFINITY, z: 0.0 },
+            center: Vector3D {
+                x: 0.0,
+                y: f64::INFINITY,
+                z: 0.0,
+            },
             radius: 1.0,
         };
         let result = compute_sphere_volume(input);

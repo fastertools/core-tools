@@ -49,48 +49,48 @@ pub struct Quartiles {
     pub iqr: f64,
 }
 
-pub fn descriptive_statistics_logic(input: StatisticsInput) -> Result<DescriptiveStatisticsOutput, String> {
+pub fn descriptive_statistics_logic(
+    input: StatisticsInput,
+) -> Result<DescriptiveStatisticsOutput, String> {
     if input.data.is_empty() {
         return Err("Input data cannot be empty".to_string());
     }
-    
+
     let data = &input.data;
     let count = data.len();
-    
+
     // Check for invalid values
     if data.iter().any(|&x| x.is_nan() || x.is_infinite()) {
         return Err("Input data contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     // Basic calculations
     let sum: f64 = data.iter().sum();
     let mean = sum / count as f64;
-    
+
     // Sort data for median and quartiles
     let mut sorted_data = data.clone();
     sorted_data.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    
+
     let median = calculate_median(&sorted_data);
     let mode = calculate_mode(data);
-    
+
     // Variance and standard deviation
-    let variance = data.iter()
-        .map(|x| (x - mean).powi(2))
-        .sum::<f64>() / count as f64;
+    let variance = data.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / count as f64;
     let standard_deviation = variance.sqrt();
-    
+
     // Min, max, range
     let min = sorted_data[0];
     let max = sorted_data[count - 1];
     let range = max - min;
-    
+
     // Quartiles
     let quartiles = calculate_quartiles(&sorted_data);
-    
+
     // Skewness and kurtosis
     let skewness = calculate_skewness(data, mean, standard_deviation);
     let kurtosis = calculate_kurtosis(data, mean, standard_deviation);
-    
+
     Ok(DescriptiveStatisticsOutput {
         count,
         mean,
@@ -119,15 +119,15 @@ fn calculate_median(sorted_data: &[f64]) -> f64 {
 
 fn calculate_mode(data: &[f64]) -> Option<f64> {
     let mut frequency: HashMap<String, usize> = HashMap::new();
-    
+
     // Use string representation to handle floating point precision
     for &value in data {
         let key = format!("{:.10}", value);
         *frequency.entry(key).or_insert(0) += 1;
     }
-    
+
     let max_count = frequency.values().max().unwrap_or(&0);
-    
+
     // Only return mode if there's a clear winner (appears more than once)
     if *max_count > 1 {
         let modes: Vec<f64> = frequency
@@ -135,7 +135,7 @@ fn calculate_mode(data: &[f64]) -> Option<f64> {
             .filter(|&(_, &count)| count == *max_count)
             .map(|(key, _)| key.parse::<f64>().unwrap())
             .collect();
-        
+
         // If there's only one mode, return it
         if modes.len() == 1 {
             Some(modes[0])
@@ -153,7 +153,7 @@ fn calculate_quartiles(sorted_data: &[f64]) -> Quartiles {
     let q2 = calculate_percentile(sorted_data, 50.0); // median
     let q3 = calculate_percentile(sorted_data, 75.0);
     let iqr = q3 - q1;
-    
+
     Quartiles { q1, q2, q3, iqr }
 }
 
@@ -162,7 +162,7 @@ fn calculate_percentile(sorted_data: &[f64], percentile: f64) -> f64 {
     let index = (percentile / 100.0) * (n - 1) as f64;
     let lower_index = index.floor() as usize;
     let upper_index = index.ceil() as usize;
-    
+
     if lower_index == upper_index {
         sorted_data[lower_index]
     } else {
@@ -175,12 +175,14 @@ fn calculate_skewness(data: &[f64], mean: f64, std_dev: f64) -> f64 {
     if std_dev == 0.0 {
         return 0.0;
     }
-    
+
     let n = data.len() as f64;
-    let skewness = data.iter()
+    let skewness = data
+        .iter()
         .map(|x| ((x - mean) / std_dev).powi(3))
-        .sum::<f64>() / n;
-    
+        .sum::<f64>()
+        / n;
+
     skewness
 }
 
@@ -188,12 +190,14 @@ fn calculate_kurtosis(data: &[f64], mean: f64, std_dev: f64) -> f64 {
     if std_dev == 0.0 {
         return 0.0;
     }
-    
+
     let n = data.len() as f64;
-    let kurtosis = data.iter()
+    let kurtosis = data
+        .iter()
         .map(|x| ((x - mean) / std_dev).powi(4))
-        .sum::<f64>() / n;
-    
+        .sum::<f64>()
+        / n;
+
     // Excess kurtosis (subtract 3 for normal distribution)
     kurtosis - 3.0
 }
@@ -207,7 +211,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0, 5.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.count, 5);
         assert_eq!(result.mean, 3.0);
@@ -223,7 +227,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.median, 2.5); // (2 + 3) / 2
     }
@@ -233,7 +237,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.mean, 5.0);
         assert_eq!(result.variance, 4.0);
@@ -245,7 +249,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.quartiles.q1, 3.0);
         assert_eq!(result.quartiles.q2, 5.0); // median
@@ -258,7 +262,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 2.0, 3.0, 4.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.mode, Some(2.0));
     }
@@ -268,7 +272,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.mode, None);
     }
@@ -278,7 +282,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0, 5.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert!((result.skewness).abs() < 1e-10); // Should be close to 0 for symmetric data
     }
@@ -288,7 +292,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, 2.0, 3.0, 4.0, 5.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         // Uniform distribution has negative excess kurtosis
         assert!(result.kurtosis < 0.0);
@@ -296,10 +300,8 @@ mod tests {
 
     #[test]
     fn test_empty_data() {
-        let input = StatisticsInput {
-            data: vec![],
-        };
-        
+        let input = StatisticsInput { data: vec![] };
+
         let result = descriptive_statistics_logic(input);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("cannot be empty"));
@@ -310,7 +312,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, f64::NAN, 3.0],
         };
-        
+
         let result = descriptive_statistics_logic(input);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("invalid values"));
@@ -321,7 +323,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.0, f64::INFINITY, 3.0],
         };
-        
+
         let result = descriptive_statistics_logic(input);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("invalid values"));
@@ -329,10 +331,8 @@ mod tests {
 
     #[test]
     fn test_single_value() {
-        let input = StatisticsInput {
-            data: vec![42.0],
-        };
-        
+        let input = StatisticsInput { data: vec![42.0] };
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.count, 1);
         assert_eq!(result.mean, 42.0);
@@ -351,7 +351,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![5.0, 5.0, 5.0, 5.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.mean, 5.0);
         assert_eq!(result.median, 5.0);
@@ -366,7 +366,7 @@ mod tests {
     fn test_large_dataset() {
         let data: Vec<f64> = (1..=1000).map(|i| i as f64).collect();
         let input = StatisticsInput { data };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.count, 1000);
         assert_eq!(result.mean, 500.5);
@@ -380,7 +380,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![-5.0, -2.0, 0.0, 2.0, 5.0],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert_eq!(result.mean, 0.0);
         assert_eq!(result.median, 0.0);
@@ -394,7 +394,7 @@ mod tests {
         let input = StatisticsInput {
             data: vec![1.1, 2.2, 3.3, 4.4, 5.5],
         };
-        
+
         let result = descriptive_statistics_logic(input).unwrap();
         assert!((result.mean - 3.3).abs() < 1e-10);
         assert!((result.sum - 16.5).abs() < 1e-10);

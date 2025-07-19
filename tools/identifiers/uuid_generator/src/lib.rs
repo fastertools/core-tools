@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -38,19 +38,22 @@ pub fn uuid_generator(input: UuidGeneratorInput) -> ToolResponse {
         count: input.count,
         format: input.format,
     };
-    
+
     // Call logic implementation
     let result = match logic::generate_uuids(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: {}", e)),
     };
-    
+
     // Convert back to wrapper types
     let output = UuidGeneratorOutput {
         uuids: result.uuids,
         version: result.version,
         format: result.format,
     };
-    
-    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "Error serializing output".to_string()),
+    )
 }

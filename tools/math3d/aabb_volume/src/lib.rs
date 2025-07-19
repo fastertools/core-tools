@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -29,13 +29,17 @@ pub struct BoundingBoxResponse {
 pub fn aabb_volume(input: BoundingBoxInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::BoundingBoxInput {
-        points: input.points.into_iter().map(|p| logic::Vector3D {
-            x: p.x,
-            y: p.y,
-            z: p.z,
-        }).collect(),
+        points: input
+            .points
+            .into_iter()
+            .map(|p| logic::Vector3D {
+                x: p.x,
+                y: p.y,
+                z: p.z,
+            })
+            .collect(),
     };
-    
+
     // Call business logic
     match logic::compute_aabb_volume(logic_input) {
         Ok(logic_result) => {
@@ -60,6 +64,6 @@ pub fn aabb_volume(input: BoundingBoxInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

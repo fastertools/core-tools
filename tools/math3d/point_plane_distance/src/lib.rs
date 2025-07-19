@@ -1,9 +1,12 @@
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use ftl_sdk::{tool, ToolResponse};
 
 mod logic;
-use logic::{point_plane_distance_logic, PointPlaneInput as LogicInput, Vector3D as LogicVector3D, Plane3D as LogicPlane3D};
+use logic::{
+    Plane3D as LogicPlane3D, PointPlaneInput as LogicInput, Vector3D as LogicVector3D,
+    point_plane_distance_logic,
+};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug)]
 struct Vector3D {
@@ -30,7 +33,11 @@ struct PointPlaneInput {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -85,6 +92,6 @@ fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

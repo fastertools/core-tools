@@ -25,31 +25,45 @@ pub struct DistanceResult {
 
 pub fn calculate_distance_2d(input: TwoPointInput) -> Result<DistanceResult, String> {
     // Validate input - check for invalid values
-    if input.point1.x.is_nan() || input.point1.x.is_infinite() ||
-       input.point1.y.is_nan() || input.point1.y.is_infinite() ||
-       input.point2.x.is_nan() || input.point2.x.is_infinite() ||
-       input.point2.y.is_nan() || input.point2.y.is_infinite() {
+    if input.point1.x.is_nan()
+        || input.point1.x.is_infinite()
+        || input.point1.y.is_nan()
+        || input.point1.y.is_infinite()
+        || input.point2.x.is_nan()
+        || input.point2.x.is_infinite()
+        || input.point2.y.is_nan()
+        || input.point2.y.is_infinite()
+    {
         return Err("Input points contain invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let mut calculation_steps = Vec::new();
-    
+
     // Step 1: Calculate differences
     let delta_x = input.point2.x - input.point1.x;
     let delta_y = input.point2.y - input.point1.y;
     calculation_steps.push("Step 1: Calculate differences".to_string());
-    calculation_steps.push(format!("Δx = {} - {} = {}", input.point2.x, input.point1.x, delta_x));
-    calculation_steps.push(format!("Δy = {} - {} = {}", input.point2.y, input.point1.y, delta_y));
-    
+    calculation_steps.push(format!(
+        "Δx = {} - {} = {}",
+        input.point2.x, input.point1.x, delta_x
+    ));
+    calculation_steps.push(format!(
+        "Δy = {} - {} = {}",
+        input.point2.y, input.point1.y, delta_y
+    ));
+
     // Step 2: Apply Pythagorean theorem directly
     calculation_steps.push("Step 2: Apply Pythagorean theorem (d = √(Δx² + Δy²))".to_string());
-    
+
     let distance_squared = delta_x * delta_x + delta_y * delta_y;
     let distance = distance_squared.sqrt();
-    
-    calculation_steps.push(format!("d² = {}² + {}² = {}", delta_x, delta_y, distance_squared));
+
+    calculation_steps.push(format!(
+        "d² = {}² + {}² = {}",
+        delta_x, delta_y, distance_squared
+    ));
     calculation_steps.push(format!("d = √{} = {}", distance_squared, distance));
-    
+
     Ok(DistanceResult {
         distance,
         point1: input.point1,
@@ -142,8 +156,14 @@ mod tests {
     #[test]
     fn test_large_coordinates() {
         let input = TwoPointInput {
-            point1: Point2D { x: 1000.0, y: 2000.0 },
-            point2: Point2D { x: 1003.0, y: 2004.0 },
+            point1: Point2D {
+                x: 1000.0,
+                y: 2000.0,
+            },
+            point2: Point2D {
+                x: 1003.0,
+                y: 2004.0,
+            },
         };
         let result = calculate_distance_2d(input).unwrap();
         assert_eq!(result.distance, 5.0);
@@ -166,23 +186,35 @@ mod tests {
     #[test]
     fn test_nan_input_error() {
         let input = TwoPointInput {
-            point1: Point2D { x: f64::NAN, y: 2.0 },
+            point1: Point2D {
+                x: f64::NAN,
+                y: 2.0,
+            },
             point2: Point2D { x: 5.0, y: 6.0 },
         };
         let result = calculate_distance_2d(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input points contain invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input points contain invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
         let input = TwoPointInput {
             point1: Point2D { x: 1.0, y: 2.0 },
-            point2: Point2D { x: f64::INFINITY, y: 6.0 },
+            point2: Point2D {
+                x: f64::INFINITY,
+                y: 6.0,
+            },
         };
         let result = calculate_distance_2d(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input points contain invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input points contain invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
@@ -194,7 +226,12 @@ mod tests {
         let result = calculate_distance_2d(input).unwrap();
         assert!(result.calculation_steps.len() >= 4);
         assert!(result.calculation_steps[0].contains("Calculate differences"));
-        assert!(result.calculation_steps.iter().any(|step| step.contains("Pythagorean theorem")));
+        assert!(
+            result
+                .calculation_steps
+                .iter()
+                .any(|step| step.contains("Pythagorean theorem"))
+        );
     }
 
     #[test]

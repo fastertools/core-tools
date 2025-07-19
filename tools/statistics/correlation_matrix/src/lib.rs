@@ -1,14 +1,14 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 
 // Re-export types from logic module
 pub use logic::{
-    MultiSeriesInput as LogicMultiSeriesInput,
     CorrelationMatrixOutput as LogicCorrelationMatrixOutput,
+    MultiSeriesInput as LogicMultiSeriesInput,
 };
 
 // Define wrapper types with JsonSchema for FTL-SDK
@@ -37,7 +37,7 @@ pub fn correlation_matrix(input: MultiSeriesInput) -> ToolResponse {
         data: input.data,
         variable_names: input.variable_names,
     };
-    
+
     // Call logic implementation
     match logic::calculate_correlation_matrix(logic_input) {
         Ok(result) => {
@@ -49,6 +49,6 @@ pub fn correlation_matrix(input: MultiSeriesInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

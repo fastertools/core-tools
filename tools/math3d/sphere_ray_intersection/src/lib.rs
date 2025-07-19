@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::*;
@@ -74,7 +74,8 @@ pub fn sphere_ray_intersection(input: SphereRayInput) -> ToolResponse {
     match sphere_ray_intersection_logic(logic_input) {
         Ok(logic_result) => {
             // Convert logic types back to JsonSchema types
-            let intersection_points = logic_result.intersection_points
+            let intersection_points = logic_result
+                .intersection_points
                 .into_iter()
                 .map(|point| IntersectionPoint {
                     point: Vector3D {
@@ -98,6 +99,6 @@ pub fn sphere_ray_intersection(input: SphereRayInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

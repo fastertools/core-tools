@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[cfg(all(feature = "individual", not(test)))]
 use ftl_sdk::tool;
@@ -43,30 +43,40 @@ pub struct DistanceResult {
     pub delta_y: f64,
 }
 
-
 /// Calculate the distance between two 2D points using the Pythagorean theorem
 #[cfg_attr(not(test), tool)]
 pub fn distance_2d(input: TwoPointInput) -> ToolResponse {
     // Convert from flat coordinate input to logic types
     let logic_input = logic::TwoPointInput {
-        point1: logic::Point2D { x: input.x1, y: input.y1 },
-        point2: logic::Point2D { x: input.x2, y: input.y2 },
+        point1: logic::Point2D {
+            x: input.x1,
+            y: input.y1,
+        },
+        point2: logic::Point2D {
+            x: input.x2,
+            y: input.y2,
+        },
     };
-    
+
     // Call logic implementation
     match logic::calculate_distance_2d(logic_input) {
         Ok(result) => {
             // Convert back to wrapper types
             let response = DistanceResult {
                 distance: result.distance,
-                point1: Point2D { x: result.point1.x, y: result.point1.y },
-                point2: Point2D { x: result.point2.x, y: result.point2.y },
+                point1: Point2D {
+                    x: result.point1.x,
+                    y: result.point1.y,
+                },
+                point2: Point2D {
+                    x: result.point2.x,
+                    y: result.point2.y,
+                },
                 delta_x: result.delta_x,
                 delta_y: result.delta_y,
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }
-

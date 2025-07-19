@@ -1,8 +1,10 @@
-use schemars::JsonSchema;
 use ftl_sdk::ToolResponse;
+use schemars::JsonSchema;
 
 mod logic;
-use logic::{Point as LogicPoint, PolygonSimplificationInput as LogicInput, polygon_simplification_logic};
+use logic::{
+    Point as LogicPoint, PolygonSimplificationInput as LogicInput, polygon_simplification_logic,
+};
 
 #[derive(serde::Deserialize, JsonSchema)]
 pub struct Point {
@@ -12,7 +14,10 @@ pub struct Point {
 
 impl From<Point> for LogicPoint {
     fn from(p: Point) -> Self {
-        LogicPoint { lat: p.lat, lon: p.lon }
+        LogicPoint {
+            lat: p.lat,
+            lon: p.lon,
+        }
     }
 }
 
@@ -36,7 +41,10 @@ impl From<PolygonSimplificationInput> for LogicInput {
 #[cfg_attr(not(test), ftl_sdk::tool)]
 pub fn polygon_simplification(input: PolygonSimplificationInput) -> ToolResponse {
     match polygon_simplification_logic(input.into()) {
-        Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap_or_else(|_| "Error serializing result".to_string())),
+        Ok(result) => ToolResponse::text(
+            serde_json::to_string(&result)
+                .unwrap_or_else(|_| "Error serializing result".to_string()),
+        ),
         Err(error) => ToolResponse::text(error),
     }
 }

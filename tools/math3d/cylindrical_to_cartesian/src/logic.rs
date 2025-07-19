@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct CylindricalCoordinates {
@@ -33,16 +33,16 @@ pub struct CylindricalToCartesianResult {
 
 impl CylindricalCoordinates {
     pub fn is_valid(&self) -> bool {
-        self.radius.is_finite() && 
-        self.theta.is_finite() && 
-        self.z.is_finite() &&
-        self.radius >= 0.0
+        self.radius.is_finite()
+            && self.theta.is_finite()
+            && self.z.is_finite()
+            && self.radius >= 0.0
     }
-    
+
     pub fn to_cartesian(&self) -> CartesianCoordinates {
         let cos_theta = self.theta.cos();
         let sin_theta = self.theta.sin();
-        
+
         CartesianCoordinates {
             x: self.radius * cos_theta,
             y: self.radius * sin_theta,
@@ -57,25 +57,26 @@ impl CartesianCoordinates {
     }
 }
 
-pub fn cylindrical_to_cartesian_logic(input: CylindricalCoordinates) -> Result<CylindricalToCartesianResult, String> {
+pub fn cylindrical_to_cartesian_logic(
+    input: CylindricalCoordinates,
+) -> Result<CylindricalToCartesianResult, String> {
     // Input validation
     if !input.is_valid() {
         return Err("Invalid cylindrical coordinates: radius must be non-negative and all values must be finite".to_string());
     }
-    
+
     let cartesian = input.to_cartesian();
-    
+
     // Validate conversion result
     if !cartesian.is_valid() {
         return Err("Conversion to Cartesian coordinates resulted in invalid values".to_string());
     }
-    
+
     let conversion_notes = format!(
         "Converted from Cylindrical (ρ={:.3}, θ={:.3} rad, z={:.3}) to Cartesian ({:.3}, {:.3}, {:.3})",
-        input.radius, input.theta, input.z,
-        cartesian.x, cartesian.y, cartesian.z
+        input.radius, input.theta, input.z, cartesian.x, cartesian.y, cartesian.z
     );
-    
+
     Ok(CylindricalToCartesianResult {
         original_cylindrical: input,
         cartesian_coordinates: cartesian,
@@ -94,7 +95,7 @@ mod tests {
             theta: 0.0,
             z: 2.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x - 1.0).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y).abs() < 1e-15);
@@ -108,7 +109,7 @@ mod tests {
             theta: std::f64::consts::PI / 4.0,
             z: 0.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x - 1.0).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y - 1.0).abs() < 1e-15);
@@ -122,7 +123,7 @@ mod tests {
             theta: 0.0,
             z: 0.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y).abs() < 1e-15);
@@ -136,7 +137,7 @@ mod tests {
             theta: std::f64::consts::PI,
             z: -2.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input).unwrap();
         assert!((result.cartesian_coordinates.x - (-1.0)).abs() < 1e-15);
         assert!((result.cartesian_coordinates.y).abs() < 1e-15);
@@ -150,10 +151,13 @@ mod tests {
             theta: 0.0,
             z: 0.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite"
+        );
     }
 
     #[test]
@@ -163,10 +167,13 @@ mod tests {
             theta: 0.0,
             z: 0.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite"
+        );
     }
 
     #[test]
@@ -176,33 +183,60 @@ mod tests {
             theta: 0.0,
             z: 0.0,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Invalid cylindrical coordinates: radius must be non-negative and all values must be finite"
+        );
     }
 
     #[test]
     fn test_coordinate_validation() {
-        let valid = CylindricalCoordinates { radius: 1.0, theta: 0.0, z: 1.0 };
+        let valid = CylindricalCoordinates {
+            radius: 1.0,
+            theta: 0.0,
+            z: 1.0,
+        };
         assert!(valid.is_valid());
-        
-        let invalid_negative = CylindricalCoordinates { radius: -1.0, theta: 0.0, z: 1.0 };
+
+        let invalid_negative = CylindricalCoordinates {
+            radius: -1.0,
+            theta: 0.0,
+            z: 1.0,
+        };
         assert!(!invalid_negative.is_valid());
-        
-        let invalid_nan = CylindricalCoordinates { radius: f64::NAN, theta: 0.0, z: 1.0 };
+
+        let invalid_nan = CylindricalCoordinates {
+            radius: f64::NAN,
+            theta: 0.0,
+            z: 1.0,
+        };
         assert!(!invalid_nan.is_valid());
     }
 
     #[test]
     fn test_cartesian_validation() {
-        let valid = CartesianCoordinates { x: 1.0, y: 2.0, z: 3.0 };
+        let valid = CartesianCoordinates {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+        };
         assert!(valid.is_valid());
-        
-        let invalid_nan = CartesianCoordinates { x: f64::NAN, y: 2.0, z: 3.0 };
+
+        let invalid_nan = CartesianCoordinates {
+            x: f64::NAN,
+            y: 2.0,
+            z: 3.0,
+        };
         assert!(!invalid_nan.is_valid());
-        
-        let invalid_inf = CartesianCoordinates { x: f64::INFINITY, y: 2.0, z: 3.0 };
+
+        let invalid_inf = CartesianCoordinates {
+            x: f64::INFINITY,
+            y: 2.0,
+            z: 3.0,
+        };
         assert!(!invalid_inf.is_valid());
     }
 
@@ -211,23 +245,38 @@ mod tests {
         // Test specific angle positions
         let test_cases = vec![
             // (radius, theta, z) -> expected (x, y, z)
-            (1.0, 0.0, 5.0, 1.0, 0.0, 5.0),                                    // 0 radians
-            (1.0, std::f64::consts::PI / 2.0, 5.0, 0.0, 1.0, 5.0),           // π/2 radians
-            (1.0, std::f64::consts::PI, 5.0, -1.0, 0.0, 5.0),                // π radians
-            (1.0, -std::f64::consts::PI / 2.0, 5.0, 0.0, -1.0, 5.0),         // -π/2 radians
-            (1.0, 3.0 * std::f64::consts::PI / 2.0, 5.0, 0.0, -1.0, 5.0),    // 3π/2 radians
+            (1.0, 0.0, 5.0, 1.0, 0.0, 5.0), // 0 radians
+            (1.0, std::f64::consts::PI / 2.0, 5.0, 0.0, 1.0, 5.0), // π/2 radians
+            (1.0, std::f64::consts::PI, 5.0, -1.0, 0.0, 5.0), // π radians
+            (1.0, -std::f64::consts::PI / 2.0, 5.0, 0.0, -1.0, 5.0), // -π/2 radians
+            (1.0, 3.0 * std::f64::consts::PI / 2.0, 5.0, 0.0, -1.0, 5.0), // 3π/2 radians
         ];
-        
+
         for (radius, theta, z, expected_x, expected_y, expected_z) in test_cases {
             let input = CylindricalCoordinates { radius, theta, z };
             let result = cylindrical_to_cartesian_logic(input).unwrap();
-            
-            assert!((result.cartesian_coordinates.x - expected_x).abs() < 1e-14,
-                    "X mismatch for (ρ={}, θ={}, z={})", radius, theta, z);
-            assert!((result.cartesian_coordinates.y - expected_y).abs() < 1e-14,
-                    "Y mismatch for (ρ={}, θ={}, z={})", radius, theta, z);
-            assert!((result.cartesian_coordinates.z - expected_z).abs() < 1e-14,
-                    "Z mismatch for (ρ={}, θ={}, z={})", radius, theta, z);
+
+            assert!(
+                (result.cartesian_coordinates.x - expected_x).abs() < 1e-14,
+                "X mismatch for (ρ={}, θ={}, z={})",
+                radius,
+                theta,
+                z
+            );
+            assert!(
+                (result.cartesian_coordinates.y - expected_y).abs() < 1e-14,
+                "Y mismatch for (ρ={}, θ={}, z={})",
+                radius,
+                theta,
+                z
+            );
+            assert!(
+                (result.cartesian_coordinates.z - expected_z).abs() < 1e-14,
+                "Z mismatch for (ρ={}, θ={}, z={})",
+                radius,
+                theta,
+                z
+            );
         }
     }
 
@@ -235,19 +284,21 @@ mod tests {
     fn test_round_trip_precision() {
         // Test that converting back preserves precision
         let original_cartesian = (3.0_f64, 4.0_f64, 5.0_f64);
-        
+
         // Convert to cylindrical manually
-        let radius = (original_cartesian.0 * original_cartesian.0 + original_cartesian.1 * original_cartesian.1).sqrt();
+        let radius = (original_cartesian.0 * original_cartesian.0
+            + original_cartesian.1 * original_cartesian.1)
+            .sqrt();
         let theta = original_cartesian.1.atan2(original_cartesian.0);
-        
+
         let cylindrical_input = CylindricalCoordinates {
             radius,
             theta,
             z: original_cartesian.2,
         };
-        
+
         let result = cylindrical_to_cartesian_logic(cylindrical_input).unwrap();
-        
+
         assert!((result.cartesian_coordinates.x - original_cartesian.0).abs() < 1e-14);
         assert!((result.cartesian_coordinates.y - original_cartesian.1).abs() < 1e-14);
         assert!((result.cartesian_coordinates.z - original_cartesian.2).abs() < 1e-14);

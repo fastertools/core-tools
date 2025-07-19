@@ -1,9 +1,8 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
-
 
 // Re-export types from logic module
 pub use logic::{JsonFormatterInput as LogicInput, JsonFormatterResult as LogicOutput};
@@ -38,13 +37,13 @@ pub fn json_formatter(input: JsonFormatterInput) -> ToolResponse {
         json_string: input.json_string,
         indent: input.indent,
     };
-    
+
     // Call logic implementation
     let result = match logic::format_json(logic_input) {
         Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error formatting JSON: {}", e)),
     };
-    
+
     // Convert back to wrapper types
     let response = JsonFormatterResult {
         formatted: result.formatted,
@@ -53,6 +52,8 @@ pub fn json_formatter(input: JsonFormatterInput) -> ToolResponse {
         input_length: result.input_length,
         output_length: result.output_length,
     };
-    
-    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
+
+    ToolResponse::text(
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+    )
 }

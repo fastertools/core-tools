@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -37,7 +37,6 @@ pub struct PythagoreanResult {
     pub sum_of_squares: f64,
 }
 
-
 /// Calculate the hypotenuse of a right triangle using the Pythagorean theorem: c = sqrt(a² + b²)
 #[cfg_attr(not(test), tool)]
 pub fn pythagorean(input: PythagoreanInput) -> ToolResponse {
@@ -46,7 +45,7 @@ pub fn pythagorean(input: PythagoreanInput) -> ToolResponse {
         a: input.a,
         b: input.b,
     };
-    
+
     // Call logic implementation
     match logic::calculate_pythagorean(logic_input) {
         Ok(result) => {
@@ -54,7 +53,7 @@ pub fn pythagorean(input: PythagoreanInput) -> ToolResponse {
             let a_squared = input.a * input.a;
             let b_squared = input.b * input.b;
             let sum_of_squares = a_squared + b_squared;
-            
+
             // Convert back to wrapper types
             let response = PythagoreanResult {
                 hypotenuse: result.hypotenuse,
@@ -66,7 +65,6 @@ pub fn pythagorean(input: PythagoreanInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }
-

@@ -88,29 +88,47 @@ impl Vector3D {
     }
 }
 
-pub fn line_plane_intersection_logic(input: LinePlaneInput) -> Result<LinePlaneIntersectionResult, String> {
+pub fn line_plane_intersection_logic(
+    input: LinePlaneInput,
+) -> Result<LinePlaneIntersectionResult, String> {
     // Validate inputs for NaN and infinite values
-    if input.line.point.x.is_nan() || input.line.point.x.is_infinite() ||
-       input.line.point.y.is_nan() || input.line.point.y.is_infinite() ||
-       input.line.point.z.is_nan() || input.line.point.z.is_infinite() {
+    if input.line.point.x.is_nan()
+        || input.line.point.x.is_infinite()
+        || input.line.point.y.is_nan()
+        || input.line.point.y.is_infinite()
+        || input.line.point.z.is_nan()
+        || input.line.point.z.is_infinite()
+    {
         return Err("Line point coordinates must be finite".to_string());
     }
 
-    if input.line.direction.x.is_nan() || input.line.direction.x.is_infinite() ||
-       input.line.direction.y.is_nan() || input.line.direction.y.is_infinite() ||
-       input.line.direction.z.is_nan() || input.line.direction.z.is_infinite() {
+    if input.line.direction.x.is_nan()
+        || input.line.direction.x.is_infinite()
+        || input.line.direction.y.is_nan()
+        || input.line.direction.y.is_infinite()
+        || input.line.direction.z.is_nan()
+        || input.line.direction.z.is_infinite()
+    {
         return Err("Line direction coordinates must be finite".to_string());
     }
 
-    if input.plane.point.x.is_nan() || input.plane.point.x.is_infinite() ||
-       input.plane.point.y.is_nan() || input.plane.point.y.is_infinite() ||
-       input.plane.point.z.is_nan() || input.plane.point.z.is_infinite() {
+    if input.plane.point.x.is_nan()
+        || input.plane.point.x.is_infinite()
+        || input.plane.point.y.is_nan()
+        || input.plane.point.y.is_infinite()
+        || input.plane.point.z.is_nan()
+        || input.plane.point.z.is_infinite()
+    {
         return Err("Plane point coordinates must be finite".to_string());
     }
 
-    if input.plane.normal.x.is_nan() || input.plane.normal.x.is_infinite() ||
-       input.plane.normal.y.is_nan() || input.plane.normal.y.is_infinite() ||
-       input.plane.normal.z.is_nan() || input.plane.normal.z.is_infinite() {
+    if input.plane.normal.x.is_nan()
+        || input.plane.normal.x.is_infinite()
+        || input.plane.normal.y.is_nan()
+        || input.plane.normal.y.is_infinite()
+        || input.plane.normal.z.is_nan()
+        || input.plane.normal.z.is_infinite()
+    {
         return Err("Plane normal coordinates must be finite".to_string());
     }
 
@@ -125,37 +143,41 @@ pub fn line_plane_intersection_logic(input: LinePlaneInput) -> Result<LinePlaneI
 
     // Calculate dot product of line direction and plane normal
     let dot_product = input.line.direction.dot(&input.plane.normal);
-    
+
     // Check if line is parallel to plane (direction perpendicular to normal)
     let is_parallel = dot_product.abs() < EPSILON;
-    
+
     if is_parallel {
         // Line is parallel to plane
         // Check if line is in the plane
         let point_to_plane = input.line.point.subtract(&input.plane.point);
         let distance = point_to_plane.dot(&input.plane.normal).abs();
-        
+
         let normal_mag = input.plane.normal.magnitude();
         let normalized_distance = if normal_mag > EPSILON {
             distance / normal_mag
         } else {
             0.0
         };
-        
+
         let is_in_plane = normalized_distance < EPSILON;
-        
+
         Ok(LinePlaneIntersectionResult {
-            intersection_type: if is_in_plane { 
-                "line_in_plane".to_string() 
-            } else { 
-                "no_intersection".to_string() 
+            intersection_type: if is_in_plane {
+                "line_in_plane".to_string()
+            } else {
+                "no_intersection".to_string()
             },
             intersects: is_in_plane,
             intersection_point: None,
             parameter: None,
             line_is_parallel: true,
             line_is_in_plane: is_in_plane,
-            distance_to_plane: if is_in_plane { 0.0 } else { normalized_distance },
+            distance_to_plane: if is_in_plane {
+                0.0
+            } else {
+                normalized_distance
+            },
         })
     } else {
         // Line is not parallel - calculate intersection point
@@ -163,13 +185,13 @@ pub fn line_plane_intersection_logic(input: LinePlaneInput) -> Result<LinePlaneI
         // Plane equation: (P - plane.point) · plane.normal = 0
         // Substituting: ((line.point + t * line.direction) - plane.point) · plane.normal = 0
         // Solving for t: t = (plane.point - line.point) · plane.normal / (line.direction · plane.normal)
-        
+
         let point_diff = input.plane.point.subtract(&input.line.point);
         let t = point_diff.dot(&input.plane.normal) / dot_product;
-        
+
         // Calculate intersection point
         let intersection_point = input.line.point.add(&input.line.direction.scale(t));
-        
+
         Ok(LinePlaneIntersectionResult {
             intersection_type: "point".to_string(),
             intersects: true,
@@ -204,12 +226,12 @@ mod tests {
         assert_eq!(result.intersection_type, "point");
         assert!(!result.line_is_parallel);
         assert!(!result.line_is_in_plane);
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.x - 0.0).abs() < EPSILON);
         assert!((intersection.y - 0.0).abs() < EPSILON);
         assert!((intersection.z - 0.0).abs() < EPSILON);
-        
+
         let param = result.parameter.unwrap();
         assert!((param - 1.0).abs() < EPSILON);
     }
@@ -278,10 +300,10 @@ mod tests {
         assert_eq!(result.intersection_type, "point");
         assert!(!result.line_is_parallel);
         assert!(!result.line_is_in_plane);
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.z - 0.0).abs() < EPSILON);
-        
+
         let param = result.parameter.unwrap();
         assert!((param - (-1.0)).abs() < EPSILON);
     }
@@ -355,7 +377,10 @@ mod tests {
 
         let result = line_plane_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Line direction coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Line direction coordinates must be finite"
+        );
     }
 
     #[test]
@@ -373,7 +398,10 @@ mod tests {
 
         let result = line_plane_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Plane point coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Plane point coordinates must be finite"
+        );
     }
 
     #[test]
@@ -391,7 +419,10 @@ mod tests {
 
         let result = line_plane_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Plane normal coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Plane normal coordinates must be finite"
+        );
     }
 
     #[test]
@@ -410,7 +441,7 @@ mod tests {
         let result = line_plane_intersection_logic(input).unwrap();
         assert!(result.intersects);
         assert_eq!(result.intersection_type, "point");
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.x - 1.0).abs() < EPSILON);
         assert!((intersection.y - 1.0).abs() < EPSILON);
@@ -470,7 +501,7 @@ mod tests {
         let result = line_plane_intersection_logic(input).unwrap();
         assert!(result.intersects);
         assert_eq!(result.intersection_type, "point");
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.x - 1000.0).abs() < EPSILON);
         assert!((intersection.y - 2000.0).abs() < EPSILON);

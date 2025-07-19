@@ -1,12 +1,14 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-
 // Re-export types from logic module
-pub use logic::{VectorMagnitudeInput as LogicInput, VectorMagnitudeOutput as LogicOutput, Vector3D as LogicVector3D};
+pub use logic::{
+    Vector3D as LogicVector3D, VectorMagnitudeInput as LogicInput,
+    VectorMagnitudeOutput as LogicOutput,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -42,7 +44,7 @@ pub fn vector_magnitude(input: VectorMagnitudeInput) -> ToolResponse {
             z: input.vector.z,
         },
     };
-    
+
     // Call logic implementation
     match logic::compute_vector_magnitude(logic_input) {
         Ok(result) => {
@@ -58,6 +60,6 @@ pub fn vector_magnitude(input: VectorMagnitudeInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

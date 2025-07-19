@@ -24,7 +24,7 @@ pub struct JsonFormatterResult {
 
 pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, String> {
     let input_length = input.json_string.len();
-    
+
     // Try to parse the JSON
     let parsed: serde_json::Value = match serde_json::from_str(&input.json_string) {
         Ok(val) => val,
@@ -38,7 +38,7 @@ pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, Str
             });
         }
     };
-    
+
     // Format based on indent preference
     let formatted = match input.indent {
         Some(0) => {
@@ -70,9 +70,9 @@ pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, Str
             }
         }
     };
-    
+
     let output_length = formatted.len();
-    
+
     Ok(JsonFormatterResult {
         formatted,
         is_valid: true,
@@ -110,8 +110,8 @@ mod tests {
         assert!(result.is_valid);
         // JSON object key order is not guaranteed, so check both possibilities
         assert!(
-            result.formatted == r#"{"name":"John","age":30}"# ||
-            result.formatted == r#"{"age":30,"name":"John"}"#
+            result.formatted == r#"{"name":"John","age":30}"#
+                || result.formatted == r#"{"age":30,"name":"John"}"#
         );
     }
 

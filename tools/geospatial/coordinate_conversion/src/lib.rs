@@ -1,4 +1,4 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -42,7 +42,7 @@ struct CoordinateConversionResult {
 #[cfg_attr(not(test), ftl_sdk::tool)]
 fn coordinate_conversion(input: DecimalDegreesInput) -> ftl_sdk::ToolResponse {
     let logic_input = LogicInput::from(input);
-    
+
     match convert_to_dms(logic_input.latitude, logic_input.longitude) {
         Ok(result) => {
             let response = CoordinateConversionResult {
@@ -61,6 +61,6 @@ fn coordinate_conversion(input: DecimalDegreesInput) -> ftl_sdk::ToolResponse {
             };
             ftl_sdk::ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
     }
 }

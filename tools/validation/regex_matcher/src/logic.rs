@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegexMatcherInput {
@@ -81,7 +81,7 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
     // Build regex with flags
     let mut pattern_with_flags = String::new();
     let mut flags_applied = Vec::new();
-    
+
     if let Some(flags) = &input.flags {
         if flags.case_insensitive.unwrap_or(false) {
             pattern_with_flags.push_str("(?i)");
@@ -96,9 +96,9 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
             flags_applied.push("dot_all");
         }
     }
-    
+
     pattern_with_flags.push_str(&input.pattern);
-    
+
     // Compile regex
     let regex = match Regex::new(&pattern_with_flags) {
         Ok(re) => re,
@@ -117,13 +117,13 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
             });
         }
     };
-    
+
     let capture_groups = input.capture_groups.unwrap_or(false);
     let find_all = input.find_all.unwrap_or(true);
-    
+
     // Find matches
     let mut matches = Vec::new();
-    
+
     if find_all {
         for cap in regex.captures_iter(&input.text) {
             let full_match = cap.get(0).unwrap();
@@ -133,10 +133,10 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
                 end: full_match.end(),
                 groups: None,
             };
-            
+
             if capture_groups {
                 let mut groups = Vec::new();
-                
+
                 // Include all groups (including full match at index 0)
                 for i in 0..cap.len() {
                     if let Some(group) = cap.get(i) {
@@ -157,10 +157,10 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
                         });
                     }
                 }
-                
+
                 match_item.groups = Some(groups);
             }
-            
+
             matches.push(match_item);
         }
     } else {
@@ -173,10 +173,10 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
                 end: full_match.end(),
                 groups: None,
             };
-            
+
             if capture_groups {
                 let mut groups = Vec::new();
-                
+
                 for i in 0..cap.len() {
                     if let Some(group) = cap.get(i) {
                         groups.push(CaptureGroup {
@@ -196,17 +196,17 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
                         });
                     }
                 }
-                
+
                 match_item.groups = Some(groups);
             }
-            
+
             matches.push(match_item);
         }
     }
-    
+
     let has_match = !matches.is_empty();
     let match_count = matches.len();
-    
+
     Ok(RegexMatcherResult {
         has_match,
         match_count,
@@ -215,10 +215,10 @@ pub fn match_regex(input: RegexMatcherInput) -> Result<RegexMatcherResult, Strin
             pattern: input.pattern.clone(),
             is_valid: true,
             capture_group_count: regex.captures_len() - 1, // Exclude full match
-            flags_applied: if flags_applied.is_empty() { 
-                "none".to_string() 
-            } else { 
-                flags_applied.join(", ") 
+            flags_applied: if flags_applied.is_empty() {
+                "none".to_string()
+            } else {
+                flags_applied.join(", ")
             },
         },
         error: None,
@@ -306,7 +306,7 @@ mod tests {
         };
         let result = match_regex(input).unwrap();
         assert!(result.has_match);
-        
+
         let groups = result.matches[0].groups.as_ref().unwrap();
         assert_eq!(groups.len(), 3); // Full match + 2 groups
         assert_eq!(groups[0].text.as_ref().unwrap(), "user@example.com");
@@ -427,7 +427,12 @@ mod tests {
         let result = match_regex(input).unwrap();
         assert!(result.pattern_info.is_valid);
         assert_eq!(result.pattern_info.capture_group_count, 2);
-        assert!(result.pattern_info.flags_applied.contains("case_insensitive"));
+        assert!(
+            result
+                .pattern_info
+                .flags_applied
+                .contains("case_insensitive")
+        );
         assert!(result.pattern_info.flags_applied.contains("multiline"));
     }
 }

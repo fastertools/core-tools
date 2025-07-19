@@ -1,26 +1,26 @@
-use serde::{Deserialize, Serialize};
-use schemars::JsonSchema;
 use regex::Regex;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct StringSplitInput {
     pub text: String,
-    
+
     #[serde(default = "default_delimiter")]
     pub delimiter: String,
-    
+
     #[serde(default = "default_split_type")]
     pub split_type: String,
-    
+
     #[serde(default)]
     pub limit: Option<usize>,
-    
+
     #[serde(default)]
     pub trim_parts: bool,
-    
+
     #[serde(default)]
     pub remove_empty: bool,
-    
+
     #[serde(default)]
     pub case_sensitive: Option<bool>,
 }
@@ -44,35 +44,44 @@ pub struct StringSplitResult {
 
 pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String> {
     let original = input.text.clone();
-    
+
     let mut parts: Vec<String> = match input.split_type.as_str() {
         "string" => {
             if input.delimiter.is_empty() {
                 original.chars().map(|c| c.to_string()).collect()
             } else if let Some(limit) = input.limit {
-                original.splitn(limit, &input.delimiter).map(|s| s.to_string()).collect()
+                original
+                    .splitn(limit, &input.delimiter)
+                    .map(|s| s.to_string())
+                    .collect()
             } else {
-                original.split(&input.delimiter).map(|s| s.to_string()).collect()
+                original
+                    .split(&input.delimiter)
+                    .map(|s| s.to_string())
+                    .collect()
             }
-        },
-        
+        }
+
         "regex" => {
             let regex = Regex::new(&input.delimiter)
                 .map_err(|e| format!("Invalid regex pattern: {}", e))?;
-            
+
             if let Some(limit) = input.limit {
-                regex.splitn(&original, limit).map(|s| s.to_string()).collect()
+                regex
+                    .splitn(&original, limit)
+                    .map(|s| s.to_string())
+                    .collect()
             } else {
                 regex.split(&original).map(|s| s.to_string()).collect()
             }
-        },
-        
+        }
+
         "whitespace" => {
             if let Some(limit) = input.limit {
                 let mut result = Vec::new();
                 let mut remaining = original.as_str();
                 let mut count = 0;
-                
+
                 while count < limit - 1 && !remaining.is_empty() {
                     if let Some(pos) = remaining.find(char::is_whitespace) {
                         if pos > 0 {
@@ -84,17 +93,17 @@ pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String
                         break;
                     }
                 }
-                
+
                 if !remaining.is_empty() {
                     result.push(remaining.to_string());
                 }
-                
+
                 result
             } else {
                 original.split_whitespace().map(|s| s.to_string()).collect()
             }
-        },
-        
+        }
+
         "lines" => {
             if let Some(limit) = input.limit {
                 let mut lines: Vec<String> = original.lines().map(|s| s.to_string()).collect();
@@ -103,8 +112,8 @@ pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String
             } else {
                 original.lines().map(|s| s.to_string()).collect()
             }
-        },
-        
+        }
+
         "chars" => {
             let chars: Vec<String> = original.chars().map(|c| c.to_string()).collect();
             if let Some(limit) = input.limit {
@@ -112,35 +121,40 @@ pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String
             } else {
                 chars
             }
-        },
-        
+        }
+
         "words" => {
             let word_regex = Regex::new(r"\b\w+\b").unwrap();
             let words: Vec<String> = word_regex
                 .find_iter(&original)
                 .map(|m| m.as_str().to_string())
                 .collect();
-            
+
             if let Some(limit) = input.limit {
                 words.into_iter().take(limit).collect()
             } else {
                 words
             }
-        },
-        
-        _ => return Err(format!("Unknown split_type: {}. Valid types: string, regex, whitespace, lines, chars, words", input.split_type)),
+        }
+
+        _ => {
+            return Err(format!(
+                "Unknown split_type: {}. Valid types: string, regex, whitespace, lines, chars, words",
+                input.split_type
+            ));
+        }
     };
-    
+
     if input.trim_parts {
         parts = parts.into_iter().map(|s| s.trim().to_string()).collect();
     }
-    
+
     if input.remove_empty {
         parts = parts.into_iter().filter(|s| !s.is_empty()).collect();
     }
-    
+
     let count = parts.len();
-    
+
     Ok(StringSplitResult {
         parts,
         count,
@@ -171,7 +185,7 @@ mod tests {
             remove_empty: false,
             case_sensitive: None,
         };
-        
+
         let result = split_string(input).unwrap();
         assert_eq!(result.parts, vec!["apple", "banana", "cherry"]);
         assert_eq!(result.count, 3);
@@ -188,7 +202,7 @@ mod tests {
             remove_empty: false,
             case_sensitive: None,
         };
-        
+
         let result = split_string(input).unwrap();
         assert_eq!(result.parts, vec!["hello", "world", "from", "rust"]);
         assert_eq!(result.count, 4);
@@ -205,7 +219,7 @@ mod tests {
             remove_empty: false,
             case_sensitive: None,
         };
-        
+
         let result = split_string(input).unwrap();
         assert_eq!(result.parts, vec!["one", "two", "three", "four"]);
     }
@@ -221,7 +235,7 @@ mod tests {
             remove_empty: false,
             case_sensitive: None,
         };
-        
+
         let result = split_string(input).unwrap();
         assert_eq!(result.parts, vec!["a", "b", "c-d-e"]);
         assert_eq!(result.count, 3);
@@ -238,7 +252,7 @@ mod tests {
             remove_empty: true,
             case_sensitive: None,
         };
-        
+
         let result = split_string(input).unwrap();
         assert_eq!(result.parts, vec!["a", "b", "c"]);
         assert_eq!(result.count, 3);

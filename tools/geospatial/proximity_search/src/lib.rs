@@ -1,9 +1,9 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{Point as LogicPoint, NearestPointsInput as LogicInput, find_nearest_points};
+use logic::{NearestPointsInput as LogicInput, Point as LogicPoint, find_nearest_points};
 
 #[derive(Deserialize, Serialize, JsonSchema)]
 struct Point {
@@ -17,7 +17,11 @@ struct Point {
 
 impl From<Point> for LogicPoint {
     fn from(p: Point) -> Self {
-        LogicPoint { lat: p.lat, lon: p.lon, id: p.id }
+        LogicPoint {
+            lat: p.lat,
+            lon: p.lon,
+            id: p.id,
+        }
     }
 }
 
@@ -59,7 +63,11 @@ impl From<NearestPointsInput> for LogicInput {
     fn from(input: NearestPointsInput) -> Self {
         LogicInput {
             query_point: input.query_point.into(),
-            candidate_points: input.candidate_points.into_iter().map(|p| p.into()).collect(),
+            candidate_points: input
+                .candidate_points
+                .into_iter()
+                .map(|p| p.into())
+                .collect(),
             max_results: input.max_results,
             max_distance_meters: input.max_distance_meters,
         }
@@ -70,8 +78,13 @@ impl From<NearestPointsInput> for LogicInput {
 #[cfg_attr(not(test), ftl_sdk::tool)]
 fn proximity_search(input: NearestPointsInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
-    
-    match find_nearest_points(logic_input.query_point, logic_input.candidate_points, logic_input.max_results, logic_input.max_distance_meters) {
+
+    match find_nearest_points(
+        logic_input.query_point,
+        logic_input.candidate_points,
+        logic_input.max_results,
+        logic_input.max_distance_meters,
+    ) {
         Ok(result) => {
             let response = NearestPointsResult {
                 query_point: Point {
@@ -79,21 +92,27 @@ fn proximity_search(input: NearestPointsInput) -> ToolResponse {
                     lon: result.query_point.lon,
                     id: result.query_point.id,
                 },
-                nearest_points: result.nearest_points.into_iter().map(|np| NearestPointResult {
-                    point: Point {
-                        lat: np.point.lat,
-                        lon: np.point.lon,
-                        id: np.point.id,
-                    },
-                    distance_meters: np.distance_meters,
-                    bearing_degrees: np.bearing_degrees,
-                }).collect(),
+                nearest_points: result
+                    .nearest_points
+                    .into_iter()
+                    .map(|np| NearestPointResult {
+                        point: Point {
+                            lat: np.point.lat,
+                            lon: np.point.lon,
+                            id: np.point.id,
+                        },
+                        distance_meters: np.distance_meters,
+                        bearing_degrees: np.bearing_degrees,
+                    })
+                    .collect(),
                 total_candidates: result.total_candidates,
                 results_returned: result.results_returned,
             };
-            ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|_| "Error serializing result".to_string()))
-        },
+            ToolResponse::text(
+                serde_json::to_string(&response)
+                    .unwrap_or_else(|_| "Error serializing result".to_string()),
+            )
+        }
         Err(error) => ToolResponse::text(error),
     }
 }
-

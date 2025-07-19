@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use sha2::{Sha256, Sha512, Digest};
 use md5::Md5;
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256, Sha512};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HashGeneratorInput {
@@ -30,13 +30,20 @@ pub struct HashGeneratorResult {
 
 pub fn generate_hash(input: HashGeneratorInput) -> Result<HashGeneratorResult, String> {
     let algorithm = input.algorithm.to_lowercase();
-    let format = input.format.as_ref().map(|s| s.to_lowercase()).unwrap_or_else(|| "hex".to_string());
-    
+    let format = input
+        .format
+        .as_ref()
+        .map(|s| s.to_lowercase())
+        .unwrap_or_else(|| "hex".to_string());
+
     // Validate format
     if format != "hex" && format != "base64" {
-        return Err(format!("Unsupported format: {}. Use 'hex' or 'base64'", format));
+        return Err(format!(
+            "Unsupported format: {}. Use 'hex' or 'base64'",
+            format
+        ));
     }
-    
+
     // Generate hash based on algorithm
     let (hash_bytes, byte_length) = match algorithm.as_str() {
         "md5" => {
@@ -58,10 +65,13 @@ pub fn generate_hash(input: HashGeneratorInput) -> Result<HashGeneratorResult, S
             (result.to_vec(), 64)
         }
         _ => {
-            return Err(format!("Unsupported algorithm: {}. Use 'md5', 'sha256', or 'sha512'", algorithm));
+            return Err(format!(
+                "Unsupported algorithm: {}. Use 'md5', 'sha256', or 'sha512'",
+                algorithm
+            ));
         }
     };
-    
+
     // Format output
     let hash_string = match format.as_str() {
         "hex" => hex::encode(&hash_bytes),
@@ -71,7 +81,7 @@ pub fn generate_hash(input: HashGeneratorInput) -> Result<HashGeneratorResult, S
         }
         _ => unreachable!(), // Already validated above
     };
-    
+
     Ok(HashGeneratorResult {
         hash: hash_string.clone(),
         algorithm: algorithm.clone(),
@@ -109,7 +119,10 @@ mod tests {
             format: None, // Default to hex
         };
         let result = generate_hash(input).unwrap();
-        assert_eq!(result.hash, "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
+        assert_eq!(
+            result.hash,
+            "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+        );
         assert_eq!(result.algorithm, "sha256");
         assert_eq!(result.format, "hex");
         assert_eq!(result.byte_length, 32);
@@ -124,7 +137,10 @@ mod tests {
             format: Some("hex".to_string()),
         };
         let result = generate_hash(input).unwrap();
-        assert_eq!(result.hash, "309ecc489c12d6eb4cc40f50c902f2b4d0ed77ee511a7c7a9bcd3ca86d4cd86f989dd35bc5ff499670da34255b45b0cfd830e81f605dcf7dc5542e93ae9cd76f");
+        assert_eq!(
+            result.hash,
+            "309ecc489c12d6eb4cc40f50c902f2b4d0ed77ee511a7c7a9bcd3ca86d4cd86f989dd35bc5ff499670da34255b45b0cfd830e81f605dcf7dc5542e93ae9cd76f"
+        );
         assert_eq!(result.algorithm, "sha512");
         assert_eq!(result.byte_length, 64);
         assert_eq!(result.string_length, 128);
@@ -138,7 +154,10 @@ mod tests {
             format: None,
         };
         let result = generate_hash(input).unwrap();
-        assert_eq!(result.hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+        assert_eq!(
+            result.hash,
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
     }
 
     #[test]
@@ -191,11 +210,20 @@ mod tests {
     #[test]
     fn test_known_sha256_vectors() {
         let test_cases = vec![
-            ("", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-            ("abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"),
-            ("The quick brown fox jumps over the lazy dog", "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"),
+            (
+                "",
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            ),
+            (
+                "abc",
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+            ),
+            (
+                "The quick brown fox jumps over the lazy dog",
+                "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592",
+            ),
         ];
-        
+
         for (text, expected_hash) in test_cases {
             let input = HashGeneratorInput {
                 text: text.to_string(),

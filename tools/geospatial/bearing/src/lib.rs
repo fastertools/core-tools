@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 
 // Re-export types from logic module
 pub use logic::{BearingInput as LogicInput, BearingResult as LogicOutput};
@@ -37,7 +37,7 @@ pub fn bearing(input: BearingInput) -> ToolResponse {
         lat2: input.lat2,
         lon2: input.lon2,
     };
-    
+
     // Call logic implementation
     match logic::calculate_bearing_between_points(logic_input) {
         Ok(result) => {
@@ -48,6 +48,6 @@ pub fn bearing(input: BearingInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

@@ -1,12 +1,14 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 
 // Re-export types from logic module
-pub use logic::{HistogramInput as LogicInput, HistogramOutput as LogicOutput, HistogramBin as LogicBin};
+pub use logic::{
+    HistogramBin as LogicBin, HistogramInput as LogicInput, HistogramOutput as LogicOutput,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -50,25 +52,29 @@ pub fn histogram(input: HistogramInput) -> ToolResponse {
         data: input.data,
         num_bins: input.num_bins,
     };
-    
+
     // Call logic implementation
     match logic::generate_histogram(logic_input) {
         Ok(result) => {
             // Convert back to wrapper types
             let response = HistogramOutput {
-                bins: result.bins.into_iter().map(|bin| HistogramBin {
-                    lower_bound: bin.lower_bound,
-                    upper_bound: bin.upper_bound,
-                    count: bin.count,
-                    frequency: bin.frequency,
-                    density: bin.density,
-                }).collect(),
+                bins: result
+                    .bins
+                    .into_iter()
+                    .map(|bin| HistogramBin {
+                        lower_bound: bin.lower_bound,
+                        upper_bound: bin.upper_bound,
+                        count: bin.count,
+                        frequency: bin.frequency,
+                        density: bin.density,
+                    })
+                    .collect(),
                 total_count: result.total_count,
                 bin_width: result.bin_width,
                 range: result.range,
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

@@ -57,7 +57,11 @@ impl Vector3 {
                 z: self.z / mag,
             }
         } else {
-            Vector3 { x: 0.0, y: 0.0, z: 0.0 }
+            Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }
         }
     }
 
@@ -80,7 +84,7 @@ impl Vector3 {
 
 fn calculate_aabb_normal(aabb: &AABB, point: &Vector3) -> Vector3 {
     let epsilon = 1e-6;
-    
+
     if (point.x - aabb.min.x).abs() < epsilon {
         Vector3::new(-1.0, 0.0, 0.0)
     } else if (point.x - aabb.max.x).abs() < epsilon {
@@ -108,28 +112,44 @@ pub fn ray_aabb_intersection_logic(input: AABBRayInput) -> Result<AABBIntersecti
     }
 
     // Check for NaN or infinite values in AABB
-    if aabb.min.x.is_nan() || aabb.min.x.is_infinite() ||
-       aabb.min.y.is_nan() || aabb.min.y.is_infinite() ||
-       aabb.min.z.is_nan() || aabb.min.z.is_infinite() {
+    if aabb.min.x.is_nan()
+        || aabb.min.x.is_infinite()
+        || aabb.min.y.is_nan()
+        || aabb.min.y.is_infinite()
+        || aabb.min.z.is_nan()
+        || aabb.min.z.is_infinite()
+    {
         return Err("AABB min coordinates must be finite".to_string());
     }
 
-    if aabb.max.x.is_nan() || aabb.max.x.is_infinite() ||
-       aabb.max.y.is_nan() || aabb.max.y.is_infinite() ||
-       aabb.max.z.is_nan() || aabb.max.z.is_infinite() {
+    if aabb.max.x.is_nan()
+        || aabb.max.x.is_infinite()
+        || aabb.max.y.is_nan()
+        || aabb.max.y.is_infinite()
+        || aabb.max.z.is_nan()
+        || aabb.max.z.is_infinite()
+    {
         return Err("AABB max coordinates must be finite".to_string());
     }
 
     // Check for NaN or infinite values in ray
-    if ray.origin.x.is_nan() || ray.origin.x.is_infinite() ||
-       ray.origin.y.is_nan() || ray.origin.y.is_infinite() ||
-       ray.origin.z.is_nan() || ray.origin.z.is_infinite() {
+    if ray.origin.x.is_nan()
+        || ray.origin.x.is_infinite()
+        || ray.origin.y.is_nan()
+        || ray.origin.y.is_infinite()
+        || ray.origin.z.is_nan()
+        || ray.origin.z.is_infinite()
+    {
         return Err("Ray origin coordinates must be finite".to_string());
     }
 
-    if ray.direction.x.is_nan() || ray.direction.x.is_infinite() ||
-       ray.direction.y.is_nan() || ray.direction.y.is_infinite() ||
-       ray.direction.z.is_nan() || ray.direction.z.is_infinite() {
+    if ray.direction.x.is_nan()
+        || ray.direction.x.is_infinite()
+        || ray.direction.y.is_nan()
+        || ray.direction.y.is_infinite()
+        || ray.direction.z.is_nan()
+        || ray.direction.z.is_infinite()
+    {
         return Err("Ray direction coordinates must be finite".to_string());
     }
 
@@ -139,11 +159,23 @@ pub fn ray_aabb_intersection_logic(input: AABBRayInput) -> Result<AABBIntersecti
     }
 
     let ray_dir = ray.direction.normalize();
-    
+
     let inv_dir = Vector3::new(
-        if ray_dir.x.abs() < 1e-10 { 1e10 } else { 1.0 / ray_dir.x },
-        if ray_dir.y.abs() < 1e-10 { 1e10 } else { 1.0 / ray_dir.y },
-        if ray_dir.z.abs() < 1e-10 { 1e10 } else { 1.0 / ray_dir.z },
+        if ray_dir.x.abs() < 1e-10 {
+            1e10
+        } else {
+            1.0 / ray_dir.x
+        },
+        if ray_dir.y.abs() < 1e-10 {
+            1e10
+        } else {
+            1.0 / ray_dir.y
+        },
+        if ray_dir.z.abs() < 1e-10 {
+            1e10
+        } else {
+            1.0 / ray_dir.z
+        },
     );
 
     let t1 = (aabb.min.x - ray.origin.x) * inv_dir.x;
@@ -170,26 +202,26 @@ pub fn ray_aabb_intersection_logic(input: AABBRayInput) -> Result<AABBIntersecti
     if tmin > 0.0 {
         let point = ray.origin.add(&ray_dir.scale(tmin));
         let normal = calculate_aabb_normal(&aabb, &point);
-        
+
         intersection_points.push(IntersectionPoint {
             point,
             distance: tmin,
             normal,
         });
-        
+
         closest_distance = Some(tmin);
     }
 
     if tmax > 0.0 && tmax != tmin {
         let point = ray.origin.add(&ray_dir.scale(tmax));
         let normal = calculate_aabb_normal(&aabb, &point);
-        
+
         intersection_points.push(IntersectionPoint {
             point,
             distance: tmax,
             normal,
         });
-        
+
         if closest_distance.is_none() || tmax < closest_distance.unwrap() {
             closest_distance = Some(tmax);
         }
@@ -223,7 +255,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 2);
         assert!(result.closest_distance.is_some());
-        
+
         let closest = result.closest_distance.unwrap();
         assert!((closest - 4.0).abs() < 1e-10);
     }
@@ -264,7 +296,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 1);
         assert!(result.closest_distance.is_some());
-        
+
         let closest = result.closest_distance.unwrap();
         assert!((closest - 2.0).abs() < 1e-10);
     }
@@ -303,7 +335,10 @@ mod tests {
 
         let result = ray_aabb_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "AABB min coordinates must be less than max coordinates");
+        assert_eq!(
+            result.unwrap_err(),
+            "AABB min coordinates must be less than max coordinates"
+        );
     }
 
     #[test]
@@ -375,7 +410,10 @@ mod tests {
 
         let result = ray_aabb_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Ray direction coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Ray direction coordinates must be finite"
+        );
     }
 
     #[test]
@@ -430,7 +468,7 @@ mod tests {
         let result = ray_aabb_intersection_logic(input).unwrap();
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 2);
-        
+
         // Check that normals are unit vectors
         for intersection in &result.intersection_points {
             let normal_magnitude = intersection.normal.magnitude();

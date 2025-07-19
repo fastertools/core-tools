@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -40,7 +40,7 @@ pub fn quaternion_multiply(input: QuaternionMultiplyInput) -> ToolResponse {
             w: input.q2.w,
         },
     };
-    
+
     // Call business logic
     match logic::compute_quaternion_multiply(logic_input) {
         Ok(logic_result) => {
@@ -55,6 +55,6 @@ pub fn quaternion_multiply(input: QuaternionMultiplyInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

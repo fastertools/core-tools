@@ -76,7 +76,11 @@ impl Vector3 {
                 z: self.z / mag,
             }
         } else {
-            Vector3 { x: 0.0, y: 0.0, z: 0.0 }
+            Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }
         }
     }
 }
@@ -87,7 +91,9 @@ impl Sphere {
     }
 }
 
-pub fn sphere_sphere_intersection_logic(input: SphereSphereInput) -> Result<SphereSphereResult, String> {
+pub fn sphere_sphere_intersection_logic(
+    input: SphereSphereInput,
+) -> Result<SphereSphereResult, String> {
     let sphere1 = input.sphere1;
     let sphere2 = input.sphere2;
 
@@ -97,9 +103,13 @@ pub fn sphere_sphere_intersection_logic(input: SphereSphereInput) -> Result<Sphe
     }
 
     // Check for NaN or infinite values in sphere1
-    if sphere1.center.x.is_nan() || sphere1.center.x.is_infinite() ||
-       sphere1.center.y.is_nan() || sphere1.center.y.is_infinite() ||
-       sphere1.center.z.is_nan() || sphere1.center.z.is_infinite() {
+    if sphere1.center.x.is_nan()
+        || sphere1.center.x.is_infinite()
+        || sphere1.center.y.is_nan()
+        || sphere1.center.y.is_infinite()
+        || sphere1.center.z.is_nan()
+        || sphere1.center.z.is_infinite()
+    {
         return Err("Sphere1 center coordinates must be finite".to_string());
     }
 
@@ -108,9 +118,13 @@ pub fn sphere_sphere_intersection_logic(input: SphereSphereInput) -> Result<Sphe
     }
 
     // Check for NaN or infinite values in sphere2
-    if sphere2.center.x.is_nan() || sphere2.center.x.is_infinite() ||
-       sphere2.center.y.is_nan() || sphere2.center.y.is_infinite() ||
-       sphere2.center.z.is_nan() || sphere2.center.z.is_infinite() {
+    if sphere2.center.x.is_nan()
+        || sphere2.center.x.is_infinite()
+        || sphere2.center.y.is_nan()
+        || sphere2.center.y.is_infinite()
+        || sphere2.center.z.is_nan()
+        || sphere2.center.z.is_infinite()
+    {
         return Err("Sphere2 center coordinates must be finite".to_string());
     }
 
@@ -138,19 +152,21 @@ pub fn sphere_sphere_intersection_logic(input: SphereSphereInput) -> Result<Sphe
     };
 
     let mut intersection_circle = None;
-    
+
     if intersects && intersection_type == "intersecting" {
         // Calculate intersection circle using analytical geometry
-        let a = (sphere1.radius * sphere1.radius - sphere2.radius * sphere2.radius + center_distance * center_distance) / (2.0 * center_distance);
+        let a = (sphere1.radius * sphere1.radius - sphere2.radius * sphere2.radius
+            + center_distance * center_distance)
+            / (2.0 * center_distance);
         let h_squared = sphere1.radius * sphere1.radius - a * a;
-        
+
         // Ensure h_squared is non-negative to avoid NaN
         if h_squared >= 0.0 {
             let h = h_squared.sqrt();
-            
+
             let direction = sphere2.center.subtract(&sphere1.center).normalize();
             let circle_center = sphere1.center.add(&direction.scale(a));
-            
+
             intersection_circle = Some(IntersectionCircle {
                 center: circle_center,
                 radius: h,
@@ -199,12 +215,12 @@ mod tests {
         assert_eq!(result.intersection_type, "intersecting");
         assert!((result.distance_between_centers - 2.0).abs() < EPSILON);
         assert!(result.intersection_circle.is_some());
-        
+
         let circle = result.intersection_circle.unwrap();
         assert!((circle.center.x - 1.0).abs() < EPSILON);
         assert!((circle.center.y - 0.0).abs() < EPSILON);
         assert!((circle.center.z - 0.0).abs() < EPSILON);
-        
+
         let expected_radius = (3.0_f64).sqrt(); // sqrt(4 - 1) = sqrt(3)
         assert!((circle.radius - expected_radius).abs() < EPSILON);
     }
@@ -277,7 +293,7 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_type, "intersecting");
         assert!(result.intersection_circle.is_some());
-        
+
         let expected_distance = (3.0_f64).sqrt(); // sqrt(1^2 + 1^2 + 1^2)
         assert!((result.distance_between_centers - expected_distance).abs() < EPSILON);
     }
@@ -315,7 +331,10 @@ mod tests {
 
         let result = sphere_sphere_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Sphere1 center coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Sphere1 center coordinates must be finite"
+        );
     }
 
     #[test]
@@ -339,7 +358,10 @@ mod tests {
 
         let result = sphere_sphere_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Sphere2 center coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Sphere2 center coordinates must be finite"
+        );
     }
 
     #[test]
@@ -365,12 +387,12 @@ mod tests {
         assert!(result.intersects);
         assert_eq!(result.intersection_type, "intersecting");
         assert!(result.intersection_circle.is_some());
-        
+
         let circle = result.intersection_circle.unwrap();
         // Check that normal vector is unit length
         let normal_magnitude = circle.normal.magnitude();
         assert!((normal_magnitude - 1.0).abs() < EPSILON);
-        
+
         // Check intersection circle radius is positive
         assert!(circle.radius > 0.0);
     }

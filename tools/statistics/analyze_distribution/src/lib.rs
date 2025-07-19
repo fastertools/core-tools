@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -91,19 +91,24 @@ pub async fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolRespon
         data: input.data,
         num_bins: input.num_bins,
     };
-    
+
     // Call logic implementation
     match logic::calculate_analyze_distribution(logic_input).await {
         Ok(result) => {
             let response = AnalyzeDistributionOutput {
                 histogram: HistogramOutput {
-                    bins: result.histogram.bins.into_iter().map(|bin| HistogramBin {
-                        lower_bound: bin.lower_bound,
-                        upper_bound: bin.upper_bound,
-                        count: bin.count,
-                        frequency: bin.frequency,
-                        density: bin.density,
-                    }).collect(),
+                    bins: result
+                        .histogram
+                        .bins
+                        .into_iter()
+                        .map(|bin| HistogramBin {
+                            lower_bound: bin.lower_bound,
+                            upper_bound: bin.upper_bound,
+                            count: bin.count,
+                            frequency: bin.frequency,
+                            density: bin.density,
+                        })
+                        .collect(),
                     total_count: result.histogram.total_count,
                     bin_width: result.histogram.bin_width,
                     range: result.histogram.range,
@@ -126,6 +131,6 @@ pub async fn analyze_distribution(input: AnalyzeDistributionInput) -> ToolRespon
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

@@ -1,9 +1,12 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{cross_product_logic, CrossProductInput as LogicInput, CrossProductResult as LogicResult, Vector3D as LogicVector3D};
+use logic::{
+    CrossProductInput as LogicInput, CrossProductResult as LogicResult, Vector3D as LogicVector3D,
+    cross_product_logic,
+};
 
 #[derive(Deserialize, Serialize, JsonSchema, Clone, Debug, PartialEq)]
 struct Vector3D {
@@ -37,7 +40,11 @@ struct CrossProductResult {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -67,6 +74,6 @@ fn cross_product(input: CrossProductInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

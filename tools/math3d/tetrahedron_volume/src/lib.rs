@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -51,7 +51,7 @@ pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> ToolResponse {
             z: input.point_d.z,
         },
     };
-    
+
     // Call business logic
     match logic::compute_tetrahedron_volume(logic_input) {
         Ok(logic_result) => {
@@ -84,6 +84,6 @@ pub fn tetrahedron_volume(input: TetrahedronVolumeInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

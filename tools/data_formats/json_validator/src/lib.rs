@@ -1,12 +1,14 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-
 // Re-export types from logic module
-pub use logic::{JsonValidatorInput as LogicInput, JsonValidatorResult as LogicOutput, ValidationDetails as LogicDetails};
+pub use logic::{
+    JsonValidatorInput as LogicInput, JsonValidatorResult as LogicOutput,
+    ValidationDetails as LogicDetails,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -54,13 +56,13 @@ pub fn json_validator(input: JsonValidatorInput) -> ToolResponse {
         json_string: input.json_string,
         schema: input.schema,
     };
-    
+
     // Call logic implementation
     let result = match logic::validate_json(logic_input) {
         Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error validating JSON: {}", e)),
     };
-    
+
     // Convert back to wrapper types
     let response = JsonValidatorResult {
         is_valid: result.is_valid,
@@ -76,6 +78,8 @@ pub fn json_validator(input: JsonValidatorInput) -> ToolResponse {
         },
         schema_validated: result.schema_validated,
     };
-    
-    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
+
+    ToolResponse::text(
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+    )
 }

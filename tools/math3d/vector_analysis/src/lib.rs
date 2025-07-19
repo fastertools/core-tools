@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -39,7 +39,7 @@ pub struct VectorAnalysisOutput {
 }
 
 /// Comprehensive vector analysis using composition of atomic math3d tools
-/// 
+///
 /// This composite tool demonstrates the composition pattern by calling multiple
 /// atomic tools (vector_magnitude, vector_angle, dot_product, cross_product) and
 /// combining their results for comprehensive vector analysis.
@@ -50,7 +50,7 @@ pub async fn vector_analysis(input: VectorAnalysisInput) -> ToolResponse {
         vector_a: input.vector_a,
         vector_b: input.vector_b,
     };
-    
+
     // Call async logic implementation
     match logic::analyze_vectors(logic_input).await {
         Ok(result) => {
@@ -68,7 +68,7 @@ pub async fn vector_analysis(input: VectorAnalysisInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string_pretty(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }
 
@@ -82,7 +82,7 @@ mod tests {
             vector_a: vec![1.0, 0.0, 0.0],
             vector_b: vec![0.0, 1.0, 0.0],
         };
-        
+
         assert_eq!(input.vector_a.len(), 3);
         assert_eq!(input.vector_b.len(), 3);
     }
@@ -100,7 +100,7 @@ mod tests {
             is_parallel: false,
             vector_similarity: 0.0,
         };
-        
+
         assert!(output.is_orthogonal);
         assert!(!output.is_parallel);
         assert_eq!(output.cross_product.len(), 3);

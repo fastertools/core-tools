@@ -17,9 +17,9 @@ pub fn square_number(input: SingleNumberInput) -> Result<ArithmeticResult, Strin
     if input.value.is_nan() || input.value.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let result = input.value * input.value;
-    
+
     Ok(ArithmeticResult {
         result,
         operation: "square".to_string(),
@@ -135,22 +135,35 @@ mod tests {
         let input = SingleNumberInput { value: f64::NAN };
         let result = square_number(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = SingleNumberInput { value: f64::INFINITY };
+        let input = SingleNumberInput {
+            value: f64::INFINITY,
+        };
         let result = square_number(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_negative_infinite_input_error() {
-        let input = SingleNumberInput { value: f64::NEG_INFINITY };
+        let input = SingleNumberInput {
+            value: f64::NEG_INFINITY,
+        };
         let result = square_number(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 }

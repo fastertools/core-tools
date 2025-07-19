@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -16,27 +16,27 @@ pub use logic::{StringSplitInput as LogicInput, StringSplitResult as LogicResult
 pub struct StringSplitInput {
     /// The text to split
     pub text: String,
-    
+
     /// Delimiter for splitting (ignored for split_type: whitespace, lines, chars, words)
     #[serde(default = "default_delimiter")]
     pub delimiter: String,
-    
+
     /// Split type: string, regex, whitespace, lines, chars, words
     #[serde(default = "default_split_type")]
     pub split_type: String,
-    
+
     /// Maximum number of splits (None for unlimited)
     #[serde(default)]
     pub limit: Option<usize>,
-    
+
     /// Whether to trim whitespace from each part
     #[serde(default)]
     pub trim_parts: bool,
-    
+
     /// Whether to remove empty parts from result
     #[serde(default)]
     pub remove_empty: bool,
-    
+
     /// Case sensitivity (for string split_type)
     #[serde(default)]
     pub case_sensitive: Option<bool>,
@@ -76,13 +76,13 @@ pub fn string_splitter(input: StringSplitInput) -> ToolResponse {
         remove_empty: input.remove_empty,
         case_sensitive: input.case_sensitive,
     };
-    
+
     // Call logic implementation
     let result = match logic::split_string(logic_input) {
         Ok(r) => r,
-        Err(e) => return ToolResponse::text(format!("Error: {}", e))
+        Err(e) => return ToolResponse::text(format!("Error: {}", e)),
     };
-    
+
     // Convert back to wrapper types
     let output = StringSplitResult {
         parts: result.parts,
@@ -91,6 +91,9 @@ pub fn string_splitter(input: StringSplitInput) -> ToolResponse {
         delimiter_used: result.delimiter_used,
         split_type: result.split_type,
     };
-    
-    ToolResponse::text(serde_json::to_string_pretty(&output).unwrap_or_else(|_| "Error serializing output".to_string()))
+
+    ToolResponse::text(
+        serde_json::to_string_pretty(&output)
+            .unwrap_or_else(|_| "Error serializing output".to_string()),
+    )
 }

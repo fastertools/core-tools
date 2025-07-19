@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 
 // Re-export types from logic module
-pub use logic::{TwoSeriesInput as LogicInput, CorrelationOutput as LogicOutput};
+pub use logic::{CorrelationOutput as LogicOutput, TwoSeriesInput as LogicInput};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -36,7 +36,7 @@ pub fn spearman_correlation(input: TwoSeriesInput) -> ToolResponse {
         x: input.x,
         y: input.y,
     };
-    
+
     // Call logic implementation
     match logic::calculate_spearman_correlation(logic_input) {
         Ok(result) => {
@@ -49,6 +49,6 @@ pub fn spearman_correlation(input: TwoSeriesInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

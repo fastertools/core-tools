@@ -1,12 +1,13 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
-
 // Re-export types from logic module
-pub use logic::{CsvParserInput as LogicInput, CsvParserResult as LogicOutput, ParsingStats as LogicStats};
+pub use logic::{
+    CsvParserInput as LogicInput, CsvParserResult as LogicOutput, ParsingStats as LogicStats,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -61,13 +62,13 @@ pub fn csv_parser(input: CsvParserInput) -> ToolResponse {
         skip_empty_lines: input.skip_empty_lines,
         trim_fields: input.trim_fields,
     };
-    
+
     // Call logic implementation
     let result = match logic::parse_csv(logic_input) {
         Ok(result) => result,
         Err(e) => return ToolResponse::text(format!("Error parsing CSV: {}", e)),
     };
-    
+
     // Convert back to wrapper types
     let response = CsvParserResult {
         headers: result.headers,
@@ -82,6 +83,8 @@ pub fn csv_parser(input: CsvParserInput) -> ToolResponse {
         },
         error: result.error,
     };
-    
-    ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)))
+
+    ToolResponse::text(
+        serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+    )
 }

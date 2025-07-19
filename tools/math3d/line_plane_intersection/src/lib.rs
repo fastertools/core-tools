@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::*;
@@ -105,6 +105,6 @@ pub fn line_plane_intersection(input: LinePlaneInput) -> ftl_sdk::ToolResponse {
             };
             ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
     }
 }

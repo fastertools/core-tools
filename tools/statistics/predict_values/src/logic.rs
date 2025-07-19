@@ -23,26 +23,37 @@ pub fn predict_values(input: PredictionInput) -> Result<PredictionOutput, String
     if input.x_values.is_empty() {
         return Err("X values for prediction cannot be empty".to_string());
     }
-    
+
     // Check for invalid values
-    if input.x_values.iter().any(|&x| x.is_nan() || x.is_infinite()) {
+    if input
+        .x_values
+        .iter()
+        .any(|&x| x.is_nan() || x.is_infinite())
+    {
         return Err("X values contain invalid values (NaN or Infinite)".to_string());
     }
-    
-    if input.slope.is_nan() || input.slope.is_infinite() ||
-       input.intercept.is_nan() || input.intercept.is_infinite() {
+
+    if input.slope.is_nan()
+        || input.slope.is_infinite()
+        || input.intercept.is_nan()
+        || input.intercept.is_infinite()
+    {
         return Err("Slope or intercept contains invalid values".to_string());
     }
-    
-    let predictions = input.x_values.iter().map(|&x| {
-        let y_predicted = input.slope * x + input.intercept;
-        RegressionPrediction {
-            x,
-            y_predicted,
-            confidence_interval: None, // Would require additional statistics to calculate
-        }
-    }).collect();
-    
+
+    let predictions = input
+        .x_values
+        .iter()
+        .map(|&x| {
+            let y_predicted = input.slope * x + input.intercept;
+            RegressionPrediction {
+                x,
+                y_predicted,
+                confidence_interval: None, // Would require additional statistics to calculate
+            }
+        })
+        .collect();
+
     Ok(PredictionOutput { predictions })
 }
 
@@ -57,7 +68,7 @@ mod tests {
             intercept: 1.0,
             x_values: vec![1.0, 2.0, 3.0],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 3);
         assert_eq!(result.predictions[0].y_predicted, 3.0); // 2*1 + 1
@@ -72,7 +83,7 @@ mod tests {
             intercept: 5.0,
             x_values: vec![1.0, 2.0, 3.0],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 3);
         assert_eq!(result.predictions[0].y_predicted, 5.0);
@@ -87,11 +98,11 @@ mod tests {
             intercept: 10.0,
             x_values: vec![2.0, 4.0],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 2);
-        assert_eq!(result.predictions[0].y_predicted, 7.0);  // -1.5*2 + 10
-        assert_eq!(result.predictions[1].y_predicted, 4.0);  // -1.5*4 + 10
+        assert_eq!(result.predictions[0].y_predicted, 7.0); // -1.5*2 + 10
+        assert_eq!(result.predictions[1].y_predicted, 4.0); // -1.5*4 + 10
     }
 
     #[test]
@@ -101,7 +112,7 @@ mod tests {
             intercept: -2.0,
             x_values: vec![5.0],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 1);
         assert_eq!(result.predictions[0].y_predicted, 13.0); // 3*5 - 2
@@ -114,10 +125,13 @@ mod tests {
             intercept: 0.0,
             x_values: vec![],
         };
-        
+
         let result = predict_values(input);
         assert!(result.is_err());
-        assert_eq!(result.err().unwrap(), "X values for prediction cannot be empty");
+        assert_eq!(
+            result.err().unwrap(),
+            "X values for prediction cannot be empty"
+        );
     }
 
     #[test]
@@ -127,7 +141,7 @@ mod tests {
             intercept: 0.0,
             x_values: vec![1.0, f64::NAN, 3.0],
         };
-        
+
         let result = predict_values(input);
         assert!(result.is_err());
         assert!(result.err().unwrap().contains("invalid values"));
@@ -140,7 +154,7 @@ mod tests {
             intercept: 0.0,
             x_values: vec![1.0, f64::INFINITY, 3.0],
         };
-        
+
         let result = predict_values(input);
         assert!(result.is_err());
         assert!(result.err().unwrap().contains("invalid values"));
@@ -153,10 +167,15 @@ mod tests {
             intercept: 0.0,
             x_values: vec![1.0, 2.0],
         };
-        
+
         let result = predict_values(input);
         assert!(result.is_err());
-        assert!(result.err().unwrap().contains("Slope or intercept contains invalid values"));
+        assert!(
+            result
+                .err()
+                .unwrap()
+                .contains("Slope or intercept contains invalid values")
+        );
     }
 
     #[test]
@@ -166,10 +185,15 @@ mod tests {
             intercept: f64::INFINITY,
             x_values: vec![1.0, 2.0],
         };
-        
+
         let result = predict_values(input);
         assert!(result.is_err());
-        assert!(result.err().unwrap().contains("Slope or intercept contains invalid values"));
+        assert!(
+            result
+                .err()
+                .unwrap()
+                .contains("Slope or intercept contains invalid values")
+        );
     }
 
     #[test]
@@ -179,7 +203,7 @@ mod tests {
             intercept: -500.0,
             x_values: vec![0.1, 0.2, 0.3],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 3);
         assert_eq!(result.predictions[0].y_predicted, -400.0); // 1000*0.1 - 500
@@ -194,12 +218,12 @@ mod tests {
             intercept: 0.25,
             x_values: vec![1.5, 2.5, 3.5],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert_eq!(result.predictions.len(), 3);
-        assert_eq!(result.predictions[0].y_predicted, 1.0);   // 0.5*1.5 + 0.25
-        assert_eq!(result.predictions[1].y_predicted, 1.5);   // 0.5*2.5 + 0.25
-        assert_eq!(result.predictions[2].y_predicted, 2.0);   // 0.5*3.5 + 0.25
+        assert_eq!(result.predictions[0].y_predicted, 1.0); // 0.5*1.5 + 0.25
+        assert_eq!(result.predictions[1].y_predicted, 1.5); // 0.5*2.5 + 0.25
+        assert_eq!(result.predictions[2].y_predicted, 2.0); // 0.5*3.5 + 0.25
     }
 
     #[test]
@@ -209,7 +233,7 @@ mod tests {
             intercept: 0.0,
             x_values: vec![1.0],
         };
-        
+
         let result = predict_values(input).unwrap();
         assert!(result.predictions[0].confidence_interval.is_none());
     }

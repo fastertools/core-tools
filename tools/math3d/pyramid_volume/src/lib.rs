@@ -1,6 +1,6 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
@@ -31,18 +31,22 @@ pub struct PyramidResponse {
 pub fn pyramid_volume(input: PyramidInput) -> ToolResponse {
     // Convert API types to logic types
     let logic_input = logic::PyramidInput {
-        base_points: input.base_points.into_iter().map(|p| logic::Vector3D {
-            x: p.x,
-            y: p.y,
-            z: p.z,
-        }).collect(),
+        base_points: input
+            .base_points
+            .into_iter()
+            .map(|p| logic::Vector3D {
+                x: p.x,
+                y: p.y,
+                z: p.z,
+            })
+            .collect(),
         apex: logic::Vector3D {
             x: input.apex.x,
             y: input.apex.y,
             z: input.apex.z,
         },
     };
-    
+
     // Call business logic
     match logic::compute_pyramid_volume(logic_input) {
         Ok(logic_result) => {
@@ -52,11 +56,15 @@ pub fn pyramid_volume(input: PyramidInput) -> ToolResponse {
                 calculation_method: logic_result.calculation_method,
                 base_area: logic_result.base_area,
                 height: logic_result.height,
-                base_points: logic_result.base_points.into_iter().map(|p| Vector3D {
-                    x: p.x,
-                    y: p.y,
-                    z: p.z,
-                }).collect(),
+                base_points: logic_result
+                    .base_points
+                    .into_iter()
+                    .map(|p| Vector3D {
+                        x: p.x,
+                        y: p.y,
+                        z: p.z,
+                    })
+                    .collect(),
                 apex: Vector3D {
                     x: logic_result.apex.x,
                     y: logic_result.apex.y,
@@ -65,6 +73,6 @@ pub fn pyramid_volume(input: PyramidInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

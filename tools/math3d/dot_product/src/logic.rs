@@ -63,11 +63,11 @@ impl Vector3D {
     pub fn angle_with(&self, other: &Vector3D) -> Result<f64, String> {
         let mag1 = self.magnitude();
         let mag2 = other.magnitude();
-        
+
         if mag1 == 0.0 || mag2 == 0.0 {
             return Err("Cannot compute angle with zero vector".to_string());
         }
-        
+
         let cos_angle = self.dot(other) / (mag1 * mag2);
         // Clamp to [-1, 1] to handle floating point errors
         let cos_angle = cos_angle.max(-1.0).min(1.0);
@@ -88,7 +88,7 @@ pub fn dot_product_logic(input: DotProductInput) -> Result<DotProductResult, Str
     let dot_product = input.vector1.dot(&input.vector2);
     let are_perpendicular = input.vector1.are_perpendicular(&input.vector2);
     let are_parallel = input.vector1.are_parallel(&input.vector2);
-    
+
     let (angle_radians, angle_degrees) = if input.vector1.is_zero() || input.vector2.is_zero() {
         (0.0, 0.0)
     } else {
@@ -97,7 +97,7 @@ pub fn dot_product_logic(input: DotProductInput) -> Result<DotProductResult, Str
             Err(_) => (0.0, 0.0),
         }
     };
-    
+
     Ok(DotProductResult {
         dot_product,
         angle_radians,
@@ -291,7 +291,7 @@ mod tests {
         // Test vectors with very small magnitudes
         let v1 = create_test_vector(1e-15, 0.0, 0.0);
         let v2 = create_test_vector(0.0, 1e-15, 0.0);
-        
+
         // These should be considered zero vectors
         assert!(v1.is_zero());
         assert!(v2.is_zero());

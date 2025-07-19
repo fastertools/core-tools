@@ -1,4 +1,4 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 
 mod logic;
@@ -22,7 +22,7 @@ fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
         axis: input.axis,
         angle: input.angle,
     };
-    
+
     match arbitrary_rotation_logic(logic_input) {
         Ok(output) => {
             let result = ToolOutput {
@@ -30,6 +30,6 @@ fn arbitrary_rotation(input: ToolInput) -> ToolResponse {
             };
             ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

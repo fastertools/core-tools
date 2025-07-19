@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 /// Standard input for operations requiring a single number
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -95,7 +95,7 @@ impl SafeArithmeticResult {
 pub trait BasicMathOperation {
     type Input;
     type Output;
-    
+
     fn execute(input: Self::Input) -> Self::Output;
 }
 
@@ -129,7 +129,14 @@ pub mod helpers {
     }
 
     /// Create ArithmeticResult from four inputs (2D points)
-    pub fn points_result(operation: &str, x1: f64, y1: f64, x2: f64, y2: f64, result: f64) -> ArithmeticResult {
+    pub fn points_result(
+        operation: &str,
+        x1: f64,
+        y1: f64,
+        x2: f64,
+        y2: f64,
+        result: f64,
+    ) -> ArithmeticResult {
         ArithmeticResult::success(operation, result, vec![x1, y1, x2, y2])
     }
 }

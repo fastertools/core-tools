@@ -17,47 +17,61 @@ pub struct PythagoreanResult {
 
 pub fn calculate_pythagorean(input: PythagoreanInput) -> Result<PythagoreanResult, String> {
     // Validate input - check for invalid values
-    if input.a.is_nan() || input.a.is_infinite() ||
-       input.b.is_nan() || input.b.is_infinite() {
+    if input.a.is_nan() || input.a.is_infinite() || input.b.is_nan() || input.b.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     // Check for negative values (triangle legs must be positive)
     if input.a < 0.0 || input.b < 0.0 {
         return Err("Triangle legs must be non-negative".to_string());
     }
-    
+
     let mut calculation_steps = Vec::new();
     let mut tool_calls = Vec::new();
-    
+
     // Step 1: Square first leg (a²)
     calculation_steps.push(format!("Step 1: Square first leg: {}² = ?", input.a));
     tool_calls.push(format!("Pure function: square({}) via a²", input.a));
-    
+
     let a_squared = input.a * input.a;
     calculation_steps.push(format!("Result: {}² = {}", input.a, a_squared));
-    
+
     // Step 2: Square second leg (b²)
     calculation_steps.push(format!("Step 2: Square second leg: {}² = ?", input.b));
     tool_calls.push(format!("Pure function: square({}) via b²", input.b));
-    
+
     let b_squared = input.b * input.b;
     calculation_steps.push(format!("Result: {}² = {}", input.b, b_squared));
-    
+
     // Step 3: Add the squares (a² + b²)
-    calculation_steps.push(format!("Step 3: Add squares: {} + {} = ?", a_squared, b_squared));
-    tool_calls.push(format!("Pure function: add({}, {}) via a² + b²", a_squared, b_squared));
-    
+    calculation_steps.push(format!(
+        "Step 3: Add squares: {} + {} = ?",
+        a_squared, b_squared
+    ));
+    tool_calls.push(format!(
+        "Pure function: add({}, {}) via a² + b²",
+        a_squared, b_squared
+    ));
+
     let sum_of_squares = a_squared + b_squared;
-    calculation_steps.push(format!("Result: {} + {} = {}", a_squared, b_squared, sum_of_squares));
-    
+    calculation_steps.push(format!(
+        "Result: {} + {} = {}",
+        a_squared, b_squared, sum_of_squares
+    ));
+
     // Step 4: Take square root (sqrt(a² + b²))
-    calculation_steps.push(format!("Step 4: Take square root: sqrt({}) = ?", sum_of_squares));
-    tool_calls.push(format!("Pure function: sqrt({}) via f64::sqrt()", sum_of_squares));
-    
+    calculation_steps.push(format!(
+        "Step 4: Take square root: sqrt({}) = ?",
+        sum_of_squares
+    ));
+    tool_calls.push(format!(
+        "Pure function: sqrt({}) via f64::sqrt()",
+        sum_of_squares
+    ));
+
     let hypotenuse = sum_of_squares.sqrt();
     calculation_steps.push(format!("Result: sqrt({}) = {}", sum_of_squares, hypotenuse));
-    
+
     Ok(PythagoreanResult {
         hypotenuse,
         leg_a: input.a,
@@ -164,36 +178,68 @@ mod tests {
 
     #[test]
     fn test_nan_input_error() {
-        let input = PythagoreanInput { a: f64::NAN, b: 4.0 };
+        let input = PythagoreanInput {
+            a: f64::NAN,
+            b: 4.0,
+        };
         let result = calculate_pythagorean(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = PythagoreanInput { a: 3.0, b: f64::INFINITY };
+        let input = PythagoreanInput {
+            a: 3.0,
+            b: f64::INFINITY,
+        };
         let result = calculate_pythagorean(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_calculation_steps_content() {
         let input = PythagoreanInput { a: 3.0, b: 4.0 };
         let result = calculate_pythagorean(input).unwrap();
-        
-        assert!(result.calculation_steps.iter().any(|step| step.contains("Square first leg")));
-        assert!(result.calculation_steps.iter().any(|step| step.contains("Square second leg")));
-        assert!(result.calculation_steps.iter().any(|step| step.contains("Add squares")));
-        assert!(result.calculation_steps.iter().any(|step| step.contains("Take square root")));
+
+        assert!(
+            result
+                .calculation_steps
+                .iter()
+                .any(|step| step.contains("Square first leg"))
+        );
+        assert!(
+            result
+                .calculation_steps
+                .iter()
+                .any(|step| step.contains("Square second leg"))
+        );
+        assert!(
+            result
+                .calculation_steps
+                .iter()
+                .any(|step| step.contains("Add squares"))
+        );
+        assert!(
+            result
+                .calculation_steps
+                .iter()
+                .any(|step| step.contains("Take square root"))
+        );
     }
 
     #[test]
     fn test_tool_calls_content() {
         let input = PythagoreanInput { a: 3.0, b: 4.0 };
         let result = calculate_pythagorean(input).unwrap();
-        
+
         assert!(result.tool_calls.iter().any(|call| call.contains("square")));
         assert!(result.tool_calls.iter().any(|call| call.contains("add")));
         assert!(result.tool_calls.iter().any(|call| call.contains("sqrt")));

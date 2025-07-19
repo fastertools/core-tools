@@ -106,19 +106,22 @@ impl Line3D {
     }
 }
 
-fn closest_points_skew_lines(line1: &Line3D, line2: &Line3D) -> (f64, f64, Vector3D, Vector3D, f64) {
+fn closest_points_skew_lines(
+    line1: &Line3D,
+    line2: &Line3D,
+) -> (f64, f64, Vector3D, Vector3D, f64) {
     let d1 = &line1.direction;
     let d2 = &line2.direction;
     let w = line1.point.subtract(&line2.point);
-    
+
     let a = d1.dot(d1);
     let b = d1.dot(d2);
     let c = d2.dot(d2);
     let d = d1.dot(&w);
     let e = d2.dot(&w);
-    
+
     let denom = a * c - b * b;
-    
+
     let (t1, t2) = if denom.abs() < EPSILON {
         // Lines are parallel
         (0.0, d / c)
@@ -127,50 +130,55 @@ fn closest_points_skew_lines(line1: &Line3D, line2: &Line3D) -> (f64, f64, Vecto
         let t2 = (a * e - b * d) / denom;
         (t1, t2)
     };
-    
+
     let closest1 = line1.point_at_parameter(t1);
     let closest2 = line2.point_at_parameter(t2);
     let distance = closest1.distance_to(&closest2);
-    
+
     (t1, t2, closest1, closest2, distance)
 }
 
-pub fn line_segment_intersection_logic(input: LineSegmentInput) -> Result<LineSegmentIntersectionResult, String> {
+pub fn line_segment_intersection_logic(
+    input: LineSegmentInput,
+) -> Result<LineSegmentIntersectionResult, String> {
     // Input validation
-    if !input.segment1_start.is_valid() || !input.segment1_end.is_valid() || 
-       !input.segment2_start.is_valid() || !input.segment2_end.is_valid() {
+    if !input.segment1_start.is_valid()
+        || !input.segment1_end.is_valid()
+        || !input.segment2_start.is_valid()
+        || !input.segment2_end.is_valid()
+    {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
 
     // Convert segments to lines
     let dir1 = input.segment1_end.subtract(&input.segment1_start);
     let dir2 = input.segment2_end.subtract(&input.segment2_start);
-    
+
     if dir1.is_zero() {
         return Err("Segment 1 has zero length".to_string());
     }
     if dir2.is_zero() {
         return Err("Segment 2 has zero length".to_string());
     }
-    
+
     let line1 = Line3D::new(input.segment1_start.clone(), dir1)?;
     let line2 = Line3D::new(input.segment2_start.clone(), dir2)?;
-    
+
     let (t1, t2, _closest1, _closest2, distance) = closest_points_skew_lines(&line1, &line2);
-    
+
     // Check if parameters are within segment bounds [0, 1]
     let t1_in_bounds = t1 >= 0.0 && t1 <= 1.0;
     let t2_in_bounds = t2 >= 0.0 && t2 <= 1.0;
     let intersection_on_both_segments = t1_in_bounds && t2_in_bounds;
-    
+
     // Clamp parameters to segment bounds for final closest points
     let t1_clamped = t1.max(0.0).min(1.0);
     let t2_clamped = t2.max(0.0).min(1.0);
-    
+
     let final_closest1 = line1.point_at_parameter(t1_clamped);
     let final_closest2 = line2.point_at_parameter(t2_clamped);
     let final_distance = final_closest1.distance_to(&final_closest2);
-    
+
     // For segments, intersection is based on clamped distance and parameter bounds
     let intersects = final_distance < EPSILON && intersection_on_both_segments;
     let intersection_point = if intersects {
@@ -178,7 +186,7 @@ pub fn line_segment_intersection_logic(input: LineSegmentInput) -> Result<LineSe
     } else {
         None
     };
-    
+
     Ok(LineSegmentIntersectionResult {
         intersects,
         intersection_point,
@@ -212,7 +220,7 @@ mod tests {
         assert!(result.intersects);
         assert!(result.intersection_on_both_segments);
         assert!(result.intersection_point.is_some());
-        
+
         let intersection = result.intersection_point.unwrap();
         assert!((intersection.x - 1.0).abs() < EPSILON);
         assert!(intersection.y.abs() < EPSILON);
@@ -266,12 +274,12 @@ mod tests {
 
         let result = line_segment_intersection_logic(input).unwrap();
         assert!(!result.intersects);
-        
+
         // Closest point on segment1 should be (0.5, 0, 0)
         assert!((result.closest_point_seg1.x - 0.5).abs() < EPSILON);
         assert!(result.closest_point_seg1.y.abs() < EPSILON);
         assert!(result.closest_point_seg1.z.abs() < EPSILON);
-        
+
         // Closest point on segment2 should be (0.5, 1, 1)
         assert!((result.closest_point_seg2.x - 0.5).abs() < EPSILON);
         assert!((result.closest_point_seg2.y - 1.0).abs() < EPSILON);
@@ -289,7 +297,7 @@ mod tests {
 
         let result = line_segment_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        
+
         // Parameter for segment1 should be 0.5 (midpoint)
         assert!((result.segment1_parameter - 0.5).abs() < EPSILON);
         // Parameter for segment2 should be 0.5 (midpoint)
@@ -420,7 +428,7 @@ mod tests {
 
         let result = line_segment_intersection_logic(input).unwrap();
         assert!(!result.intersects);
-        
+
         // Parameters should be clamped to [0, 1]
         assert!(result.segment1_parameter >= 0.0 && result.segment1_parameter <= 1.0);
         assert!(result.segment2_parameter >= 0.0 && result.segment2_parameter <= 1.0);
@@ -430,7 +438,7 @@ mod tests {
     fn test_line_creation() {
         let point = create_vector(0.0, 0.0, 0.0);
         let direction = create_vector(1.0, 0.0, 0.0);
-        
+
         let line = Line3D::new(point, direction);
         assert!(line.is_ok());
 

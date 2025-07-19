@@ -63,7 +63,11 @@ impl Vector3 {
                 z: self.z / mag,
             }
         } else {
-            Vector3 { x: 0.0, y: 0.0, z: 0.0 }
+            Vector3 {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }
         }
     }
 
@@ -94,7 +98,12 @@ impl Vector3 {
 
 impl Cylinder {
     pub fn new(center: Vector3, axis: Vector3, radius: f64, height: f64) -> Self {
-        Cylinder { center, axis, radius, height }
+        Cylinder {
+            center,
+            axis,
+            radius,
+            height,
+        }
     }
 }
 
@@ -104,7 +113,9 @@ impl Ray {
     }
 }
 
-pub fn cylinder_ray_intersection_logic(input: CylinderRayInput) -> Result<CylinderRayResult, String> {
+pub fn cylinder_ray_intersection_logic(
+    input: CylinderRayInput,
+) -> Result<CylinderRayResult, String> {
     let cylinder = input.cylinder;
     let ray = input.ray;
 
@@ -114,15 +125,23 @@ pub fn cylinder_ray_intersection_logic(input: CylinderRayInput) -> Result<Cylind
     }
 
     // Validate for NaN and infinite values
-    if cylinder.center.x.is_nan() || cylinder.center.x.is_infinite() ||
-       cylinder.center.y.is_nan() || cylinder.center.y.is_infinite() ||
-       cylinder.center.z.is_nan() || cylinder.center.z.is_infinite() {
+    if cylinder.center.x.is_nan()
+        || cylinder.center.x.is_infinite()
+        || cylinder.center.y.is_nan()
+        || cylinder.center.y.is_infinite()
+        || cylinder.center.z.is_nan()
+        || cylinder.center.z.is_infinite()
+    {
         return Err("Cylinder center coordinates must be finite".to_string());
     }
 
-    if cylinder.axis.x.is_nan() || cylinder.axis.x.is_infinite() ||
-       cylinder.axis.y.is_nan() || cylinder.axis.y.is_infinite() ||
-       cylinder.axis.z.is_nan() || cylinder.axis.z.is_infinite() {
+    if cylinder.axis.x.is_nan()
+        || cylinder.axis.x.is_infinite()
+        || cylinder.axis.y.is_nan()
+        || cylinder.axis.y.is_infinite()
+        || cylinder.axis.z.is_nan()
+        || cylinder.axis.z.is_infinite()
+    {
         return Err("Cylinder axis coordinates must be finite".to_string());
     }
 
@@ -134,15 +153,23 @@ pub fn cylinder_ray_intersection_logic(input: CylinderRayInput) -> Result<Cylind
         return Err("Cylinder height must be finite".to_string());
     }
 
-    if ray.origin.x.is_nan() || ray.origin.x.is_infinite() ||
-       ray.origin.y.is_nan() || ray.origin.y.is_infinite() ||
-       ray.origin.z.is_nan() || ray.origin.z.is_infinite() {
+    if ray.origin.x.is_nan()
+        || ray.origin.x.is_infinite()
+        || ray.origin.y.is_nan()
+        || ray.origin.y.is_infinite()
+        || ray.origin.z.is_nan()
+        || ray.origin.z.is_infinite()
+    {
         return Err("Ray origin coordinates must be finite".to_string());
     }
 
-    if ray.direction.x.is_nan() || ray.direction.x.is_infinite() ||
-       ray.direction.y.is_nan() || ray.direction.y.is_infinite() ||
-       ray.direction.z.is_nan() || ray.direction.z.is_infinite() {
+    if ray.direction.x.is_nan()
+        || ray.direction.x.is_infinite()
+        || ray.direction.y.is_nan()
+        || ray.direction.y.is_infinite()
+        || ray.direction.z.is_nan()
+        || ray.direction.z.is_infinite()
+    {
         return Err("Ray direction coordinates must be finite".to_string());
     }
 
@@ -157,17 +184,19 @@ pub fn cylinder_ray_intersection_logic(input: CylinderRayInput) -> Result<Cylind
 
     let ray_dir = ray.direction.normalize();
     let cylinder_axis = cylinder.axis.normalize();
-    
+
     let to_cylinder = ray.origin.subtract(&cylinder.center);
     let axis_dot_ray = cylinder_axis.dot(&ray_dir);
     let axis_dot_to_cylinder = cylinder_axis.dot(&to_cylinder);
-    
+
     let a = ray_dir.dot(&ray_dir) - axis_dot_ray * axis_dot_ray;
     let b = 2.0 * (to_cylinder.dot(&ray_dir) - axis_dot_ray * axis_dot_to_cylinder);
-    let c = to_cylinder.dot(&to_cylinder) - axis_dot_to_cylinder * axis_dot_to_cylinder - cylinder.radius * cylinder.radius;
-    
+    let c = to_cylinder.dot(&to_cylinder)
+        - axis_dot_to_cylinder * axis_dot_to_cylinder
+        - cylinder.radius * cylinder.radius;
+
     let discriminant = b * b - 4.0 * a * c;
-    
+
     if discriminant < 0.0 {
         return Ok(CylinderRayResult {
             intersects: false,
@@ -175,39 +204,39 @@ pub fn cylinder_ray_intersection_logic(input: CylinderRayInput) -> Result<Cylind
             closest_distance: None,
         });
     }
-    
+
     let mut intersection_points = vec![];
     let mut closest_distance = None;
-    
+
     let sqrt_discriminant = discriminant.sqrt();
     let t1 = (-b - sqrt_discriminant) / (2.0 * a);
     let t2 = (-b + sqrt_discriminant) / (2.0 * a);
-    
+
     for t in [t1, t2] {
         if t > 0.0 {
             let point = ray.origin.add(&ray_dir.scale(t));
-            let point_on_axis = cylinder.center.add(&cylinder_axis.scale(
-                cylinder_axis.dot(&point.subtract(&cylinder.center))
-            ));
-            
+            let point_on_axis = cylinder
+                .center
+                .add(&cylinder_axis.scale(cylinder_axis.dot(&point.subtract(&cylinder.center))));
+
             let axis_distance = point_on_axis.subtract(&cylinder.center).magnitude();
-            
+
             if axis_distance <= cylinder.height / 2.0 {
                 let normal = point.subtract(&point_on_axis).normalize();
-                
+
                 intersection_points.push(IntersectionPoint {
                     point,
                     distance: t,
                     normal,
                 });
-                
+
                 if closest_distance.is_none() || t < closest_distance.unwrap() {
                     closest_distance = Some(t);
                 }
             }
         }
     }
-    
+
     Ok(CylinderRayResult {
         intersects: !intersection_points.is_empty(),
         intersection_points,
@@ -230,17 +259,14 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
         assert_eq!(result.intersection_points.len(), 2);
         assert!(result.closest_distance.is_some());
-        
+
         let closest = result.closest_distance.unwrap();
         assert!((closest - 1.0).abs() < EPSILON);
     }
@@ -254,10 +280,7 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 3.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 3.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
@@ -275,10 +298,7 @@ mod tests {
                 1.0,
                 4.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.5),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.5), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
@@ -296,10 +316,7 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 3.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 3.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
@@ -316,15 +333,15 @@ mod tests {
                 -1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Cylinder radius and height must be positive");
+        assert_eq!(
+            result.unwrap_err(),
+            "Cylinder radius and height must be positive"
+        );
     }
 
     #[test]
@@ -336,15 +353,15 @@ mod tests {
                 1.0,
                 0.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Cylinder radius and height must be positive");
+        assert_eq!(
+            result.unwrap_err(),
+            "Cylinder radius and height must be positive"
+        );
     }
 
     #[test]
@@ -356,15 +373,15 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Cylinder center coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Cylinder center coordinates must be finite"
+        );
     }
 
     #[test]
@@ -376,15 +393,15 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Cylinder axis coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Cylinder axis coordinates must be finite"
+        );
     }
 
     #[test]
@@ -424,7 +441,10 @@ mod tests {
 
         let result = cylinder_ray_intersection_logic(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Ray direction coordinates must be finite");
+        assert_eq!(
+            result.unwrap_err(),
+            "Ray direction coordinates must be finite"
+        );
     }
 
     #[test]
@@ -436,10 +456,7 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(0.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
@@ -456,10 +473,7 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input);
@@ -476,10 +490,7 @@ mod tests {
                 1.0,
                 4.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 1.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 1.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
@@ -496,15 +507,12 @@ mod tests {
                 1.0,
                 2.0,
             ),
-            ray: Ray::new(
-                Vector3::new(-2.0, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-2.0, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        
+
         // Check that normals are unit vectors
         for intersection in &result.intersection_points {
             let normal_magnitude = intersection.normal.magnitude();
@@ -541,10 +549,7 @@ mod tests {
                 1e-6,
                 2e-6,
             ),
-            ray: Ray::new(
-                Vector3::new(-1e-5, 0.0, 0.0),
-                Vector3::new(1.0, 0.0, 0.0),
-            ),
+            ray: Ray::new(Vector3::new(-1e-5, 0.0, 0.0), Vector3::new(1.0, 0.0, 0.0)),
         };
 
         let result = cylinder_ray_intersection_logic(input).unwrap();

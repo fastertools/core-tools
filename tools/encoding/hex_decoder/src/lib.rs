@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
 #[cfg(not(test))]
 use ftl_sdk::tool;
-use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{HexDecoderInput as LogicInput, HexDecoderOutput as LogicOutput};
@@ -42,7 +42,7 @@ pub fn hex_decoder(input: HexDecoderInput) -> ToolResponse {
         encoded: input.encoded,
         ignore_whitespace: input.ignore_whitespace,
     };
-    
+
     // Call logic implementation
     match logic::decode_hex(logic_input) {
         Ok(result) => {
@@ -56,7 +56,7 @@ pub fn hex_decoder(input: HexDecoderInput) -> ToolResponse {
                 pairs_decoded: result.pairs_decoded,
             };
             ToolResponse::text(serde_json::to_string(&output).unwrap())
-        },
+        }
         Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_yml::{Value, Mapping};
+use serde_yml::{Mapping, Value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct YamlFormatterInput {
@@ -44,7 +44,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
     let indent_spaces = input.indent_spaces.unwrap_or(2);
     let quote_all_strings = input.quote_all_strings.unwrap_or(false);
     let sort_keys = input.sort_keys.unwrap_or(false);
-    
+
     // Parse YAML
     let values: Vec<Value> = match serde_yml::from_str::<Value>(&input.content) {
         Ok(single_doc) => vec![single_doc],
@@ -62,7 +62,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
             });
         }
     };
-    
+
     if values.is_empty() {
         return Ok(YamlFormatterResult {
             formatted: None,
@@ -76,7 +76,7 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
             },
         });
     }
-    
+
     // Calculate statistics
     let mut stats = YamlStats {
         document_count: values.len(),
@@ -84,9 +84,9 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
         max_depth: 0,
         value_types: vec![],
     };
-    
+
     let mut type_set = std::collections::HashSet::new();
-    
+
     for value in &values {
         let (keys, depth, types) = analyze_value(value, 0);
         stats.key_count += keys;
@@ -95,10 +95,10 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
             type_set.insert(t);
         }
     }
-    
+
     stats.value_types = type_set.into_iter().collect();
     stats.value_types.sort();
-    
+
     // If only validating, return here
     if validate_only {
         return Ok(YamlFormatterResult {
@@ -108,30 +108,30 @@ pub fn format_yaml(input: YamlFormatterInput) -> Result<YamlFormatterResult, Str
             stats,
         });
     }
-    
+
     // Format the YAML
     let formatted_values: Vec<Value> = if sort_keys {
         values.into_iter().map(|v| sort_value_keys(v)).collect()
     } else {
         values
     };
-    
+
     // Serialize with formatting options
     let mut output = String::new();
     for (i, value) in formatted_values.iter().enumerate() {
         if i > 0 {
             output.push_str("---\n");
         }
-        
+
         let formatted = if quote_all_strings {
             format_with_quoted_strings(value, indent_spaces)
         } else {
             serde_yml::to_string(&value).map_err(|e| format!("Failed to format YAML: {}", e))?
         };
-        
+
         output.push_str(&formatted);
     }
-    
+
     Ok(YamlFormatterResult {
         formatted: Some(output.trim_end().to_string()),
         is_valid: true,
@@ -144,7 +144,7 @@ fn analyze_value(value: &Value, depth: usize) -> (usize, usize, Vec<String>) {
     let mut key_count = 0;
     let mut max_depth = depth;
     let mut types = Vec::new();
-    
+
     match value {
         Value::Null => types.push("null".to_string()),
         Value::Bool(_) => types.push("boolean".to_string()),
@@ -177,7 +177,7 @@ fn analyze_value(value: &Value, depth: usize) -> (usize, usize, Vec<String>) {
             types.extend(t);
         }
     }
-    
+
     (key_count, max_depth, types)
 }
 
@@ -185,19 +185,18 @@ fn sort_value_keys(value: Value) -> Value {
     match value {
         Value::Mapping(map) => {
             let mut sorted_map = Mapping::new();
-            let mut entries: Vec<(String, Value)> = map.into_iter()
+            let mut entries: Vec<(String, Value)> = map
+                .into_iter()
                 .map(|(k, v)| (k.as_str().unwrap_or("").to_string(), sort_value_keys(v)))
                 .collect();
             entries.sort_by(|a, b| a.0.cmp(&b.0));
-            
+
             for (k, v) in entries {
                 sorted_map.insert(Value::String(k), v);
             }
             Value::Mapping(sorted_map)
         }
-        Value::Sequence(seq) => {
-            Value::Sequence(seq.into_iter().map(sort_value_keys).collect())
-        }
+        Value::Sequence(seq) => Value::Sequence(seq.into_iter().map(sort_value_keys).collect()),
         _ => value,
     }
 }
@@ -225,7 +224,7 @@ mod tests {
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert!(result.formatted.is_some());
         assert_eq!(result.stats.key_count, 3);
@@ -242,7 +241,7 @@ mod tests {
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert!(result.formatted.is_none());
         assert_eq!(result.stats.key_count, 2);
@@ -258,7 +257,7 @@ mod tests {
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(!result.is_valid);
         assert!(result.error.is_some());
     }
@@ -275,14 +274,15 @@ person:
     coordinates:
       lat: 40.7
       lon: -74.0
-"#.to_string(),
+"#
+            .to_string(),
             validate_only: Some(false),
             indent_spaces: None,
             quote_all_strings: None,
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert_eq!(result.stats.max_depth, 4); // person -> address -> coordinates -> lat/lon
         assert_eq!(result.stats.key_count, 8); // person, name, address, street, city, coordinates, lat, lon
@@ -297,14 +297,15 @@ fruits:
   - banana
   - orange
 numbers: [1, 2, 3]
-"#.to_string(),
+"#
+            .to_string(),
             validate_only: Some(false),
             indent_spaces: None,
             quote_all_strings: None,
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert!(result.stats.value_types.contains(&"array".to_string()));
     }
@@ -319,15 +320,15 @@ numbers: [1, 2, 3]
             sort_keys: Some(true),
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         let formatted = result.formatted.unwrap();
-        
+
         // Check that 'apple' comes before 'mango' and 'zebra'
         let apple_pos = formatted.find("apple").unwrap();
         let mango_pos = formatted.find("mango").unwrap();
         let zebra_pos = formatted.find("zebra").unwrap();
-        
+
         assert!(apple_pos < mango_pos);
         assert!(mango_pos < zebra_pos);
     }
@@ -342,7 +343,7 @@ numbers: [1, 2, 3]
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         // serde_yml doesn't support multi-document YAML, so this should fail
         assert!(!result.is_valid);
         assert!(result.error.is_some());
@@ -360,14 +361,15 @@ null_value: null
 array: [1, 2, 3]
 object:
   key: value
-"#.to_string(),
+"#
+            .to_string(),
             validate_only: Some(false),
             indent_spaces: None,
             quote_all_strings: None,
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert!(result.stats.value_types.contains(&"string".to_string()));
         assert!(result.stats.value_types.contains(&"number".to_string()));
@@ -387,7 +389,7 @@ object:
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         // serde_yml might parse empty string as null
         if result.is_valid {
             assert_eq!(result.stats.document_count, 1);
@@ -403,14 +405,15 @@ object:
 special: "Line 1\nLine 2"
 unicode: "Hello 世界"
 symbols: "@#$%^&*()"
-"#.to_string(),
+"#
+            .to_string(),
             validate_only: Some(false),
             indent_spaces: None,
             quote_all_strings: None,
             sort_keys: None,
         };
         let result = format_yaml(input).unwrap();
-        
+
         assert!(result.is_valid);
         assert!(result.formatted.is_some());
     }

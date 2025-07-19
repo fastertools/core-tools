@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
+use ftl_sdk::ToolResponse;
 #[cfg(not(test))]
 use ftl_sdk::tool;
-use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{UrlEncoderInput as LogicInput, UrlEncoderOutput as LogicOutput};
@@ -41,7 +41,7 @@ pub fn url_encoder(input: UrlEncoderInput) -> ToolResponse {
         data: input.data,
         mode: input.mode,
     };
-    
+
     // Call logic implementation
     match logic::encode_url(logic_input) {
         Ok(result) => {
@@ -54,7 +54,7 @@ pub fn url_encoder(input: UrlEncoderInput) -> ToolResponse {
                 chars_encoded: result.chars_encoded,
             };
             ToolResponse::text(serde_json::to_string(&output).unwrap())
-        },
+        }
         Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

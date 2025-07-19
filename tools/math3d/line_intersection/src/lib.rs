@@ -1,10 +1,13 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
 
-use logic::{line_intersection_logic, LineIntersectionInput as LogicInput, LineIntersectionResult, Line3D as LogicLine3D, Vector3D as LogicVector3D};
+use logic::{
+    Line3D as LogicLine3D, LineIntersectionInput as LogicInput, LineIntersectionResult,
+    Vector3D as LogicVector3D, line_intersection_logic,
+};
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Vector3D {
@@ -34,7 +37,11 @@ pub struct LineIntersectionInput {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 
@@ -61,6 +68,6 @@ impl From<LineIntersectionInput> for LogicInput {
 pub fn line_intersection(input: LineIntersectionInput) -> ToolResponse {
     match line_intersection_logic(input.into()) {
         Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

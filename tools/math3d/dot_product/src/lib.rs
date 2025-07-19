@@ -1,9 +1,12 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{dot_product_logic, DotProductInput as LogicInput, DotProductResult as LogicDotProductResult, Vector3D as LogicVector3D};
+use logic::{
+    DotProductInput as LogicInput, DotProductResult as LogicDotProductResult,
+    Vector3D as LogicVector3D, dot_product_logic,
+};
 
 #[derive(Deserialize, JsonSchema, Clone, Debug, PartialEq)]
 struct Vector3D {
@@ -39,7 +42,11 @@ struct DotProductResult {
 
 impl From<Vector3D> for LogicVector3D {
     fn from(v: Vector3D) -> Self {
-        LogicVector3D { x: v.x, y: v.y, z: v.z }
+        LogicVector3D {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        }
     }
 }
 

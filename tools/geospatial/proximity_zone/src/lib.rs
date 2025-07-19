@@ -1,4 +1,4 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,11 @@ struct Point {
 
 impl From<Point> for LogicPoint {
     fn from(p: Point) -> Self {
-        LogicPoint { lat: p.lat, lon: p.lon, id: p.id }
+        LogicPoint {
+            lat: p.lat,
+            lon: p.lon,
+            id: p.id,
+        }
     }
 }
 
@@ -76,7 +80,11 @@ impl From<ProximityZoneInput> for LogicInput {
         LogicInput {
             center: input.center.into(),
             radius_meters: input.radius_meters,
-            candidate_points: input.candidate_points.into_iter().map(|p| p.into()).collect(),
+            candidate_points: input
+                .candidate_points
+                .into_iter()
+                .map(|p| p.into())
+                .collect(),
         }
     }
 }
@@ -85,8 +93,12 @@ impl From<ProximityZoneInput> for LogicInput {
 #[cfg_attr(not(test), ftl_sdk::tool)]
 fn proximity_zone(input: ProximityZoneInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
-    
-    match proximity_zone_analysis(logic_input.center, logic_input.radius_meters, logic_input.candidate_points) {
+
+    match proximity_zone_analysis(
+        logic_input.center,
+        logic_input.radius_meters,
+        logic_input.candidate_points,
+    ) {
         Ok(result) => {
             let response = ProximityZoneResult {
                 center: Point {
@@ -95,24 +107,32 @@ fn proximity_zone(input: ProximityZoneInput) -> ToolResponse {
                     id: result.center.id,
                 },
                 radius_meters: result.radius_meters,
-                points_in_zone: result.points_in_zone.into_iter().map(|np| NearestPointResult {
-                    point: Point {
-                        lat: np.point.lat,
-                        lon: np.point.lon,
-                        id: np.point.id,
-                    },
-                    distance_meters: np.distance_meters,
-                    bearing_degrees: np.bearing_degrees,
-                }).collect(),
-                points_outside_zone: result.points_outside_zone.into_iter().map(|np| NearestPointResult {
-                    point: Point {
-                        lat: np.point.lat,
-                        lon: np.point.lon,
-                        id: np.point.id,
-                    },
-                    distance_meters: np.distance_meters,
-                    bearing_degrees: np.bearing_degrees,
-                }).collect(),
+                points_in_zone: result
+                    .points_in_zone
+                    .into_iter()
+                    .map(|np| NearestPointResult {
+                        point: Point {
+                            lat: np.point.lat,
+                            lon: np.point.lon,
+                            id: np.point.id,
+                        },
+                        distance_meters: np.distance_meters,
+                        bearing_degrees: np.bearing_degrees,
+                    })
+                    .collect(),
+                points_outside_zone: result
+                    .points_outside_zone
+                    .into_iter()
+                    .map(|np| NearestPointResult {
+                        point: Point {
+                            lat: np.point.lat,
+                            lon: np.point.lon,
+                            id: np.point.id,
+                        },
+                        distance_meters: np.distance_meters,
+                        bearing_degrees: np.bearing_degrees,
+                    })
+                    .collect(),
                 summary: ProximityZoneSummary {
                     total_points: result.summary.total_points,
                     points_inside: result.summary.points_inside,
@@ -122,9 +142,11 @@ fn proximity_zone(input: ProximityZoneInput) -> ToolResponse {
                     farthest_point_distance: result.summary.farthest_point_distance,
                 },
             };
-            ToolResponse::text(serde_json::to_string(&response).unwrap_or_else(|_| "Error serializing result".to_string()))
-        },
+            ToolResponse::text(
+                serde_json::to_string(&response)
+                    .unwrap_or_else(|_| "Error serializing result".to_string()),
+            )
+        }
         Err(error) => ToolResponse::text(error),
     }
 }
-

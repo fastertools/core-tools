@@ -41,16 +41,16 @@ impl Vector3D {
     pub fn angle_with(&self, other: &Vector3D) -> Result<f64, String> {
         let mag1 = self.magnitude();
         let mag2 = other.magnitude();
-        
+
         if mag1 == 0.0 || mag2 == 0.0 {
             return Err("Cannot compute angle with zero vector".to_string());
         }
 
         let cos_angle = self.dot(other) / (mag1 * mag2);
-        
+
         // Clamp to [-1, 1] to handle numerical precision issues
         let cos_angle = cos_angle.max(-1.0).min(1.0);
-        
+
         Ok(cos_angle.acos())
     }
 
@@ -62,27 +62,28 @@ impl Vector3D {
 pub fn vector_angle_logic(input: TwoVectorInput) -> Result<VectorAngleResult, String> {
     let v1 = &input.vector1;
     let v2 = &input.vector2;
-    
+
     // Input validation
     if !v1.is_valid() || !v2.is_valid() {
         return Err("Invalid vector components: must be finite numbers".to_string());
     }
-    
+
     if v1.is_zero() || v2.is_zero() {
         return Err("Cannot compute angle with zero vector".to_string());
     }
-    
+
     let mag1 = v1.magnitude();
     let mag2 = v2.magnitude();
     let angle_radians = v1.angle_with(v2)?;
     let angle_degrees = angle_radians.to_degrees();
     let cos_angle = v1.dot(v2) / (mag1 * mag2);
-    
+
     // Check for special relationships
     const EPSILON: f64 = 1e-10;
     let is_perpendicular = (angle_radians - std::f64::consts::PI / 2.0).abs() < EPSILON;
-    let is_parallel = angle_radians < EPSILON || (angle_radians - std::f64::consts::PI).abs() < EPSILON;
-    
+    let is_parallel =
+        angle_radians < EPSILON || (angle_radians - std::f64::consts::PI).abs() < EPSILON;
+
     Ok(VectorAngleResult {
         angle_radians,
         angle_degrees,

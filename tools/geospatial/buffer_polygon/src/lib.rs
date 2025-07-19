@@ -1,4 +1,4 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +15,10 @@ struct Point {
 
 impl From<Point> for LogicPoint {
     fn from(p: Point) -> Self {
-        LogicPoint { lat: p.lat, lon: p.lon }
+        LogicPoint {
+            lat: p.lat,
+            lon: p.lon,
+        }
     }
 }
 
@@ -55,18 +58,28 @@ struct BufferPolygonResult {
 #[cfg_attr(not(test), ftl_sdk::tool)]
 fn buffer_polygon(input: CircularBufferInput) -> ftl_sdk::ToolResponse {
     let logic_input = LogicInput::from(input);
-    
-    match create_circular_buffer(logic_input.center, logic_input.radius_meters, logic_input.num_points) {
+
+    match create_circular_buffer(
+        logic_input.center,
+        logic_input.radius_meters,
+        logic_input.num_points,
+    ) {
         Ok(result) => {
             let response = BufferPolygonResult {
-                buffer_polygon: result.buffer_polygon.into_iter().map(|p| Point { lat: p.lat, lon: p.lon }).collect(),
+                buffer_polygon: result
+                    .buffer_polygon
+                    .into_iter()
+                    .map(|p| Point {
+                        lat: p.lat,
+                        lon: p.lon,
+                    })
+                    .collect(),
                 area_square_meters: result.area_square_meters,
                 perimeter_meters: result.perimeter_meters,
                 algorithm_used: result.algorithm_used,
             };
             ftl_sdk::ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
     }
 }
-

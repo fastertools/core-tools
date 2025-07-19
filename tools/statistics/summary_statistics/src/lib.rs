@@ -1,9 +1,9 @@
-use ftl_sdk::{tool, ToolResponse};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{summary_statistics_logic, StatisticsInput as LogicInput, SummaryStatisticsOutput};
+use logic::{StatisticsInput as LogicInput, SummaryStatisticsOutput, summary_statistics_logic};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 pub struct StatisticsInput {
@@ -21,6 +21,6 @@ impl From<StatisticsInput> for LogicInput {
 pub fn summary_statistics(input: StatisticsInput) -> ToolResponse {
     match summary_statistics_logic(input.into()) {
         Ok(result) => ToolResponse::text(serde_json::to_string(&result).unwrap()),
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

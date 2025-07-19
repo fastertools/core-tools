@@ -15,13 +15,12 @@ pub struct ArithmeticResult {
 
 pub fn multiply_numbers(input: TwoNumberInput) -> Result<ArithmeticResult, String> {
     // Validate input - check for invalid values
-    if input.a.is_nan() || input.a.is_infinite() ||
-       input.b.is_nan() || input.b.is_infinite() {
+    if input.a.is_nan() || input.a.is_infinite() || input.b.is_nan() || input.b.is_infinite() {
         return Err("Input contains invalid values (NaN or Infinite)".to_string());
     }
-    
+
     let result = input.a * input.b;
-    
+
     Ok(ArithmeticResult {
         result,
         operation: "multiplication".to_string(),
@@ -116,25 +115,43 @@ mod tests {
 
     #[test]
     fn test_nan_input_error() {
-        let input = TwoNumberInput { a: f64::NAN, b: 3.0 };
+        let input = TwoNumberInput {
+            a: f64::NAN,
+            b: 3.0,
+        };
         let result = multiply_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_infinite_input_error() {
-        let input = TwoNumberInput { a: 5.0, b: f64::INFINITY };
+        let input = TwoNumberInput {
+            a: 5.0,
+            b: f64::INFINITY,
+        };
         let result = multiply_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 
     #[test]
     fn test_negative_infinite_input_error() {
-        let input = TwoNumberInput { a: f64::NEG_INFINITY, b: 3.0 };
+        let input = TwoNumberInput {
+            a: f64::NEG_INFINITY,
+            b: 3.0,
+        };
         let result = multiply_numbers(input);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Input contains invalid values (NaN or Infinite)");
+        assert_eq!(
+            result.unwrap_err(),
+            "Input contains invalid values (NaN or Infinite)"
+        );
     }
 }

@@ -1,11 +1,14 @@
-use ftl_sdk::{tool, ToolResponse};
-use serde::{Deserialize, Serialize};
+use ftl_sdk::{ToolResponse, tool};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 mod logic;
 
 // Re-export types from logic module
-pub use logic::{PredictionInput as LogicInput, PredictionOutput as LogicOutput, RegressionPrediction as LogicPrediction};
+pub use logic::{
+    PredictionInput as LogicInput, PredictionOutput as LogicOutput,
+    RegressionPrediction as LogicPrediction,
+};
 
 // Define wrapper types with JsonSchema for FTL-SDK
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -42,20 +45,24 @@ pub fn predict_values(input: PredictionInput) -> ToolResponse {
         intercept: input.intercept,
         x_values: input.x_values,
     };
-    
+
     // Call logic implementation
     match logic::predict_values(logic_input) {
         Ok(result) => {
             // Convert back to wrapper types
             let response = PredictionOutput {
-                predictions: result.predictions.into_iter().map(|p| RegressionPrediction {
-                    x: p.x,
-                    y_predicted: p.y_predicted,
-                    confidence_interval: p.confidence_interval,
-                }).collect(),
+                predictions: result
+                    .predictions
+                    .into_iter()
+                    .map(|p| RegressionPrediction {
+                        x: p.x,
+                        y_predicted: p.y_predicted,
+                        confidence_interval: p.confidence_interval,
+                    })
+                    .collect(),
             };
             ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ToolResponse::text(format!("Error: {}", e))
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }
