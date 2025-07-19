@@ -1,12 +1,12 @@
+use ftl_sdk::ToolResponse;
 #[cfg(not(test))]
 use ftl_sdk::tool;
-use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
 use logic::{
-    line_segment_intersection_logic, LineSegmentInput as LogicInput, Vector3D as LogicVector3D,
+    LineSegmentInput as LogicInput, Vector3D as LogicVector3D, line_segment_intersection_logic,
 };
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, JsonSchema)]

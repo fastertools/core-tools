@@ -1,13 +1,11 @@
+use ftl_sdk::ToolResponse;
 #[cfg(not(test))]
 use ftl_sdk::tool;
-use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 mod logic;
-use logic::{
-    dot_product_logic, DotProductInput as LogicInput, Vector3D as LogicVector3D,
-};
+use logic::{DotProductInput as LogicInput, Vector3D as LogicVector3D, dot_product_logic};
 
 #[derive(Deserialize, JsonSchema, Clone, Debug, PartialEq)]
 struct Vector3D {

@@ -1,10 +1,10 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[cfg(all(feature = "individual", not(test)))]
-use ftl_sdk::tool;
 #[cfg(feature = "individual")]
 use ftl_sdk::ToolResponse;
+#[cfg(all(feature = "individual", not(test)))]
+use ftl_sdk::tool;
 
 mod logic;
 

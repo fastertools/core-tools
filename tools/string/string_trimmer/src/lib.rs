@@ -1,9 +1,9 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 mod logic;
+use ftl_sdk::ToolResponse;
 #[cfg(not(test))]
 use ftl_sdk::tool;
-use ftl_sdk::ToolResponse;
 
 // Re-export types from logic module
 pub use logic::{StringTrimInput as LogicInput, StringTrimResult as LogicResult};
