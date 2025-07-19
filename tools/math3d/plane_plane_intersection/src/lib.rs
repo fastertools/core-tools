@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 
 mod logic;
@@ -32,8 +34,8 @@ struct ToolOutput {
 
 /// Calculate the intersection between two 3D planes
 /// Returns detailed information about the intersection including the line of intersection if it exists
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn plane_plane_intersection(input: ToolInput) -> ftl_sdk::ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn plane_plane_intersection(input: ToolInput) -> ToolResponse {
     let logic_input = PlanePlaneIntersectionInput {
         plane1: input.plane1,
         plane2: input.plane2,
@@ -50,8 +52,8 @@ fn plane_plane_intersection(input: ToolInput) -> ftl_sdk::ToolResponse {
                 angle_radians: output.angle_radians,
                 angle_degrees: output.angle_degrees,
             };
-            ftl_sdk::ToolResponse::text(serde_json::to_string(&result).unwrap())
+            ToolResponse::text(serde_json::to_string(&result).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

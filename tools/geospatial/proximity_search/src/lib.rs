@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -75,8 +77,8 @@ impl From<NearestPointsInput> for LogicInput {
 }
 
 /// Find nearest points to a query location with distance and bearing
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn proximity_search(input: NearestPointsInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn proximity_search(input: NearestPointsInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 
     match find_nearest_points(

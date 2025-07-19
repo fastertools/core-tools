@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -75,8 +77,8 @@ struct PointPlaneResult {
 
 /// Calculate the distance from a point to a plane in 3D space
 /// Returns both signed and unsigned distance, the closest point on the plane, and which side of the plane the point is on
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn point_plane_distance(input: PointPlaneInput) -> ToolResponse {
     match point_plane_distance_logic(input.into()) {
         Ok(logic_result) => {
             let result = PointPlaneResult {

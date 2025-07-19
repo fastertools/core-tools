@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -55,8 +57,8 @@ struct BufferPolygonResult {
 }
 
 /// Create circular buffer around a point using geodesic calculations
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn buffer_polygon(input: CircularBufferInput) -> ftl_sdk::ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn buffer_polygon(input: CircularBufferInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 
     match create_circular_buffer(
@@ -78,8 +80,8 @@ fn buffer_polygon(input: CircularBufferInput) -> ftl_sdk::ToolResponse {
                 perimeter_meters: result.perimeter_meters,
                 algorithm_used: result.algorithm_used,
             };
-            ftl_sdk::ToolResponse::text(serde_json::to_string(&response).unwrap())
+            ToolResponse::text(serde_json::to_string(&response).unwrap())
         }
-        Err(e) => ftl_sdk::ToolResponse::text(format!("Error: {}", e)),
+        Err(e) => ToolResponse::text(format!("Error: {}", e)),
     }
 }

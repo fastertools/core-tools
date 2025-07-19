@@ -1,4 +1,6 @@
-use ftl_sdk::{ToolResponse, tool};
+#[cfg(not(test))]
+use ftl_sdk::tool;
+use ftl_sdk::ToolResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -90,8 +92,8 @@ impl From<ProximityZoneInput> for LogicInput {
 }
 
 /// Analyze points within a proximity zone and provide detailed statistics
-#[cfg_attr(not(test), ftl_sdk::tool)]
-fn proximity_zone(input: ProximityZoneInput) -> ToolResponse {
+#[cfg_attr(not(test), tool)]
+pub fn proximity_zone(input: ProximityZoneInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 
     match proximity_zone_analysis(
