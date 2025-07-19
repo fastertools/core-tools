@@ -31,6 +31,7 @@ struct PointInPolygonInput {
 }
 
 #[derive(Serialize, JsonSchema)]
+#[allow(dead_code)]
 struct PointInPolygonResult {
     /// Whether the point is inside the polygon
     is_inside: bool,
@@ -51,6 +52,7 @@ impl From<PointInPolygonInput> for LogicInput {
 
 /// Check if a point is inside a polygon using ray casting algorithm
 #[cfg_attr(not(test), ftl_sdk::tool)]
+#[allow(dead_code)]
 fn point_in_polygon(input: PointInPolygonInput) -> ToolResponse {
     let logic_input = LogicInput::from(input);
 

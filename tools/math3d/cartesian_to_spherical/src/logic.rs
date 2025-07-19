@@ -44,6 +44,7 @@ impl Vector3D {
         SphericalCoord { radius, theta, phi }
     }
 
+    #[allow(dead_code)]
     pub fn magnitude(&self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }

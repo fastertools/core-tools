@@ -32,7 +32,7 @@ pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, Str
             return Ok(JsonFormatterResult {
                 formatted: input.json_string.clone(),
                 is_valid: false,
-                error: Some(format!("JSON parse error: {}", e)),
+                error: Some(format!("JSON parse error: {e}")),
                 input_length,
                 output_length: input_length,
             });
@@ -45,7 +45,7 @@ pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, Str
             // Compact format
             match serde_json::to_string(&parsed) {
                 Ok(s) => s,
-                Err(e) => return Err(format!("Failed to serialize JSON: {}", e)),
+                Err(e) => return Err(format!("Failed to serialize JSON: {e}")),
             }
         }
         Some(n) => {
@@ -55,18 +55,18 @@ pub fn format_json(input: JsonFormatterInput) -> Result<JsonFormatterResult, Str
             let formatter = serde_json::ser::PrettyFormatter::with_indent(indent_string.as_bytes());
             let mut ser = serde_json::Serializer::with_formatter(&mut writer, formatter);
             if let Err(e) = parsed.serialize(&mut ser) {
-                return Err(format!("Failed to serialize JSON: {}", e));
+                return Err(format!("Failed to serialize JSON: {e}"));
             }
             match String::from_utf8(writer) {
                 Ok(s) => s,
-                Err(e) => return Err(format!("UTF-8 conversion error: {}", e)),
+                Err(e) => return Err(format!("UTF-8 conversion error: {e}")),
             }
         }
         None => {
             // Default pretty format (2 spaces)
             match serde_json::to_string_pretty(&parsed) {
                 Ok(s) => s,
-                Err(e) => return Err(format!("Failed to serialize JSON: {}", e)),
+                Err(e) => return Err(format!("Failed to serialize JSON: {e}")),
             }
         }
     };

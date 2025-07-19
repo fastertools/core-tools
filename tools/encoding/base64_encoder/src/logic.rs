@@ -1,6 +1,6 @@
 use base64::{
-    Engine as _, alphabet,
-    engine::{GeneralPurpose, general_purpose},
+    Engine as _,
+    engine::general_purpose,
 };
 use serde::{Deserialize, Serialize};
 
@@ -40,8 +40,7 @@ pub fn encode_base64(input: Base64EncoderInput) -> Result<Base64EncoderOutput, S
         "url_safe_no_pad" => general_purpose::URL_SAFE_NO_PAD.encode(&input.data),
         _ => {
             return Err(format!(
-                "Invalid variant '{}'. Valid variants are: standard, standard_no_pad, url_safe, url_safe_no_pad",
-                variant
+                "Invalid variant '{variant}'. Valid variants are: standard, standard_no_pad, url_safe, url_safe_no_pad"
             ));
         }
     };
@@ -184,8 +183,8 @@ mod tests {
             assert_eq!(result.original_length, data.len());
 
             // Base64 encoding increases size by approximately 4/3
-            let expected_len = ((data.len() * 4) + 2) / 3;
-            let expected_len = ((expected_len + 3) / 4) * 4; // Padding to multiple of 4
+            let expected_len = (data.len() * 4).div_ceil(3);
+            let expected_len = expected_len.div_ceil(4) * 4; // Padding to multiple of 4
             assert_eq!(result.encoded_length, expected_len);
         }
     }

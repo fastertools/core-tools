@@ -26,7 +26,7 @@ struct Plane3D {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct PointPlaneInput {
+pub struct PointPlaneInput {
     /// The point to measure distance from
     point: Vector3D,
     /// The plane to measure distance to

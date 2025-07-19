@@ -8,7 +8,7 @@ mod logic;
 use logic::{DecimalDegreesInput as LogicInput, convert_to_dms};
 
 #[derive(Deserialize, JsonSchema)]
-struct DecimalDegreesInput {
+pub struct DecimalDegreesInput {
     /// Latitude in decimal degrees
     latitude: f64,
     /// Longitude in decimal degrees

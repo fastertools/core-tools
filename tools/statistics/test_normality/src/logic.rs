@@ -65,13 +65,11 @@ pub fn calculate_test_normality(input: TestNormalityInput) -> Result<TestNormali
 
     let interpretation = if is_normal {
         format!(
-            "Data appears to be normally distributed (p-value: {:.4} > {:.2})",
-            p_value, confidence_level
+            "Data appears to be normally distributed (p-value: {p_value:.4} > {confidence_level:.2})"
         )
     } else {
         format!(
-            "Data does not appear to be normally distributed (p-value: {:.4} <= {:.2})",
-            p_value, confidence_level
+            "Data does not appear to be normally distributed (p-value: {p_value:.4} <= {confidence_level:.2})"
         )
     };
 

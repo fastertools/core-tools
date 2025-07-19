@@ -164,16 +164,16 @@ pub fn line_segment_intersection_logic(
     let line1 = Line3D::new(input.segment1_start.clone(), dir1)?;
     let line2 = Line3D::new(input.segment2_start.clone(), dir2)?;
 
-    let (t1, t2, _closest1, _closest2, distance) = closest_points_skew_lines(&line1, &line2);
+    let (t1, t2, _closest1, _closest2, _distance) = closest_points_skew_lines(&line1, &line2);
 
     // Check if parameters are within segment bounds [0, 1]
-    let t1_in_bounds = t1 >= 0.0 && t1 <= 1.0;
-    let t2_in_bounds = t2 >= 0.0 && t2 <= 1.0;
+    let t1_in_bounds = (0.0..=1.0).contains(&t1);
+    let t2_in_bounds = (0.0..=1.0).contains(&t2);
     let intersection_on_both_segments = t1_in_bounds && t2_in_bounds;
 
     // Clamp parameters to segment bounds for final closest points
-    let t1_clamped = t1.max(0.0).min(1.0);
-    let t2_clamped = t2.max(0.0).min(1.0);
+    let t1_clamped = t1.clamp(0.0, 1.0);
+    let t2_clamped = t2.clamp(0.0, 1.0);
 
     let final_closest1 = line1.point_at_parameter(t1_clamped);
     let final_closest2 = line2.point_at_parameter(t2_clamped);

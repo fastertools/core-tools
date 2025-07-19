@@ -150,7 +150,7 @@ pub fn split_string(input: StringSplitInput) -> Result<StringSplitResult, String
     }
 
     if input.remove_empty {
-        parts = parts.into_iter().filter(|s| !s.is_empty()).collect();
+        parts.retain(|s| !s.is_empty());
     }
 
     let count = parts.len();

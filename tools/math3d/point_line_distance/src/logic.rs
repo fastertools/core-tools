@@ -31,6 +31,7 @@ pub struct PointLineDistanceResult {
 }
 
 impl Vector3D {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3D { x, y, z }
     }
@@ -77,6 +78,7 @@ impl Vector3D {
 }
 
 impl Line3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, direction: Vector3D) -> Self {
         Line3D { point, direction }
     }

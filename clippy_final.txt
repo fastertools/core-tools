@@ -1,0 +1,261 @@
+    Checking sphere_sphere_intersection_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/sphere_sphere_intersection)
+    Checking polynomial_regression v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/statistics/polynomial_regression)
+    Checking line_intersection_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/line_intersection)
+    Checking modulus_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/basic_math/modulus)
+    Checking test_normality v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/statistics/test_normality)
+    Checking matrix_vector_multiply_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/matrix_vector_multiply)
+    Checking plane_plane_intersection_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/plane_plane_intersection)
+    Checking geospatial_coordinate_conversion_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/geospatial/coordinate_conversion)
+    Checking correlation-matrix v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/statistics/correlation_matrix)
+    Checking json_formatter_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/data_formats/json_formatter)
+    Checking cylinder_ray_intersection_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/cylinder_ray_intersection)
+    Checking sphere_ray_intersection_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/sphere_ray_intersection)
+    Checking cartesian_to_cylindrical_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/math3d/cartesian_to_cylindrical)
+    Checking current_datetime_tool v0.1.0 (/Users/coreyryan/data/mashh/core-tools/tools/datetime/current_datetime)
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/cartesian_to_cylindrical/src/logic.rs:246:13
+    |
+246 | /             assert!(
+247 | |                 (result.cylindrical_coordinates.radius - expected_radius).abs() < 1e-14,
+248 | |                 "Radius mismatch for ({}, {}, {})",
+249 | |                 x,
+250 | |                 y,
+251 | |                 z
+252 | |             );
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/cartesian_to_cylindrical/src/logic.rs:253:13
+    |
+253 | /             assert!(
+254 | |                 (result.cylindrical_coordinates.theta - expected_theta).abs() < 1e-14,
+255 | |                 "Theta mismatch for ({}, {}, {})",
+256 | |                 x,
+257 | |                 y,
+258 | |                 z
+259 | |             );
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: variables can be used directly in the `format!` string
+   --> tools/math3d/cartesian_to_cylindrical/src/logic.rs:260:13
+    |
+260 | /             assert!(
+261 | |                 (result.cylindrical_coordinates.z - z).abs() < 1e-14,
+262 | |                 "Z mismatch for ({}, {}, {})",
+263 | |                 x,
+264 | |                 y,
+265 | |                 z
+266 | |             );
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+
+error: the loop variable `j` is used to index `row`
+  --> tools/statistics/polynomial_regression/src/logic.rs:56:18
+   |
+56 |         for j in 0..=degree {
+   |                  ^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+56 -         for j in 0..=degree {
+56 +         for (j, <item>) in row.iter_mut().enumerate().take(degree + 1) {
+   |
+
+error: the loop variable `j` is used to index `coefficients`
+  --> tools/statistics/polynomial_regression/src/logic.rs:91:18
+   |
+91 |         for j in 0..=degree {
+   |                  ^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+   |
+91 -         for j in 0..=degree {
+91 +         for (j, <item>) in coefficients.iter().enumerate().take(degree + 1) {
+   |
+
+error: variables can be used directly in the `format!` string
+   --> tools/statistics/polynomial_regression/src/logic.rs:115:32
+    |
+115 |             equation.push_str(&format!("{:.6}", coeff));
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+    = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+    |
+115 -             equation.push_str(&format!("{:.6}", coeff));
+115 +             equation.push_str(&format!("{coeff:.6}"));
+    |
+
+error: casting to the same type is unnecessary (`f64` -> `f64`)
+   --> tools/statistics/polynomial_regression/src/logic.rs:233:23
+    |
+233 |             .map(|&x| (x as f64).powi(3) + 2.0 * (x as f64).powi(2) + 3.0 * x + 4.0)
+    |                       ^^^^^^^^^^ help: try: `x`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+    = note: `-D clippy::unnecessary-cast` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::unnecessary_cast)]`
+
+error: casting to the same type is unnecessary (`f64` -> `f64`)
+   --> tools/statistics/polynomial_regression/src/logic.rs:233:50
+    |
+233 |             .map(|&x| (x as f64).powi(3) + 2.0 * (x as f64).powi(2) + 3.0 * x + 4.0)
+    |                                                  ^^^^^^^^^^ help: try: `x`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#unnecessary_cast
+
+error: could not compile `cartesian_to_cylindrical_tool` (lib test) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: variables can be used directly in the `format!` string
+  --> tools/data_formats/json_formatter/src/lib.rs:46:45
+   |
+46 |         Err(e) => return ToolResponse::text(format!("Error formatting JSON: {}", e)),
+   |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+help: change this to
+   |
+46 -         Err(e) => return ToolResponse::text(format!("Error formatting JSON: {}", e)),
+46 +         Err(e) => return ToolResponse::text(format!("Error formatting JSON: {e}")),
+   |
+
+error: variables can be used directly in the `format!` string
+  --> tools/data_formats/json_formatter/src/lib.rs:59:61
+   |
+59 |         serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+   |                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+help: change this to
+   |
+59 -         serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {}", e)),
+59 +         serde_json::to_string(&response).unwrap_or_else(|e| format!("Serialization error: {e}")),
+   |
+
+error: could not compile `json_formatter_tool` (lib test) due to 2 previous errors
+error: could not compile `polynomial_regression` (lib test) due to 5 previous errors
+error: equality checks against true are unnecessary
+   --> tools/statistics/test_normality/src/logic.rs:256:17
+    |
+256 |         assert!(result.is_normal == true || result.is_normal == false);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^ help: try simplifying it as shown: `result.is_normal`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#bool_comparison
+    = note: `-D clippy::bool-comparison` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::bool_comparison)]`
+
+error: equality checks against false can be replaced by a negation
+   --> tools/statistics/test_normality/src/logic.rs:256:45
+    |
+256 |         assert!(result.is_normal == true || result.is_normal == false);
+    |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^ help: try simplifying it as shown: `!result.is_normal`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#bool_comparison
+
+error: could not compile `test_normality` (lib test) due to 2 previous errors
+error: variables can be used directly in the `format!` string
+  --> tools/statistics/correlation_matrix/src/logic.rs:53:24
+   |
+53 |               return Err(format!(
+   |  ________________________^
+54 | |                 "Series {} contains invalid values (NaN or Infinite)",
+55 | |                 i
+56 | |             ));
+   | |_____________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#uninlined_format_args
+   = note: `-D clippy::uninlined-format-args` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::uninlined_format_args)]`
+
+error: the loop variable `i` is used to index `correlation_matrix`
+  --> tools/statistics/correlation_matrix/src/logic.rs:67:14
+   |
+67 |     for i in 0..num_variables {
+   |              ^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+67 -     for i in 0..num_variables {
+67 +     for (i, <item>) in correlation_matrix.iter_mut().enumerate().take(num_variables) {
+   |
+
+error: clamp-like pattern without using clamp function
+   --> tools/statistics/correlation_matrix/src/logic.rs:217:9
+    |
+217 |         p.min(1.0).max(0.0)
+    |         ^^^^^^^^^^^^^^^^^^^ help: replace with clamp: `p.clamp(0.0, 1.0)`
+    |
+    = note: clamp will panic if max < min, min.is_nan(), or max.is_nan()
+    = note: clamp returns NaN if the input is NaN
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_clamp
+    = note: `-D clippy::manual-clamp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_clamp)]`
+
+error: could not compile `correlation-matrix` (lib test) due to 3 previous errors
+error: associated function `new` is never used
+  --> tools/math3d/cylinder_ray_intersection/src/logic.rs:45:12
+   |
+44 | impl Vector3 {
+   | ------------ associated function in this implementation
+45 |     pub fn new(x: f64, y: f64, z: f64) -> Self {
+   |            ^^^
+   |
+   = note: `-D dead-code` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(dead_code)]`
+
+error: associated function `new` is never used
+   --> tools/math3d/cylinder_ray_intersection/src/logic.rs:100:12
+    |
+99  | impl Cylinder {
+    | ------------- associated function in this implementation
+100 |     pub fn new(center: Vector3, axis: Vector3, radius: f64, height: f64) -> Self {
+    |            ^^^
+
+error: associated function `new` is never used
+   --> tools/math3d/cylinder_ray_intersection/src/logic.rs:111:12
+    |
+110 | impl Ray {
+    | -------- associated function in this implementation
+111 |     pub fn new(origin: Vector3, direction: Vector3) -> Self {
+    |            ^^^
+
+error: manual `!RangeInclusive::contains` implementation
+   --> tools/datetime/current_datetime/src/logic.rs:132:8
+    |
+132 |     if hours < 0 || hours > 14 {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^ help: use: `!(0..=14).contains(&hours)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_range_contains
+    = note: `-D clippy::manual-range-contains` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_range_contains)]`
+
+error: manual `!RangeInclusive::contains` implementation
+   --> tools/datetime/current_datetime/src/logic.rs:135:8
+    |
+135 |     if minutes < 0 || minutes > 59 {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use: `!(0..=59).contains(&minutes)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#manual_range_contains
+
+error: could not compile `correlation-matrix` (lib) due to 3 previous errors
+error: could not compile `json_formatter_tool` (lib) due to 2 previous errors
+error: could not compile `current_datetime_tool` (lib) due to 2 previous errors
+error: could not compile `cylinder_ray_intersection_tool` (lib) due to 3 previous errors

@@ -11,8 +11,10 @@ pub struct Point {
 #[derive(Deserialize)]
 pub struct PointInPolygonInput {
     /// Point to test
+    #[allow(dead_code)]
     pub point: Point,
     /// Polygon vertices
+    #[allow(dead_code)]
     pub polygon: Vec<Point>,
 }
 

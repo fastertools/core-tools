@@ -57,10 +57,10 @@ pub fn convert_to_dms(latitude: f64, longitude: f64) -> Result<DMSResult, String
         return Err("Longitude cannot be NaN or infinite".to_string());
     }
 
-    if latitude < -90.0 || latitude > 90.0 {
+    if !(-90.0..=90.0).contains(&latitude) {
         return Err("Latitude must be between -90 and 90".to_string());
     }
-    if longitude < -180.0 || longitude > 180.0 {
+    if !(-180.0..=180.0).contains(&longitude) {
         return Err("Longitude must be between -180 and 180".to_string());
     }
 

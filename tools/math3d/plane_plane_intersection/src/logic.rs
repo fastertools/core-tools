@@ -123,6 +123,7 @@ impl Line3D {
 }
 
 impl Plane3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, normal: Vector3D) -> Result<Self, String> {
         if !point.is_valid() || !normal.is_valid() {
             return Err("Plane3D contains invalid coordinates".to_string());

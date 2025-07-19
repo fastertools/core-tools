@@ -28,7 +28,7 @@ impl From<Point> for LogicPoint {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct NearestPointsInput {
+pub struct NearestPointsInput {
     /// Point to search from
     query_point: Point,
     /// Points to search among

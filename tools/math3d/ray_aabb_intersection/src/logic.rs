@@ -14,6 +14,7 @@ pub struct Ray {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct AABB {
     pub min: Vector3,
     pub max: Vector3,
@@ -316,7 +317,7 @@ mod tests {
 
         let result = ray_aabb_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
         assert!(result.closest_distance.is_some());
     }
 
@@ -491,7 +492,7 @@ mod tests {
 
         let result = ray_aabb_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 
     #[test]
@@ -509,6 +510,6 @@ mod tests {
 
         let result = ray_aabb_intersection_logic(input).unwrap();
         assert!(result.intersects);
-        assert!(result.intersection_points.len() > 0);
+        assert!(!result.intersection_points.is_empty());
     }
 }

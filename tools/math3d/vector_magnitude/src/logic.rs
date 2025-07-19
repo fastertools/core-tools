@@ -238,10 +238,7 @@ mod tests {
             let result = compute_vector_magnitude(input).unwrap();
             assert!(
                 (result.magnitude - expected_magnitude).abs() < 1e-10,
-                "Failed for vector ({}, {}, {})",
-                x,
-                y,
-                z
+                "Failed for vector ({x}, {y}, {z})"
             );
         }
     }

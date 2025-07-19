@@ -45,6 +45,7 @@ impl Vector3D {
         self.magnitude() < EPSILON
     }
 
+    #[allow(dead_code)]
     pub fn dot(&self, other: &Vector3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
@@ -71,6 +72,7 @@ impl Vector3D {
 }
 
 impl Line3D {
+    #[allow(dead_code)]
     pub fn new(point: Vector3D, direction: Vector3D) -> Result<Self, String> {
         if direction.is_zero() {
             return Err("Direction vector cannot be zero".to_string());
@@ -128,12 +130,11 @@ pub fn multiple_line_intersection_logic(
     for (i, line) in input.lines.iter().enumerate() {
         if !line.is_valid() {
             return Err(format!(
-                "Line {} contains invalid values (NaN or Infinite)",
-                i
+                "Line {i} contains invalid values (NaN or Infinite)"
             ));
         }
         if line.direction.is_zero() {
-            return Err(format!("Line {} has zero direction vector", i));
+            return Err(format!("Line {i} has zero direction vector"));
         }
     }
 

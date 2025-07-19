@@ -39,6 +39,7 @@ pub struct LinePlaneIntersectionResult {
 const EPSILON: f64 = 1e-10;
 
 impl Vector3D {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3D { x, y, z }
     }
@@ -75,6 +76,7 @@ impl Vector3D {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    #[allow(dead_code)]
     pub fn normalize(&self) -> Result<Vector3D, String> {
         let mag = self.magnitude();
         if mag < EPSILON {

@@ -52,6 +52,7 @@ impl Vector3D {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add(&self, other: &Vector3D) -> Vector3D {
         Vector3D {
             x: self.x + other.x,

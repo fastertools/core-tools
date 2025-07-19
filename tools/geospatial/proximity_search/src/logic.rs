@@ -145,8 +145,7 @@ pub fn find_nearest_points(
     let max_results = max_results.unwrap_or(distances.len()).min(distances.len());
 
     let mut nearest_points = Vec::new();
-    for i in 0..max_results {
-        let (idx, distance) = distances[i];
+    for &(idx, distance) in distances.iter().take(max_results) {
         let candidate = &candidate_points[idx];
         let bearing = calculate_bearing(&query_point, candidate);
 

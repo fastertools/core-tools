@@ -271,8 +271,7 @@ mod tests {
             let interpretation = interpret_correlation(r_value);
             assert_eq!(
                 interpretation, expected_interpretation,
-                "Failed for r={}",
-                r_value
+                "Failed for r={r_value}"
             );
         }
     }

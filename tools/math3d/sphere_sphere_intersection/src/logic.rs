@@ -35,6 +35,7 @@ pub struct IntersectionCircle {
 }
 
 impl Vector3 {
+    #[allow(dead_code)]
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3 { x, y, z }
     }
@@ -86,6 +87,7 @@ impl Vector3 {
 }
 
 impl Sphere {
+    #[allow(dead_code)]
     pub fn new(center: Vector3, radius: f64) -> Self {
         Sphere { center, radius }
     }
