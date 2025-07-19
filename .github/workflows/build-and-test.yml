@@ -97,15 +97,15 @@ jobs:
     
     - name: Run basic smoke tests
       run: |
-        chmod +x test_server
-        ./test_server start
+        chmod +x test_scripts/test_server
+        ./test_scripts/test_server start
         sleep 5
         
         # Test a few endpoints
         curl -f http://localhost:3000/add -X POST -H "Content-Type: application/json" -d '{"a": 1, "b": 2}' || exit 1
         curl -f http://localhost:3000/multiply -X POST -H "Content-Type: application/json" -d '{"a": 3, "b": 4}' || exit 1
         
-        ./test_server stop
+        ./test_scripts/test_server stop
 
   build-summary:
     if: always()
