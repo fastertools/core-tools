@@ -84,28 +84,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install Spin
-      uses: fermyon/actions/spin/setup@v1
-      with:
-        version: "v2.0.1"
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
     
-    - name: Download WASM artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: wasm-modules
-        path: target/wasm32-wasip1/release/
-    
-    - name: Run basic smoke tests
-      run: |
-        chmod +x test_scripts/test_server
-        ./test_scripts/test_server start
-        sleep 5
-        
-        # Test a few endpoints
-        curl -f http://localhost:3000/add -X POST -H "Content-Type: application/json" -d '{"a": 1, "b": 2}' || exit 1
-        curl -f http://localhost:3000/multiply -X POST -H "Content-Type: application/json" -d '{"a": 3, "b": 4}' || exit 1
-        
-        ./test_scripts/test_server stop
+    - name: Run tests
+      run: cargo test --all --all-features
 
   build-summary:
     if: always()
