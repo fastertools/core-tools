@@ -1,8 +1,6 @@
 name: Release
-# New workflow for manual/tagged releases
-# Incorporates versioning from publish-tools.yml with manual dispatch
-
-# TESTING: Temporarily disable automatic triggers for validation
+# Production release workflow with wkg publishing
+# Publishes all 84+ tools as individual WebAssembly components to GHCR
 on:
   workflow_dispatch:
     inputs:
@@ -20,16 +18,9 @@ on:
         required: false
         type: boolean
         default: false
-      test_wkg:
-        description: 'Test Spin compatibility with wkg-published components'
-        required: false
-        type: boolean
-        default: false
   push:
     tags:
       - 'v*'
-    branches:
-      - feat/wkg-migration  # Temporary for testing wkg migration
 
 env:
   CARGO_TERM_COLOR: always
@@ -117,12 +108,7 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          # For wkg migration testing on branch
-          if [[ "${{ github.ref }}" == "refs/heads/feat/wkg-migration" ]]; then
-            VERSION="v0.0.0-wkg-test"
-            IS_PRERELEASE="true"
-            echo "🧪 WKG Migration Test - using test version ${VERSION}"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.version }}"
             IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
           else
@@ -136,13 +122,11 @@ jobs:
             fi
           fi
           
-          # Validate version format (skip for test branch)
-          if [[ "${{ github.ref }}" != "refs/heads/feat/wkg-migration" ]]; then
-            if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
-              echo "Error: Invalid version format: $VERSION"
-              echo "Expected format: v1.0.0 or v1.0.0-beta"
-              exit 1
-            fi
+          # Validate version format
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "Error: Invalid version format: $VERSION"
+            echo "Expected format: v1.0.0 or v1.0.0-beta"
+            exit 1
           fi
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -203,68 +187,6 @@ jobs:
           path: target/wasm32-wasip1/release/*.wasm
           retention-days: 30
 
-  # ===== TEST SPIN COMPATIBILITY =====
-  test-spin-compatibility:
-    name: Test Spin Compatibility
-    if: github.event.inputs.test_wkg == 'true' || github.ref == 'refs/heads/feat/wkg-migration'
-    needs: [prepare, publish-all-tools]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Test Spin consumption of wkg-published component
-        run: |
-          # Install Spin
-          curl -fsSL https://spin.fermyon.dev/downloads/install.sh | bash
-          sudo mv spin /usr/local/bin/
-          
-          VERSION="${{ needs.prepare.outputs.version }}"
-          REGISTRY="ghcr.io"
-          PACKAGE="${{ github.repository_owner }}:ftl-tool-add"
-          
-          echo "📦 Testing with Registry: $REGISTRY"
-          echo "📦 Testing with Package: $PACKAGE"
-          echo "📦 Testing with Version: $VERSION"
-          
-          # Create test spin.toml using wkg-published component
-          cat > test-spin.toml << EOF
-          spin_manifest_version = 2
-          
-          [application]
-          name = "wkg-compatibility-test"
-          version = "0.1.0"
-          
-          [[trigger.http]]
-          route = "/test"
-          component = "test-component"
-          
-          [component.test-component]
-          source = { registry = "$REGISTRY", package = "$PACKAGE", version = "$VERSION" }
-          allowed_outbound_hosts = []
-          EOF
-          
-          # Test if Spin can parse and build with wkg-published component
-          echo "🧪 Testing Spin compatibility with wkg-published components..."
-          if spin build --from test-spin.toml; then
-            echo "✅ Spin successfully consumed wkg-published component!"
-          else
-            echo "⚠️  Spin consumption test failed - investigating..."
-            echo "Generated spin.toml:"
-            cat test-spin.toml
-            exit 1
-          fi
-      
-      - name: Summary
-        run: |
-          echo "## Spin Compatibility Test Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Spin can successfully consume wkg-published components" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 Registry format validated for component dependencies" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Test Configuration:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Registry**: ghcr.io" >> $GITHUB_STEP_SUMMARY
-          echo "- **Package**: ${{ github.repository_owner }}:ftl-tool-add" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ needs.prepare.outputs.version }}" >> $GITHUB_STEP_SUMMARY
 
   # ===== TEST RELEASE =====
   # TEMPORARILY DISABLED: Smoke test failing, needs investigation
@@ -545,7 +467,7 @@ jobs:
   release-summary:
     name: Release Summary
     if: always()
-    needs: [prepare, lint, build-release, publish-release, publish-all-tools]  # test-release temporarily disabled
+    needs: [prepare, lint, build-release, publish-release, publish-all-tools]
     runs-on: ubuntu-latest
     steps:
       - name: Create summary
@@ -586,12 +508,15 @@ jobs:
           fi
           
           if [[ "${{ needs.publish-all-tools.result }}" == "success" ]]; then
-            echo "✅ **All Tools**: Published with version and latest tags" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **All Tools**: Published via wkg with version and latest tags" >> $GITHUB_STEP_SUMMARY
+            echo "🔐 **Security**: All components signed with cosign" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **All Tools**: Publishing failed" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **All Tools**: WKG publishing failed" >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Release Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- GitHub Release: https://github.com/${{ github.repository }}/releases/tag/${VERSION}" >> $GITHUB_STEP_SUMMARY
-          echo "- Individual Tools: \`ghcr.io/${{ github.repository_owner }}/ftl-tool-[name]:${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Release**: https://github.com/${{ github.repository }}/releases/tag/${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- **WebAssembly Components**: \`ghcr.io/${{ github.repository_owner }}/ftl-tool-[name]:${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry Format**: \`{ registry = \"ghcr.io\", package = \"${{ github.repository_owner }}:ftl-tool-[name]\", version = \"${VERSION}\" }\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Publishing Method**: wkg (WebAssembly Package Tools)" >> $GITHUB_STEP_SUMMARY
