@@ -117,7 +117,12 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # For wkg migration testing on branch
+          if [[ "${{ github.ref }}" == "refs/heads/feat/wkg-migration" ]]; then
+            VERSION="v0.0.0-wkg-test"
+            IS_PRERELEASE="true"
+            echo "🧪 WKG Migration Test - using test version ${VERSION}"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.version }}"
             IS_PRERELEASE="${{ github.event.inputs.prerelease }}"
           else
@@ -131,11 +136,13 @@ jobs:
             fi
           fi
           
-          # Validate version format
-          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
-            echo "Error: Invalid version format: $VERSION"
-            echo "Expected format: v1.0.0 or v1.0.0-beta"
-            exit 1
+          # Validate version format (skip for test branch)
+          if [[ "${{ github.ref }}" != "refs/heads/feat/wkg-migration" ]]; then
+            if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+              echo "Error: Invalid version format: $VERSION"
+              echo "Expected format: v1.0.0 or v1.0.0-beta"
+              exit 1
+            fi
           fi
           
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
