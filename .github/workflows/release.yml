@@ -20,9 +20,16 @@ on:
         required: false
         type: boolean
         default: false
+      test_wkg:
+        description: 'Test wkg publishing (only publishes add tool)'
+        required: false
+        type: boolean
+        default: false
   push:
     tags:
       - 'v*'
+    branches:
+      - feat/wkg-migration  # Temporary for testing
 
 env:
   CARGO_TERM_COLOR: always
@@ -188,6 +195,125 @@ jobs:
           name: release-wasm-batch-${{ matrix.batch }}
           path: target/wasm32-wasip1/release/*.wasm
           retention-days: 30
+
+  # ===== TEST WKG PUBLISHING =====
+  test-wkg-publish:
+    name: Test WKG Publishing
+    if: github.event.inputs.test_wkg == 'true' || github.ref == 'refs/heads/feat/wkg-migration'
+    needs: build-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # For cosign signing
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install cargo-component
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-component@0.18.0
+      
+      - name: Install wkg
+        run: |
+          cargo install wkg --version 0.11.0
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-wasm-batch-*
+          merge-multiple: true
+          path: target/wasm32-wasip1/release/
+      
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup component metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/ftl-tool-add
+          tags: |
+            type=raw,value=wkg-test-{{date 'YYYYMMDD-HHmmss'}}
+            type=raw,value=wkg-test-latest
+      
+      - name: Publish with wkg
+        run: |
+          # Get the first tag from metadata
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          
+          echo "🚀 Publishing add tool with wkg to: $FIRST_TAG"
+          
+          # Publish with wkg
+          wkg oci push $FIRST_TAG \
+            target/wasm32-wasip1/release/add_tool.wasm
+          
+          echo "✅ Successfully published with wkg!"
+      
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      
+      - name: Sign component
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          # Get the first tag from metadata
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          
+          # Sign the component
+          cosign sign --yes $FIRST_TAG
+          echo "✅ Component signed with cosign"
+      
+      - name: Test Spin consumption
+        run: |
+          # Install Spin
+          curl -fsSL https://spin.fermyon.dev/downloads/install.sh | bash
+          sudo mv spin /usr/local/bin/
+          
+          # Get the first tag from metadata
+          FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          
+          # Create test spin.toml
+          cat > test-spin.toml << EOF
+          spin_manifest_version = 2
+          
+          [application]
+          name = "wkg-test"
+          version = "0.1.0"
+          
+          [[trigger.http]]
+          route = "/..."
+          component = "test-component"
+          
+          [component.test-component]
+          source = { registry = "$FIRST_TAG" }
+          EOF
+          
+          # Test if Spin can parse the component reference
+          echo "🧪 Testing Spin compatibility with wkg-published component..."
+          if spin build --from test-spin.toml; then
+            echo "✅ Spin successfully consumed wkg-published component!"
+          else
+            echo "⚠️  Spin consumption test failed - investigating..."
+            exit 1
+          fi
+      
+      - name: Summary
+        run: |
+          echo "## WKG Publishing Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Successfully published add tool via wkg" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Component signed with cosign" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Spin compatibility verified" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Tags:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   # ===== TEST RELEASE =====
   # TEMPORARILY DISABLED: Smoke test failing, needs investigation
@@ -390,6 +516,12 @@ jobs:
           VERSION="${{ needs.prepare.outputs.version }}"
           DRY_RUN="${{ github.event.inputs.dry_run }}"
           
+          # TEMPORARILY DISABLED for wkg migration testing
+          echo "⚠️  SPIN PUBLISHING TEMPORARILY DISABLED FOR WKG MIGRATION"
+          echo "To test wkg publishing, use test_wkg input or push to feat/wkg-migration branch"
+          
+          # Original Spin publishing code commented out
+          : <<'DISABLED_FOR_WKG_MIGRATION'
           # Find ALL tools across all directories
           find tools -name "Cargo.toml" | while read cargo_file; do
             tool_dir=$(dirname "$cargo_file")
@@ -432,6 +564,7 @@ jobs:
               echo "✅ Published ${IMAGE_NAME}:${VERSION} and :latest"
             fi
           done
+          DISABLED_FOR_WKG_MIGRATION
 
   # ===== RELEASE SUMMARY =====
   release-summary:
