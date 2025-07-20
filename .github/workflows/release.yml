@@ -284,6 +284,16 @@ jobs:
           # Get the first tag from metadata
           FIRST_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           
+          # Extract registry, package, and version from the tag
+          # Format: ghcr.io/fastertools/ftl-tool-add:wkg-test-20250720-035627
+          REGISTRY="ghcr.io"
+          PACKAGE="${{ github.repository_owner }}:ftl-tool-add"
+          VERSION=$(echo "$FIRST_TAG" | cut -d':' -f2)
+          
+          echo "📦 Registry: $REGISTRY"
+          echo "📦 Package: $PACKAGE"
+          echo "📦 Version: $VERSION"
+          
           # Create test spin.toml
           cat > test-spin.toml << EOF
           spin_manifest_version = 2
@@ -297,7 +307,8 @@ jobs:
           component = "test-component"
           
           [component.test-component]
-          source = { registry = "$FIRST_TAG" }
+          source = { registry = "$REGISTRY", package = "$PACKAGE", version = "$VERSION" }
+          allowed_outbound_hosts = []
           EOF
           
           # Test if Spin can parse the component reference
@@ -306,6 +317,7 @@ jobs:
             echo "✅ Spin successfully consumed wkg-published component!"
           else
             echo "⚠️  Spin consumption test failed - investigating..."
+            cat test-spin.toml
             exit 1
           fi
       
