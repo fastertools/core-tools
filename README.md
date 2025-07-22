@@ -1,8 +1,8 @@
 # Core Tools - LLM Augmentation API Suite
 
-[![Build Status](https://github.com/your-org/core-tools/workflows/Build%20and%20Test/badge.svg)](https://github.com/your-org/core-tools/actions)
-[![Tests](https://github.com/your-org/core-tools/workflows/Tests/badge.svg)](https://github.com/your-org/core-tools/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Build Status](https://github.com/fastertools/core-tools/workflows/Build%20and%20Test/badge.svg)](https://github.com/fastertools/core-tools/actions)
+[![Tests](https://github.com/fastertools/core-tools/workflows/Tests/badge.svg)](https://github.com/fastertools/core-tools/actions)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://rustup.rs/)
 
 Production-ready computational APIs that fill critical gaps in Large Language Model capabilities for mathematical computation, spatial analysis, and data processing.
@@ -332,7 +332,7 @@ The project includes automated CI/CD pipelines:
 ### Development Setup
 ```bash
 # Clone and set up the project
-git clone https://github.com/your-org/core-tools.git
+git clone https://github.com/fastertools/core-tools.git
 cd core-tools
 make dev-setup
 ```

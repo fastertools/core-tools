@@ -139,10 +139,10 @@ pub fn parse_csv(input: CsvParserInput) -> Result<CsvParserResult, String> {
                 column_counts.push(row.len());
                 rows.push(row);
             }
-            Err(e) => {
+            Err(_e) => {
                 // Skip malformed rows but track them
                 lines_skipped += 1;
-                eprintln!("Skipping malformed row: {e}");
+                // Note: Malformed row skipped (details not logged for security)
             }
         }
     }
