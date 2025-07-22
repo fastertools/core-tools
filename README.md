@@ -1,43 +1,34 @@
 # Core Tools - LLM Augmentation API Suite
 
-A comprehensive suite of 84+ computational tools built with Rust and FTL SDK, designed to augment Large Language Model capabilities with precise mathematical, geospatial, and statistical computations.
+[![Build Status](https://github.com/your-org/core-tools/workflows/Build%20and%20Test/badge.svg)](https://github.com/your-org/core-tools/actions)
+[![Tests](https://github.com/your-org/core-tools/workflows/Tests/badge.svg)](https://github.com/your-org/core-tools/actions)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://rustup.rs/)
+
+Production-ready computational APIs that fill critical gaps in Large Language Model capabilities for mathematical computation, spatial analysis, and data processing.
 
 ## 🌟 Overview
 
-This project provides production-ready APIs across multiple computational domains, designed to fill gaps in LLM capabilities for mathematical computation, spatial analysis, and data processing.
+**Solve Real Problems with Precision**
 
-### 📊 Current Statistics
-- **Total Tools**: 84 individual microservice tools (+28 new LLM Standard Library tools)
-- **Categories**: Geospatial (9), 3D Mathematics (32), Statistics (11), Basic Math (11), Encoding (6), Data Formats (4), Validation (3), String (3), Identifiers (3), Crypto (1), DateTime (1)
-- **Architecture**: Pure FTL SDK microservice pattern with ToolResponse standard
-- **Composition**: HTTP-based composition pattern for complex operations
-- **Performance**: Sub-millisecond to ~100ms response times  
-- **Accuracy**: Validated against reference implementations
-- **Quality Assurance**: ✅ 100% build success, ✅ 100% unit test coverage, ✅ 100% HTTP endpoint validation
-- **Testing Status**: All 84 tools validated with comprehensive test suite (July 2025)
-- **HTTP Composition**: ✅ 100% success rate across all tool composition chains
+Core Tools provides battle-tested APIs for tasks LLMs struggle with:
 
-### 🔧 Recent Architectural Improvements (July 2025)
-- **Pattern Standardization**: Completed systematic conversion of all 84 tools to FTL-SDK ToolResponse pattern
-- **Single Responsibility**: Extracted bundled tools into atomic components (vector_angle, line_segment_intersection, cartesian_to_cylindrical, spherical_to_cartesian)
-- **Composition Patterns**: Demonstrated HTTP-based composition with `vector_analysis` composite tool
-- **Quality Assurance**: Achieved 100% FTL-SDK pattern compliance across entire codebase
-- **Code Quality Initiative**: Systematic audit and cleanup of anti-patterns across all tools (July 2025)
-  - Comprehensive audit of 84 tools identifying 15 violations
-  - Fixed 5 critical anti-patterns: eliminated HTTP composition, unused functions, WASM dependencies
-  - Improved architectural consistency with proper logic.rs usage patterns
-  - Created ANTI_PATTERNS_AUDIT.md for future maintenance guidelines
+- **📍 GPS & Mapping**: Calculate distances, bearings, geofencing, and spatial relationships with professional-grade accuracy
+- **🧮 3D Mathematics**: Vector operations, geometric intersections, and coordinate transformations for engineering applications  
+- **📊 Statistical Analysis**: Comprehensive statistics, correlation analysis, and regression modeling
+- **🔢 Mathematical Operations**: Reliable arithmetic, advanced calculations, and data processing primitives
+- **🛠️ Utility Functions**: Encoding, validation, string manipulation, and data format processing
 
-## 🏗️ Architecture
+**Built for Production**: Each tool is a standalone WebAssembly microservice with standardized JSON APIs, comprehensive error handling, and validated accuracy against reference implementations.
 
-### Modern Microservice Design
-This project uses a **pure FTL SDK microservice architecture** where each tool is a standalone WebAssembly component with HTTP composition capabilities:
+### 🏗️ Modern Architecture
 
-### Composition Pattern
-The architecture supports **HTTP-based composition** where complex operations can be built by combining atomic tools:
-- **Atomic Tools**: Single-purpose tools (vector_magnitude, dot_product, etc.)
-- **Composite Tools**: Complex operations combining multiple atomic tools via HTTP calls
-- **Example**: `vector_analysis` calls `vector_magnitude`, `vector_angle`, `dot_product`, and `cross_product`
+- **Microservice Design**: Each tool is an independent WebAssembly component with HTTP APIs
+- **Composability**: Combine simple tools to build complex operations via HTTP composition
+- **Performance**: WebAssembly provides near-native speed with sub-millisecond response times
+- **Reliability**: Comprehensive error handling and validation in every tool
+
+## 📁 Project Structure
 
 ```
 core-tools/
@@ -165,123 +156,75 @@ echo '{"data": [1.5, 2.3, 3.1, 4.7, 5.2, 6.8, 7.1, 8.9, 9.4, 10.6]}' | \
   ./curl.sh http://127.0.0.1:3000/descriptive-statistics
 ```
 
-## 🆕 LLM Standard Library Tools
+## 🛠️ Tool Categories
 
-This project includes **28 new LLM Standard Library tools** - essential computational tools that address common gaps in LLM capabilities:
+### 📍 Geospatial & Mapping
+GPS calculations, spatial analysis, geofencing, coordinate conversion, polygon operations
 
-### 🔢 Extended Basic Math (6 new tools)
-- **subtract**: Basic subtraction with error handling
-- **divide**: Division with zero-check protection  
-- **modulus**: Modulo operation with zero-check
-- **power**: Exponentiation with special case handling
-- **remainder**: Remainder operation (distinct from modulus)
-- **square**: Square calculation
+### 🧮 3D Mathematics
+Vector operations, geometric intersections, transformations, volume calculations, ray tracing
 
-### 🆔 Identifiers & Random Generation (3 tools)
-- **uuid_generator**: Generate UUIDs v4 with multiple formats (simple, hyphenated, uppercase)
-- **random_integer**: Generate random integers with custom ranges
-- **random_string**: Generate random strings with various charsets (alphanumeric, hex, base64)
+### 📊 Statistical Analysis  
+Descriptive statistics, correlation analysis, regression modeling, distribution testing
 
-### ⏰ DateTime (1 tool)
-- **current_datetime**: Get current time with timezone support, multiple formats (ISO, RFC2822, Unix timestamps)
+### 🔢 Mathematical Operations
+Arithmetic, advanced calculations, trigonometry, data processing primitives
 
-### 🔐 Encoding & URL Handling (6 tools)
-- **base64_encoder**: Encode strings to base64 with variants (standard, URL-safe)
-- **base64_decoder**: Decode base64 with UTF-8 validation
-- **hex_encoder**: Encode strings to hexadecimal (upper/lowercase)
-- **hex_decoder**: Decode hexadecimal strings with validation
-- **url_encoder**: URL encoding with component/form modes
-- **url_decoder**: URL decoding with comprehensive error handling
+### 🔧 Utility Functions
+Encoding/decoding, validation, string manipulation, data format processing, cryptography
 
-### 🔤 String Manipulation (3 tools)
-- **string_case_converter**: Convert text case (upper, lower, title, camel, snake, kebab)
-- **string_trimmer**: Trim whitespace from strings (start, end, both)
-- **string_splitter**: Split strings by delimiter with regex support and limits
+## 🎯 Real-World Examples
 
-### 📄 Data Format Processing (4 tools)
-- **json_formatter**: Pretty/compact JSON formatting with validation
-- **json_validator**: JSON syntax validation with detailed error reporting
-- **csv_parser**: Flexible CSV parsing with header detection and delimiter inference
-- **yaml_formatter**: YAML formatting and validation with detailed error reporting
-
-### ✅ Validation Tools (3 tools)
-- **email_validator**: RFC-compliant email validation with component analysis
-- **url_validator**: Comprehensive URL validation with scheme, host, port analysis
-- **regex_matcher**: Pattern matching with capture groups and match details
-
-### 🔒 Cryptography (1 tool)
-- **hash_generator**: MD5/SHA256/SHA512 hashing with multiple output formats (hex, base64)
-
-### 📐 3D Math Extensions (2 tools)
-- **cartesian_to_cylindrical**: Convert Cartesian to cylindrical coordinates
-- **cylindrical_to_cartesian**: Convert cylindrical to Cartesian coordinates
-
-### 🔗 Composite Tools (1 tool)
-- **vector_analysis**: Demonstrates HTTP composition pattern by combining vector operations
-
-## 📚 Tool Categories
-
-### 📍 Geospatial Tools (9 tools)
-High-precision GPS calculations and spatial analysis:
-- **Distance calculation** using Haversine formula
-- **Bearing/heading** calculations between points
-- **Geofencing** with point-in-polygon algorithms
-- **Buffer zones** and proximity analysis
-- **Coordinate conversion** (DMS ↔ Decimal)
-- **Polygon operations** (area, simplification)
-
-### 🧮 3D Mathematics (32 tools)
-Comprehensive 3D mathematical operations:
-- **Vector operations**: dot product, cross product, magnitude, angles
-- **Line operations**: intersection, closest points, distance calculations
-- **Plane operations**: intersections, point-to-plane distance
-- **3D transformations**: rotation matrices, quaternions, coordinate conversion
-- **Volume calculations**: sphere, cylinder, tetrahedron, AABB, pyramid
-- **Geometric primitives**: ray-sphere, ray-AABB, sphere-sphere intersections
-
-### 📊 Statistical Analysis (11 tools)
-Professional statistical computations:
-- **Descriptive statistics**: mean, median, mode, std dev, skewness, kurtosis
-- **Correlation analysis**: Pearson, Spearman, correlation matrices
-- **Regression**: linear and polynomial regression with predictions
-- **Distribution analysis**: histograms, normality testing
-- **Summary statistics**: 5-number summary with quartiles
-
-### ⚙️ Basic Mathematics (11 tools)
-Fundamental mathematical operations optimized for composition:
-- **Arithmetic**: addition, subtraction, multiplication, division, remainder, modulus, power
-- **Advanced**: square, square root, Pythagorean theorem, 2D distance calculation
-
-## 🎯 Example Usage
-
-### Geospatial: Calculate Distance Between Cities
+### Fleet Management: Delivery Route Optimization
 ```bash
-# Calculate distance from NYC to LA
+# Calculate distances between delivery stops
 POST /distance
 {
-  "lat1": 40.7128,
-  "lon1": -74.0060,
-  "lat2": 34.0522,
-  "lon2": -118.2437
+  "lat1": 40.7128, "lon1": -74.0060,  # NYC warehouse
+  "lat2": 40.7831, "lon2": -73.9712   # Customer location
 }
-```
+# Response: {"distance_km": 8.97, "distance_miles": 5.57}
 
-### 3D Math: Vector Operations
-```bash
-# Calculate dot product of two vectors
-POST /dot-product
+# Check if delivery is within service area
+POST /point-in-polygon
 {
-  "vector1": {"x": 1.0, "y": 2.0, "z": 3.0},
-  "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}
+  "point": {"lat": 40.7831, "lon": -73.9712},
+  "polygon": [/* service area coordinates */]
 }
 ```
 
-### Statistics: Data Analysis
+### Engineering: 3D CAD Calculations
 ```bash
-# Comprehensive statistical analysis
+# Calculate angle between structural beams
+POST /vector-angle
+{
+  "vector1": {"x": 10.0, "y": 0.0, "z": 5.0},
+  "vector2": {"x": 8.0, "y": 6.0, "z": 0.0}
+}
+# Response: {"angle_degrees": 67.38, "angle_radians": 1.176}
+
+# Find intersection point for beam connections
+POST /line-intersection
+{
+  "line1": {"point": {"x": 0, "y": 0, "z": 0}, "direction": {"x": 1, "y": 0, "z": 0}},
+  "line2": {"point": {"x": 0, "y": 1, "z": 0}, "direction": {"x": 0, "y": 0, "z": 1}}
+}
+```
+
+### Data Science: Quality Control Analysis
+```bash
+# Analyze manufacturing measurements for quality control
 POST /descriptive-statistics
 {
-  "data": [1.5, 2.3, 3.1, 4.7, 5.2, 6.8, 7.1, 8.9, 9.4, 10.6]
+  "data": [24.1, 24.3, 23.9, 24.2, 24.0, 24.4, 23.8, 24.1]
+}
+# Response: {"mean": 24.1, "std_dev": 0.19, "within_tolerance": true}
+
+# Test if measurements follow normal distribution
+POST /test-normality
+{
+  "data": [/* measurement data */],
+  "alpha": 0.05
 }
 ```
 
@@ -374,43 +317,15 @@ The project includes automated CI/CD pipelines:
 - **[🧮 3D Mathematics](./docs/3D_MATHEMATICS.md)** - Vector operations, transformations, 3D geometry
 - **[📊 Statistical Analysis](./docs/STATISTICS.md)** - Descriptive stats, correlation, regression
 
-### Performance Benchmarks
-- **Geospatial**: 99.8% accuracy using Haversine formula, sub-millisecond response times
-- **3D Mathematics**: Microsecond precision, validated against reference implementations
-- **Statistics**: Cross-validated against R and Python statistical libraries
-- **Throughput**: 200K-500K operations/second for simple operations
-
 ## 🎯 Use Cases
 
-### LLM Augmentation
-- **Spatial Reasoning**: Precise geospatial calculations for location-based queries
-- **3D Mathematics**: Complex geometric operations for CAD, robotics, graphics applications
-- **Statistical Analysis**: Professional-grade data processing and analysis
-- **Engineering Support**: Mathematical operations for technical and scientific applications
+**Augment LLM Capabilities**: Fill computational gaps with precise, reliable calculations
 
-### Production Applications
-- **Geospatial**: Fleet management, delivery optimization, security perimeters
-- **3D Mathematics**: CAD software, game engines, robotics, physics simulations
-- **Statistics**: Data science pipelines, research analysis, quality control
-
-## 🏗️ Project Status
-
-### Completed
-- ✅ **84 individual tools** across 11 major categories (complete)
-- ✅ **28 new LLM Standard Library tools** addressing computational gaps for LLMs
-- ✅ **Pure FTL SDK microservice architecture** with ToolResponse pattern
-- ✅ **100% HTTP composition success rate** - all tool chains working correctly
-- ✅ **Comprehensive testing framework** - build, unit test, and HTTP validation
-- ✅ **Production-ready APIs** with standardized error handling
-- ✅ **HTTP composition patterns** for complex operations (vector_analysis)
-- ✅ **CI/CD pipeline** with GitHub Actions integration
-- ✅ **Zero technical debt** - clean, modern codebase
-
-### Architecture Evolution
-This project has undergone a complete transformation:
-- **From**: Monolithic Rust library with complex module dependencies
-- **To**: Pure FTL SDK microservice architecture with standalone components
-- **Result**: Highly scalable, maintainable, and deployable tool suite
+- **Fleet & Logistics**: Route optimization, delivery zones, distance calculations
+- **Engineering & CAD**: 3D modeling, structural analysis, geometric calculations  
+- **Data Science**: Statistical analysis, quality control, research validation
+- **Web Applications**: Form validation, encoding/decoding, data processing
+- **Financial**: Risk analysis, correlation studies, mathematical modeling
 
 ## 🤝 Contributing
 
