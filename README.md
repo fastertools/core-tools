@@ -1,53 +1,53 @@
-# Core Tools - Precision Computation APIs for LLM Applications
+# Core Tools - Fast WASM Functions for Real-Time LLM Computation
 
 [![CI](https://github.com/fastertools/core-tools/workflows/CI/badge.svg)](https://github.com/fastertools/core-tools/actions/workflows/ci.yml)
 [![Release](https://github.com/fastertools/core-tools/workflows/Release/badge.svg)](https://github.com/fastertools/core-tools/actions/workflows/release.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://rustup.rs/)
 
-A collection of high-performance WebAssembly microservices that provide precise computational capabilities for applications using Large Language Models. Built with Rust for reliability and speed.
+A collection of lightning-fast WebAssembly functions designed for real-time computation in LLM applications. Perfect for MCP (Model Context Protocol) servers and any system requiring sub-millisecond mathematical precision alongside AI reasoning.
 
 ## Why Core Tools?
 
-Large Language Models excel at understanding and generating text, but they often struggle with precise mathematical computations. Core Tools bridges this gap by providing:
+Large Language Models excel at understanding and generating text, but they often struggle with precise mathematical computations. Core Tools solves this by providing:
 
-- **Accurate Calculations**: Battle-tested algorithms for geospatial, 3D math, and statistical operations
-- **Microservice Architecture**: 84 independent tools that can be composed for complex workflows
-- **Near-Native Performance**: WebAssembly execution with sub-millisecond response times
-- **Simple Integration**: RESTful JSON APIs that work with any programming language
-- **Production Ready**: Comprehensive error handling, input validation, and test coverage
+- **Real-Time Performance**: WASM functions with sub-millisecond response times for LLM interactions
+- **MCP-Ready**: Designed to plug directly into Model Context Protocol servers
+- **84 Precision Functions**: From GPS calculations to 3D math, all optimized for speed
+- **Zero Cold Starts**: WebAssembly means instant execution, perfect for conversational AI
+- **Simple JSON APIs**: Easy integration with any LLM framework or runtime
 
 ## Key Features
 
-- **🎯 Precision**: Validated accuracy for mission-critical calculations
-- **⚡ Performance**: WebAssembly provides near-native execution speed
-- **🔧 Composability**: Combine atomic tools to build complex operations
-- **🛡️ Reliability**: Comprehensive error handling and input validation
-- **📦 Easy Deployment**: Single binary with all tools included
+- **⚡ Sub-millisecond Response**: WASM execution ensures real-time LLM augmentation
+- **🎯 Precision Math**: Accurate calculations that LLMs can't reliably perform
+- **🔌 MCP Compatible**: Ready to integrate with Model Context Protocol servers
+- **🚀 Zero Setup**: Single binary deployment with all 84 functions included
+- **🛡️ Production Ready**: Battle-tested with comprehensive error handling
 
 ## Project Structure
 
 ```
 core-tools/
-├── tools/                     # 84 computational microservices
-│   ├── geospatial/           # Location & mapping (11 tools)
-│   ├── math3d/               # 3D operations (20 tools)
-│   ├── statistics/           # Data analysis (12 tools)
-│   ├── basic_math/           # Core calculations (25 tools)
-│   └── utilities/            # Helper functions (16 tools)
+├── tools/                     # 84 WASM computation functions
+│   ├── geospatial/           # GPS & mapping (11 functions)
+│   ├── math3d/               # 3D operations (20 functions)
+│   ├── statistics/           # Data analysis (12 functions)
+│   ├── basic_math/           # Core math (25 functions)
+│   └── utilities/            # Helpers (16 functions)
 ├── docs/                     # API documentation
-├── tests/                    # Comprehensive test suite
-├── spin.toml                 # WebAssembly configuration
+├── tests/                    # Test suite
+├── spin.toml                 # WASM runtime config
 └── Makefile                  # Build automation
 ```
 
 ## Technology Stack
 
-- **Language**: Rust (for performance and reliability)
-- **Runtime**: WebAssembly via [Spin Framework](https://spin.fermyon.dev/)
-- **Architecture**: Microservice pattern - each tool is an independent component
-- **API Design**: RESTful JSON with consistent error handling
-- **SDK**: FTL SDK for tool development
+- **Language**: Rust (compiled to WebAssembly for maximum speed)
+- **Runtime**: [Spin Framework](https://spin.fermyon.dev/) (optimized WASM runtime)
+- **Architecture**: Individual WASM functions with HTTP endpoints
+- **Integration**: JSON APIs designed for LLM/MCP server integration
+- **Performance**: Sub-millisecond execution for real-time AI applications
 
 ## Quick Start
 
@@ -121,22 +121,22 @@ echo '{"data": [1.5, 2.3, 3.1, 4.7, 5.2, 6.8, 7.1, 8.9, 9.4, 10.6]}' | \
   ./curl.sh http://127.0.0.1:3000/descriptive-statistics
 ```
 
-## Available Tool Categories
+## Available Functions (84 Total)
 
-### Geospatial & Mapping (11 tools)
-Professional-grade GPS calculations, spatial analysis, geofencing, and coordinate conversions. Perfect for logistics, mapping, and location-based services.
+### Geospatial & Mapping (11 functions)
+Instant GPS calculations, spatial analysis, and geofencing - all with sub-millisecond response for real-time LLM interactions with location data.
 
-### 3D Mathematics (20 tools)
-Comprehensive vector operations, geometric intersections, transformations, and volume calculations. Essential for CAD, game development, and engineering applications.
+### 3D Mathematics (20 functions)  
+Vector operations, geometric intersections, and transformations that execute faster than an LLM can generate the next token.
 
-### Statistical Analysis (12 tools)
-Full suite of descriptive statistics, correlation analysis, regression modeling, and distribution testing. Ideal for data science and research applications.
+### Statistical Analysis (12 functions)
+Real-time statistics, correlations, and regression analysis to augment LLM data interpretation with precise calculations.
 
-### Mathematical Operations (25 tools)
-Fundamental arithmetic through advanced calculations including matrix operations, trigonometry, and numerical methods.
+### Mathematical Operations (25 functions)
+Core arithmetic through advanced math - providing the computational precision LLMs lack, instantly.
 
-### Utility Functions (16 tools)
-Practical tools for encoding/decoding, validation, string manipulation, hashing, and data format processing.
+### Utility Functions (16 functions)
+Fast encoding, validation, and data processing functions to handle formats and transformations in real-time.
 
 ## Real-World Examples
 
@@ -239,11 +239,11 @@ async fn check_production_quality(measurements: Vec<f64>) -> QualityReport {
 ## Development
 
 ### Architecture Principles
-1. **One Tool, One Component**: Each computational tool is a standalone WASM component
-2. **Microservice Pattern**: Tools are independently deployable and scalable
-3. **Standardized Interfaces**: Consistent JSON input/output across all tools
-4. **Composability**: Tools can be combined for complex workflows
-5. **Performance**: WebAssembly provides near-native performance
+1. **One Function, One Purpose**: Each tool is a focused WASM function for a specific calculation
+2. **Real-Time First**: Optimized for sub-millisecond response in LLM conversations
+3. **MCP-Ready Design**: JSON interfaces compatible with Model Context Protocol
+4. **Composable Functions**: Chain simple functions to build complex computations
+5. **Zero Overhead**: Direct WASM execution eliminates cold starts and latency
 
 ### Development Workflow
 
@@ -271,12 +271,12 @@ make test
 make package
 ```
 
-### Adding New Tools
-1. Create new directory in appropriate category: `tools/[category]/[tool-name]/`
+### Adding New Functions
+1. Create directory for your function: `tools/[category]/[function-name]/`
 2. Set up Cargo.toml with FTL SDK dependencies
-3. Implement tool logic in `src/lib.rs` using `#[tool]` attribute
-4. Add endpoint configuration to root `spin.toml`
-5. Test using `./curl.sh`
+3. Implement the WASM function in `src/lib.rs` using `#[tool]` attribute
+4. Register HTTP endpoint in `spin.toml`
+5. Test with `./curl.sh` for sub-millisecond response
 6. Build and verify: `make build-changed`
 
 ### Testing
@@ -325,15 +325,48 @@ The project includes automated CI/CD pipelines:
 - **[3D Mathematics Guide](./docs/3D_MATHEMATICS.md)** - Vector operations, transformations, and geometry
 - **[Statistical Analysis Guide](./docs/STATISTICS.md)** - Statistics, correlation, and regression methods
 
-## Who Uses Core Tools?
+## Perfect For
 
-Core Tools is designed for developers building LLM-powered applications that need reliable computational capabilities:
+### MCP Server Developers
+Plug these functions directly into your Model Context Protocol server for instant mathematical capabilities in your AI applications.
 
-- **AI Application Developers**: Enhance chatbots and assistants with precise calculations
-- **Engineering Teams**: Add CAD calculations and 3D math to LLM workflows  
-- **Data Scientists**: Integrate statistical analysis into AI pipelines
-- **Logistics Companies**: Build route optimization into conversational interfaces
-- **Research Teams**: Combine LLM reasoning with accurate mathematical analysis
+### LLM Application Builders  
+- **Conversational AI**: Add real-time calculations to chatbots without latency
+- **AI Assistants**: Augment reasoning with precise computational results
+- **Voice Interfaces**: Sub-millisecond math for responsive voice applications
+
+### Real-Time Systems
+- **Live Data Analysis**: Statistical calculations that keep pace with streaming data
+- **Interactive 3D**: Instant geometric computations for AR/VR with AI
+- **Location Services**: GPS calculations fast enough for real-time navigation
+
+## MCP Integration Example
+
+```javascript
+// Example: Adding Core Tools to your MCP server
+const coreTools = {
+  distance: async (params) => {
+    const response = await fetch('http://localhost:3000/distance', {
+      method: 'POST',
+      body: JSON.stringify(params)
+    });
+    return response.json(); // Sub-millisecond response
+  },
+  
+  vectorAngle: async (params) => {
+    const response = await fetch('http://localhost:3000/vector-angle', {
+      method: 'POST', 
+      body: JSON.stringify(params)
+    });
+    return response.json(); // Instant 3D calculations
+  }
+  // ... add all 84 functions to your MCP tool registry
+};
+
+// Your LLM can now perform precise calculations in real-time
+// "Calculate the distance between NYC and LA"
+// "What's the angle between these two vectors?"
+```
 
 ## Contributing
 
@@ -405,12 +438,13 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## Acknowledgments
 
-- Built with [Spin](https://spin.fermyon.dev/) - The WebAssembly framework for building microservices
-- Powered by [Rust](https://www.rust-lang.org/) - For performance and reliability
-- Uses [FTL SDK](https://github.com/fastertools/ftl-sdk) - For seamless tool development
+- Built with [Spin](https://spin.fermyon.dev/) - The WebAssembly runtime for instant function execution
+- Powered by [Rust](https://www.rust-lang.org/) - Compiled to WASM for maximum performance
+- Uses [FTL SDK](https://github.com/fastertools/ftl-sdk) - For rapid function development
+- Designed for [MCP](https://modelcontextprotocol.io/) - Ready for Model Context Protocol integration
 
 ---
 
-**Core Tools** - Precision computation APIs that make LLM applications more capable.
+**Core Tools** - Lightning-fast WASM functions for real-time LLM computation. Built for MCP servers, loved by AI developers.
 
-*Questions? Issues? Contributions? We'd love to hear from you!*
+*Get sub-millisecond math in your AI applications today!*
