@@ -7,11 +7,11 @@
 
 Production-ready computational APIs that fill critical gaps in Large Language Model capabilities for mathematical computation, spatial analysis, and data processing.
 
-## 🌟 Overview
+## Overview
 
 **Solve Real Problems with Precision**
 
-Core Tools provides battle-tested APIs for tasks LLMs struggle with:
+Core Tools provides APIs for tasks LLMs struggle with:
 
 - **📍 GPS & Mapping**: Calculate distances, bearings, geofencing, and spatial relationships with professional-grade accuracy
 - **🧮 3D Mathematics**: Vector operations, geometric intersections, and coordinate transformations for engineering applications  
@@ -88,7 +88,7 @@ core-tools/
 
 ### Prerequisites
 - [Rust](https://rustup.rs/) (latest stable)
-- [Spin CLI](https://spin.fermyon.dev/quickstart/) (optional for development)
+- [Spin CLI](https://spin.fermyon.dev/quickstart/)
 - FTL SDK (included in tool dependencies)
 
 ### Building Tools
