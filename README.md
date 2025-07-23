@@ -14,7 +14,7 @@ Large Language Models excel at understanding and generating text, but they often
 - **Real-Time Performance**: WASM functions with sub-millisecond response times for LLM interactions
 - **MCP-Ready**: Designed to plug directly into Model Context Protocol servers
 - **84 Precision Functions**: From GPS calculations to 3D math, all optimized for speed
-- **Zero Cold Starts**: WebAssembly means instant execution, perfect for conversational AI
+- **Minimal Cold Starts**: WebAssembly design minimizes startup latency for responsive AI
 - **Simple JSON APIs**: Easy integration with any LLM framework or runtime
 
 ## Key Features
@@ -243,7 +243,7 @@ async fn check_production_quality(measurements: Vec<f64>) -> QualityReport {
 2. **Real-Time First**: Optimized for sub-millisecond response in LLM conversations
 3. **MCP-Ready Design**: JSON interfaces compatible with Model Context Protocol
 4. **Composable Functions**: Chain simple functions to build complex computations
-5. **Zero Overhead**: Direct WASM execution eliminates cold starts and latency
+5. **Low Latency**: WASM execution minimizes overhead for fast response times
 
 ### Development Workflow
 
