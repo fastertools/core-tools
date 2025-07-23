@@ -1,7 +1,7 @@
 # Core Tools - Precision Computation APIs for LLM Applications
 
-[![Build Status](https://github.com/fastertools/core-tools/workflows/Build%20and%20Test/badge.svg)](https://github.com/fastertools/core-tools/actions)
-[![Tests](https://github.com/fastertools/core-tools/workflows/Tests/badge.svg)](https://github.com/fastertools/core-tools/actions)
+[![CI](https://github.com/fastertools/core-tools/workflows/CI/badge.svg)](https://github.com/fastertools/core-tools/actions/workflows/ci.yml)
+[![Release](https://github.com/fastertools/core-tools/workflows/Release/badge.svg)](https://github.com/fastertools/core-tools/actions/workflows/release.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://rustup.rs/)
 
