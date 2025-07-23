@@ -91,51 +91,21 @@ make help
 ./build_all.sh help
 ```
 
-### Running the Server
-```bash
-# Start the development server
-./test_server
+## Available Functions
 
-# The server will be available at http://127.0.0.1:3000
-# Individual tools available at http://127.0.0.1:3000/[tool-name]
-
-# Stop the server
-./test_server stop
-
-# Test the API (use the testing script, not curl directly)
-./curl.sh
-```
-
-### Testing Individual Tools
-```bash
-# Test a specific geospatial tool
-echo '{"lat1": 40.7128, "lon1": -74.0060, "lat2": 34.0522, "lon2": -118.2437}' | \
-  ./curl.sh http://127.0.0.1:3000/distance
-
-# Test a 3D math operation
-echo '{"vector1": {"x": 1.0, "y": 2.0, "z": 3.0}, "vector2": {"x": 4.0, "y": 5.0, "z": 6.0}}' | \
-  ./curl.sh http://127.0.0.1:3000/dot-product
-
-# Test statistical analysis
-echo '{"data": [1.5, 2.3, 3.1, 4.7, 5.2, 6.8, 7.1, 8.9, 9.4, 10.6]}' | \
-  ./curl.sh http://127.0.0.1:3000/descriptive-statistics
-```
-
-## Available Functions (84 Total)
-
-### Geospatial & Mapping (11 functions)
+### Geospatial & Mapping
 Instant GPS calculations, spatial analysis, and geofencing - all with sub-millisecond response for real-time LLM interactions with location data.
 
-### 3D Mathematics (20 functions)  
+### 3D Mathematics
 Vector operations, geometric intersections, and transformations that execute faster than an LLM can generate the next token.
 
-### Statistical Analysis (12 functions)
+### Statistical Analysis
 Real-time statistics, correlations, and regression analysis to augment LLM data interpretation with precise calculations.
 
-### Mathematical Operations (25 functions)
+### Mathematical Operations
 Core arithmetic through advanced math - providing the computational precision LLMs lack, instantly.
 
-### Utility Functions (16 functions)
+### Utility Functions
 Fast encoding, validation, and data processing functions to handle formats and transformations in real-time.
 
 ## Real-World Examples
@@ -280,44 +250,12 @@ make package
 5. Test with `./curl.sh` for sub-millisecond response
 6. Build and verify: `make build-changed`
 
-### Testing
-
-#### Comprehensive Test Suite
-```bash
-# Build all tools and validate
-make build-all              # Build all 84 tools to WASM
-
-# Unit testing
-cargo test                  # Run all unit tests
-
-# HTTP endpoint testing
-./test_server              # Start development server
-./curl_comprehensive.sh    # Comprehensive HTTP endpoint testing (ALL 84 tools)
-./test_server stop         # Stop server
-
-# Validation commands
-make test                  # Complete validation pipeline
-```
-
 #### Testing Methodology
 The project includes a **3-tier validation system**:
 1. **Build Validation**: All 84 tools compile to WebAssembly without errors
 2. **Unit Test Validation**: Comprehensive unit test coverage for all tools  
 3. **HTTP Endpoint Validation**: End-to-end testing via HTTP requests using `curl.sh`
 4. **Integration Testing**: Complex operations like `vector_analysis` composition patterns
-
-### Continuous Integration
-
-The project includes automated CI/CD pipelines:
-
-- **Pull Request Testing**: Automatically tests only changed tools
-- **Build and Publish**: Builds tools and publishes to GitHub Container Registry
-- **Smart Change Detection**: Only rebuilds tools that have actually changed
-- **Parallel Building**: Efficiently builds tools in parallel batches
-
-#### GitHub Actions Workflows
-- `.github/workflows/build-and-publish.yml` - Main build and publish pipeline
-- `.github/workflows/test-pr.yml` - PR validation and testing
 
 ## Documentation
 
@@ -332,7 +270,7 @@ The project includes automated CI/CD pipelines:
 Plug these functions directly into your Model Context Protocol server for instant mathematical capabilities in your AI applications.
 
 ### LLM Application Builders  
-- **Conversational AI**: Add real-time calculations to chatbots without latency
+- **Conversational AI**: Add real-time calculations to chatbots with minimal latency
 - **AI Assistants**: Augment reasoning with precise computational results
 - **Voice Interfaces**: Sub-millisecond math for responsive voice applications
 
@@ -340,34 +278,6 @@ Plug these functions directly into your Model Context Protocol server for instan
 - **Live Data Analysis**: Statistical calculations that keep pace with streaming data
 - **Interactive 3D**: Instant geometric computations for AR/VR with AI
 - **Location Services**: GPS calculations fast enough for real-time navigation
-
-## MCP Integration Example
-
-```javascript
-// Example: Adding Core Tools to your MCP server
-const coreTools = {
-  distance: async (params) => {
-    const response = await fetch('http://localhost:3000/distance', {
-      method: 'POST',
-      body: JSON.stringify(params)
-    });
-    return response.json(); // Sub-millisecond response
-  },
-  
-  vectorAngle: async (params) => {
-    const response = await fetch('http://localhost:3000/vector-angle', {
-      method: 'POST', 
-      body: JSON.stringify(params)
-    });
-    return response.json(); // Instant 3D calculations
-  }
-  // ... add all 84 functions to your MCP tool registry
-};
-
-// Your LLM can now perform precise calculations in real-time
-// "Calculate the distance between NYC and LA"
-// "What's the angle between these two vectors?"
-```
 
 ## Contributing
 
@@ -423,16 +333,6 @@ make test          # Run the test suite
 - **Testing**: Provide comprehensive test coverage
 - **Performance**: Keep response times under 100ms when possible
 
-### Review Process
-
-All PRs go through:
-1. Automated testing (only changed tools are tested)
-2. Code review for quality and consistency
-3. Performance validation
-4. Documentation review
-
-We aim to review PRs within 48 hours. Small, focused PRs are easier to review and merge quickly.
-
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
@@ -445,7 +345,3 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - Designed for [MCP](https://modelcontextprotocol.io/) - Ready for Model Context Protocol integration
 
 ---
-
-**Core Tools** - Lightning-fast WASM functions for real-time LLM computation. Built for MCP servers, loved by AI developers.
-
-*Get sub-millisecond math in your AI applications today!*
