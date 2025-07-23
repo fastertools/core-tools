@@ -7,3 +7,5 @@ spin.pid
 
 *.log
 .spin-aka/
+
+CLAUDE.local.md
