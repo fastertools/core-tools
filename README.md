@@ -235,6 +235,7 @@ async fn check_production_quality(measurements: Vec<f64>) -> QualityReport {
         action_required: stats_response.std_dev > 0.2 || !normality_response.is_normal
     }
 }
+```
 
 ## Development
 
