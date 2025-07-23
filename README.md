@@ -15,7 +15,7 @@ Large Language Models excel at understanding and generating text, but they often
 - **MCP-Ready**: Designed to plug directly into Model Context Protocol servers
 - **84 Precision Functions**: From GPS calculations to 3D math, all optimized for speed
 - **Minimal Cold Starts**: WebAssembly design minimizes startup latency for responsive AI
-- **Simple JSON APIs**: Easy integration with any LLM framework or runtime
+- **Battle-Tested Algorithms**: Validated implementations you can trust for accurate results
 
 ## Key Features
 
