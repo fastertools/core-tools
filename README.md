@@ -1,90 +1,55 @@
-# Core Tools - LLM Augmentation API Suite
+# Core Tools - Precision Computation APIs for LLM Applications
 
 [![Build Status](https://github.com/fastertools/core-tools/workflows/Build%20and%20Test/badge.svg)](https://github.com/fastertools/core-tools/actions)
 [![Tests](https://github.com/fastertools/core-tools/workflows/Tests/badge.svg)](https://github.com/fastertools/core-tools/actions)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://rustup.rs/)
 
-Production-ready computational APIs that fill critical gaps in Large Language Model capabilities for mathematical computation, spatial analysis, and data processing.
+A collection of high-performance WebAssembly microservices that provide precise computational capabilities for applications using Large Language Models. Built with Rust for reliability and speed.
 
-## Overview
+## Why Core Tools?
 
-**Solve Real Problems with Precision**
+Large Language Models excel at understanding and generating text, but they often struggle with precise mathematical computations. Core Tools bridges this gap by providing:
 
-Core Tools provides APIs for tasks LLMs struggle with:
+- **Accurate Calculations**: Battle-tested algorithms for geospatial, 3D math, and statistical operations
+- **Microservice Architecture**: 84 independent tools that can be composed for complex workflows
+- **Near-Native Performance**: WebAssembly execution with sub-millisecond response times
+- **Simple Integration**: RESTful JSON APIs that work with any programming language
+- **Production Ready**: Comprehensive error handling, input validation, and test coverage
 
-- **📍 GPS & Mapping**: Calculate distances, bearings, geofencing, and spatial relationships with professional-grade accuracy
-- **🧮 3D Mathematics**: Vector operations, geometric intersections, and coordinate transformations for engineering applications  
-- **📊 Statistical Analysis**: Comprehensive statistics, correlation analysis, and regression modeling
-- **🔢 Mathematical Operations**: Reliable arithmetic, advanced calculations, and data processing primitives
-- **🛠️ Utility Functions**: Encoding, validation, string manipulation, and data format processing
+## Key Features
 
-**Built for Production**: Each tool is a standalone WebAssembly microservice with standardized JSON APIs, comprehensive error handling, and validated accuracy against reference implementations.
+- **🎯 Precision**: Validated accuracy for mission-critical calculations
+- **⚡ Performance**: WebAssembly provides near-native execution speed
+- **🔧 Composability**: Combine atomic tools to build complex operations
+- **🛡️ Reliability**: Comprehensive error handling and input validation
+- **📦 Easy Deployment**: Single binary with all tools included
 
-### 🏗️ Modern Architecture
-
-- **Microservice Design**: Each tool is an independent WebAssembly component with HTTP APIs
-- **Composability**: Combine simple tools to build complex operations via HTTP composition
-- **Performance**: WebAssembly provides near-native speed with sub-millisecond response times
-- **Reliability**: Comprehensive error handling and validation in every tool
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 core-tools/
-├── tools/                           # Individual microservice tools
-│   ├── geospatial/                  # GPS, mapping, spatial analysis
-│   │   ├── distance/                # Haversine distance calculations
-│   │   ├── bearing/                 # Bearing/heading calculations
-│   │   ├── polygon_area/            # Polygon area calculations
-│   │   ├── point_in_polygon/        # Geofencing operations
-│   │   ├── coordinate_conversion/   # DMS ↔ Decimal conversion
-│   │   ├── buffer_polygon/          # Buffer zone creation
-│   │   ├── proximity_search/        # Proximity detection
-│   │   └── polygon_simplification/  # Polygon simplification
-│   ├── math3d/                      # 3D mathematics operations
-│   │   ├── dot_product/             # Vector dot product
-│   │   ├── cross_product/           # Vector cross product
-│   │   ├── vector_magnitude/        # Vector magnitude calculation
-│   │   ├── vector_angle/            # Angle between vectors
-│   │   ├── line_intersection/       # 3D line intersection
-│   │   ├── line_plane_intersection/ # Line-plane intersection
-│   │   ├── plane_plane_intersection/# Plane-plane intersection
-│   │   ├── rotation_matrix/         # 3D rotation matrices
-│   │   ├── quaternion_*/            # Quaternion operations
-│   │   ├── *_volume/                # 3D volume calculations
-│   │   └── coordinate_conversion/   # 3D coordinate systems
-│   ├── statistics/                  # Statistical analysis
-│   │   ├── descriptive_statistics/  # Mean, std dev, skewness, etc.
-│   │   ├── summary_statistics/      # Summary stats (5-number summary)
-│   │   ├── pearson_correlation/     # Pearson correlation
-│   │   ├── spearman_correlation/    # Spearman rank correlation
-│   │   ├── correlation_matrix/      # Multi-variable correlation
-│   │   ├── linear_regression/       # Linear regression analysis
-│   │   ├── polynomial_regression/   # Polynomial regression
-│   │   ├── histogram/               # Data distribution analysis
-│   │   └── test_normality/          # Normality testing
-│   └── basic_math/                  # Fundamental operations
-│       ├── add/                     # Addition
-│       ├── multiply/                # Multiplication
-│       ├── square/                  # Square calculation
-│       ├── sqrt/                    # Square root
-│       ├── pythagorean/             # Pythagorean theorem
-│       └── distance_2d/             # 2D distance calculation
-├── spin.toml                        # Spin framework configuration
-├── curl.sh                          # Testing script (use this, not curl directly)
-├── test_server                      # Server management script
-└── docs/                            # Category-specific documentation
+├── tools/                     # 84 computational microservices
+│   ├── geospatial/           # Location & mapping (11 tools)
+│   ├── math3d/               # 3D operations (20 tools)
+│   ├── statistics/           # Data analysis (12 tools)
+│   ├── basic_math/           # Core calculations (25 tools)
+│   └── utilities/            # Helper functions (16 tools)
+├── docs/                     # API documentation
+├── tests/                    # Comprehensive test suite
+├── spin.toml                 # WebAssembly configuration
+└── Makefile                  # Build automation
 ```
 
-### Technology Stack
-- **Framework**: [Spin](https://spin.fermyon.dev/) (WebAssembly serverless)
-- **Language**: Rust with FTL SDK
-- **Architecture**: Individual microservice tools (1 tool = 1 WASM component)
-- **API**: RESTful JSON with standardized error handling
-- **Build**: Each tool builds independently to WebAssembly
+## Technology Stack
 
-## 🚀 Quick Start
+- **Language**: Rust (for performance and reliability)
+- **Runtime**: WebAssembly via [Spin Framework](https://spin.fermyon.dev/)
+- **Architecture**: Microservice pattern - each tool is an independent component
+- **API Design**: RESTful JSON with consistent error handling
+- **SDK**: FTL SDK for tool development
+
+## Quick Start
 
 ### Prerequisites
 - [Rust](https://rustup.rs/) (latest stable)
@@ -156,79 +121,122 @@ echo '{"data": [1.5, 2.3, 3.1, 4.7, 5.2, 6.8, 7.1, 8.9, 9.4, 10.6]}' | \
   ./curl.sh http://127.0.0.1:3000/descriptive-statistics
 ```
 
-## 🛠️ Tool Categories
+## Available Tool Categories
 
-### 📍 Geospatial & Mapping
-GPS calculations, spatial analysis, geofencing, coordinate conversion, polygon operations
+### Geospatial & Mapping (11 tools)
+Professional-grade GPS calculations, spatial analysis, geofencing, and coordinate conversions. Perfect for logistics, mapping, and location-based services.
 
-### 🧮 3D Mathematics
-Vector operations, geometric intersections, transformations, volume calculations, ray tracing
+### 3D Mathematics (20 tools)
+Comprehensive vector operations, geometric intersections, transformations, and volume calculations. Essential for CAD, game development, and engineering applications.
 
-### 📊 Statistical Analysis  
-Descriptive statistics, correlation analysis, regression modeling, distribution testing
+### Statistical Analysis (12 tools)
+Full suite of descriptive statistics, correlation analysis, regression modeling, and distribution testing. Ideal for data science and research applications.
 
-### 🔢 Mathematical Operations
-Arithmetic, advanced calculations, trigonometry, data processing primitives
+### Mathematical Operations (25 tools)
+Fundamental arithmetic through advanced calculations including matrix operations, trigonometry, and numerical methods.
 
-### 🔧 Utility Functions
-Encoding/decoding, validation, string manipulation, data format processing, cryptography
+### Utility Functions (16 tools)
+Practical tools for encoding/decoding, validation, string manipulation, hashing, and data format processing.
 
-## 🎯 Real-World Examples
+## Real-World Examples
 
-### Fleet Management: Delivery Route Optimization
-```bash
-# Calculate distances between delivery stops
-POST /distance
-{
-  "lat1": 40.7128, "lon1": -74.0060,  # NYC warehouse
-  "lat2": 40.7831, "lon2": -73.9712   # Customer location
-}
-# Response: {"distance_km": 8.97, "distance_miles": 5.57}
+### Example 1: Building a Delivery Route Optimizer
 
-# Check if delivery is within service area
-POST /point-in-polygon
-{
-  "point": {"lat": 40.7831, "lon": -73.9712},
-  "polygon": [/* service area coordinates */]
-}
-```
-
-### Engineering: 3D CAD Calculations
-```bash
-# Calculate angle between structural beams
-POST /vector-angle
-{
-  "vector1": {"x": 10.0, "y": 0.0, "z": 5.0},
-  "vector2": {"x": 8.0, "y": 6.0, "z": 0.0}
-}
-# Response: {"angle_degrees": 67.38, "angle_radians": 1.176}
-
-# Find intersection point for beam connections
-POST /line-intersection
-{
-  "line1": {"point": {"x": 0, "y": 0, "z": 0}, "direction": {"x": 1, "y": 0, "z": 0}},
-  "line2": {"point": {"x": 0, "y": 1, "z": 0}, "direction": {"x": 0, "y": 0, "z": 1}}
+```javascript
+// Calculate optimal delivery routes using Core Tools APIs
+async function optimizeDeliveryRoute(warehouse, deliveries) {
+  const distances = [];
+  
+  // Calculate distance from warehouse to each delivery
+  for (const delivery of deliveries) {
+    const response = await fetch('http://localhost:3000/distance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lat1: warehouse.lat, lon1: warehouse.lon,
+        lat2: delivery.lat, lon2: delivery.lon
+      })
+    });
+    
+    const result = await response.json();
+    distances.push({ 
+      delivery: delivery.id, 
+      distance_km: result.distance_km 
+    });
+  }
+  
+  // Sort by distance for simple nearest-neighbor routing
+  return distances.sort((a, b) => a.distance_km - b.distance_km);
 }
 ```
 
-### Data Science: Quality Control Analysis
-```bash
-# Analyze manufacturing measurements for quality control
-POST /descriptive-statistics
-{
-  "data": [24.1, 24.3, 23.9, 24.2, 24.0, 24.4, 23.8, 24.1]
-}
-# Response: {"mean": 24.1, "std_dev": 0.19, "within_tolerance": true}
+### Example 2: Engineering Analysis for Structural Design
 
-# Test if measurements follow normal distribution
-POST /test-normality
-{
-  "data": [/* measurement data */],
-  "alpha": 0.05
-}
+```python
+import requests
+import numpy as np
+
+def analyze_beam_connection(beam1_vector, beam2_vector):
+    """Analyze the connection between two structural beams"""
+    
+    # Calculate angle between beams
+    angle_response = requests.post(
+        'http://localhost:3000/vector-angle',
+        json={
+            'vector1': {'x': beam1_vector[0], 'y': beam1_vector[1], 'z': beam1_vector[2]},
+            'vector2': {'x': beam2_vector[0], 'y': beam2_vector[1], 'z': beam2_vector[2]}
+        }
+    )
+    angle_data = angle_response.json()
+    
+    # Check if angle is within structural limits (e.g., 45-135 degrees)
+    if 45 <= angle_data['angle_degrees'] <= 135:
+        return {
+            'status': 'valid',
+            'angle': angle_data['angle_degrees'],
+            'message': 'Connection angle within acceptable range'
+        }
+    else:
+        return {
+            'status': 'warning',
+            'angle': angle_data['angle_degrees'],
+            'message': 'Connection angle may require additional support'
+        }
 ```
 
-## 🔧 Development
+### Example 3: Quality Control in Manufacturing
+
+```rust
+// Automated quality control using statistical analysis
+async fn check_production_quality(measurements: Vec<f64>) -> QualityReport {
+    let client = reqwest::Client::new();
+    
+    // Get comprehensive statistics
+    let stats_response = client.post("http://localhost:3000/descriptive-statistics")
+        .json(&serde_json::json!({ "data": measurements }))
+        .send()
+        .await?
+        .json::<DescriptiveStats>()
+        .await?;
+    
+    // Test for normal distribution
+    let normality_response = client.post("http://localhost:3000/test-normality")
+        .json(&serde_json::json!({ "data": measurements, "alpha": 0.05 }))
+        .send()
+        .await?
+        .json::<NormalityTest>()
+        .await?;
+    
+    QualityReport {
+        mean: stats_response.mean,
+        std_dev: stats_response.std_dev,
+        within_spec: stats_response.std_dev < 0.2, // Example specification
+        normally_distributed: normality_response.is_normal,
+        action_required: stats_response.std_dev > 0.2 || !normality_response.is_normal
+    }
+}
+
+## Development
 
 ### Architecture Principles
 1. **One Tool, One Component**: Each computational tool is a standalone WASM component
@@ -310,75 +318,99 @@ The project includes automated CI/CD pipelines:
 - `.github/workflows/build-and-publish.yml` - Main build and publish pipeline
 - `.github/workflows/test-pr.yml` - PR validation and testing
 
-## 📖 Documentation
+## Documentation
 
-### Detailed Category Documentation
-- **[📍 Geospatial Tools](./docs/GEOSPATIAL.md)** - GPS calculations, geofencing, spatial analysis
-- **[🧮 3D Mathematics](./docs/3D_MATHEMATICS.md)** - Vector operations, transformations, 3D geometry
-- **[📊 Statistical Analysis](./docs/STATISTICS.md)** - Descriptive stats, correlation, regression
+### Detailed Guides by Category
+- **[Geospatial Tools Guide](./docs/GEOSPATIAL.md)** - Complete reference for GPS and spatial calculations
+- **[3D Mathematics Guide](./docs/3D_MATHEMATICS.md)** - Vector operations, transformations, and geometry
+- **[Statistical Analysis Guide](./docs/STATISTICS.md)** - Statistics, correlation, and regression methods
 
-## 🎯 Use Cases
+## Who Uses Core Tools?
 
-**Augment LLM Capabilities**: Fill computational gaps with precise, reliable calculations
+Core Tools is designed for developers building LLM-powered applications that need reliable computational capabilities:
 
-- **Fleet & Logistics**: Route optimization, delivery zones, distance calculations
-- **Engineering & CAD**: 3D modeling, structural analysis, geometric calculations  
-- **Data Science**: Statistical analysis, quality control, research validation
-- **Web Applications**: Form validation, encoding/decoding, data processing
-- **Financial**: Risk analysis, correlation studies, mathematical modeling
+- **AI Application Developers**: Enhance chatbots and assistants with precise calculations
+- **Engineering Teams**: Add CAD calculations and 3D math to LLM workflows  
+- **Data Scientists**: Integrate statistical analysis into AI pipelines
+- **Logistics Companies**: Build route optimization into conversational interfaces
+- **Research Teams**: Combine LLM reasoning with accurate mathematical analysis
 
-## 🤝 Contributing
+## Contributing
 
-### Development Setup
+We welcome contributions! Core Tools is designed to be extended with new computational capabilities.
+
+### Quick Start for Contributors
+
 ```bash
-# Clone and set up the project
-git clone https://github.com/fastertools/core-tools.git
+# 1. Fork and clone the repository
+git clone https://github.com/YOUR-USERNAME/core-tools.git
 cd core-tools
+
+# 2. Set up development environment
 make dev-setup
+
+# 3. Create a new branch
+git checkout -b feature/your-new-tool
+
+# 4. Build and test
+make build-changed  # Builds only modified tools
+make test          # Run the test suite
 ```
 
-### Making Changes
+### Adding a New Tool
 
-#### For New Tools
-1. Create tool directory: `tools/[category]/[tool-name]/`
-2. Follow FTL SDK patterns from existing tools
-3. Implement comprehensive error handling and validation
-4. Add endpoint to `spin.toml`
-5. Build and test: `make build-changed && make test`
+1. **Choose the right category** for your tool (or propose a new one)
+2. **Create the tool structure**:
+   ```bash
+   mkdir -p tools/[category]/[your-tool-name]
+   cd tools/[category]/[your-tool-name]
+   cargo init --lib
+   ```
 
-#### For Existing Tools
-1. Make your changes
-2. Build only affected tools: `make build-changed`
-3. Test your changes: `make test`
-4. Verify with project tools: `./curl.sh [tool-name] [test-data]`
+3. **Implement your tool** using the FTL SDK pattern:
+   ```rust
+   use ftl_sdk::tool;
+   
+   #[tool]
+   async fn your_tool_name(input: YourInput) -> YourOutput {
+       // Your implementation here
+   }
+   ```
 
-### Pull Request Process
-1. **Create feature branch**: `git checkout -b feature/your-feature`
-2. **Make changes**: Follow the development workflow above
-3. **Test thoroughly**: `make test` should pass
-4. **Commit changes**: Clear, descriptive commit messages
-5. **Push and create PR**: GitHub Actions will automatically test only changed tools
-6. **Review process**: Automated tests + manual review
-7. **Merge**: Only after all tests pass and review approval
+4. **Add to spin.toml** to register the HTTP endpoint
+5. **Test thoroughly** with comprehensive test cases
+6. **Submit a PR** with a clear description of what your tool does
 
-### Automated Testing
-- **PR Testing**: Only tests tools that changed in your PR
-- **Parallel Builds**: Efficient CI that scales with project size
-- **Container Publishing**: Automatic publishing on merge to main
-- **Smart Detection**: Avoids unnecessary rebuilds
+### Code Standards
 
-### Guidelines
-- Follow established FTL SDK patterns
-- Implement comprehensive error handling and validation
-- Add thorough testing using `./curl.sh`
-- Update documentation as needed
-- Maintain API consistency across tools
-- Use `make build-changed` for fast iteration during development
+- **Error Handling**: All tools must handle errors gracefully
+- **Validation**: Validate all inputs before processing
+- **Documentation**: Include clear documentation and examples
+- **Testing**: Provide comprehensive test coverage
+- **Performance**: Keep response times under 100ms when possible
 
-## 📄 License
+### Review Process
 
-This project is designed to enhance Large Language Model capabilities with precise mathematical, spatial, and statistical analysis tools.
+All PRs go through:
+1. Automated testing (only changed tools are tested)
+2. Code review for quality and consistency
+3. Performance validation
+4. Documentation review
+
+We aim to review PRs within 48 hours. Small, focused PRs are easier to review and merge quickly.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built with [Spin](https://spin.fermyon.dev/) - The WebAssembly framework for building microservices
+- Powered by [Rust](https://www.rust-lang.org/) - For performance and reliability
+- Uses [FTL SDK](https://github.com/fastertools/ftl-sdk) - For seamless tool development
 
 ---
 
-*Built with Rust, FTL SDK, and Spin for high-performance LLM augmentation.*
+**Core Tools** - Precision computation APIs that make LLM applications more capable.
+
+*Questions? Issues? Contributions? We'd love to hear from you!*
