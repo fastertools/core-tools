@@ -438,6 +438,18 @@ jobs:
               cosign sign --yes "${IMAGE_NAME}:latest"
               
               echo "✅ Published and signed ${IMAGE_NAME}:${VERSION} and :latest"
+              
+              # Make the package public using GitHub CLI
+              PACKAGE_NAME="ftl-tool-${TOOL_NAME_CLEAN}"
+              echo "🔓 Making package public: ${PACKAGE_NAME}"
+              
+              # GitHub CLI is pre-installed in GitHub Actions
+              gh api \
+                --method PATCH \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "/orgs/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}" \
+                -f visibility='public' || echo "Note: Package might already be public or require manual update"
             fi
           done
       
