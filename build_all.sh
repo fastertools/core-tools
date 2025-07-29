@@ -8,8 +8,13 @@ set -e
 # Configuration
 TARGET="wasm32-wasip1"
 BUILD_TYPE="release"
+PROFILE=""  # Custom profile (overrides BUILD_TYPE)
 MAX_PARALLEL_JOBS=4
 TOOLS_DIR="tools"
+TRACK_SIZES=false
+OPTIMIZE_LEVEL="none"
+OPT_PASSES=""
+OUTPUT_METRICS=""
 
 # Colors for output
 RED='\033[0;31m'
@@ -46,8 +51,51 @@ build_tool() {
     # Get package name from Cargo.toml
     local package_name=$(grep '^name = ' "$tool_path/Cargo.toml" | cut -d'"' -f2)
     
-    if cargo build -p "$package_name" --target "$TARGET" --"$BUILD_TYPE" 2>/dev/null; then
-        log_success "Built $category/$tool_name (package: $package_name)"
+    # Determine build profile
+    local build_profile=""
+    if [[ -n "$PROFILE" ]]; then
+        build_profile="--profile $PROFILE"
+        local display_profile="$PROFILE"
+    else
+        build_profile="--$BUILD_TYPE"
+        local display_profile="$BUILD_TYPE"
+    fi
+    
+    if cargo build -p "$package_name" --target "$TARGET" $build_profile 2>/dev/null; then
+        log_success "Built $category/$tool_name (package: $package_name) Profile: $display_profile"
+        
+        # Track sizes if enabled
+        if [[ "$TRACK_SIZES" = true ]]; then
+            # Determine WASM path based on profile
+            local wasm_dir="$display_profile"
+            # Standard profiles use their name directly, custom profiles might differ
+            if [[ "$display_profile" == "debug" ]] || [[ "$display_profile" == "release" ]]; then
+                wasm_dir="$display_profile"
+            else
+                # For custom profiles, check if directory exists, otherwise fall back to release
+                if [[ ! -d "target/$TARGET/$display_profile" ]] && [[ -d "target/$TARGET/release" ]]; then
+                    wasm_dir="release"
+                fi
+            fi
+            
+            local wasm_path="target/$TARGET/$wasm_dir/${package_name}.wasm"
+            
+            if [[ -f "$wasm_path" ]]; then
+                # Run size tracking
+                ./track_wasm_sizes.sh \
+                    --wasm "$wasm_path" \
+                    --tool "$category/$tool_name" \
+                    --profile "$display_profile" \
+                    --opt-level "$OPTIMIZE_LEVEL" \
+                    --opt-passes "$OPT_PASSES" \
+                    >> "$OUTPUT_METRICS" 2>/dev/null || {
+                        log_warning "Size tracking failed for $category/$tool_name"
+                    }
+            else
+                log_warning "WASM file not found for size tracking: $wasm_path"
+            fi
+        fi
+        
         return 0
     else
         log_error "Failed to build $category/$tool_name (package: $package_name)"
@@ -176,15 +224,25 @@ COMMANDS:
 OPTIONS:
     --target TARGET     Set build target (default: $TARGET)
     --debug             Build in debug mode (default: release)
+    --profile PROFILE   Use custom Cargo profile (overrides --debug)
     --jobs N            Set maximum parallel jobs (default: $MAX_PARALLEL_JOBS)
     --base-ref REF      Base reference for changed detection (default: main)
+    
+SIZE TRACKING OPTIONS:
+    --track-sizes       Enable WASM size tracking and analysis
+    --optimize LEVEL    Apply wasm-opt optimization (none, Oz, O1-O4, custom)
+    --opt-passes PASSES Custom wasm-opt passes (use with --optimize custom)
+    --output-metrics FILE  Save metrics to file (default: build_metrics_TIMESTAMP.tsv)
 
 EXAMPLES:
     $0                  # Build all tools in release mode
     $0 --debug          # Build all tools in debug mode
+    $0 --profile lean-wasm  # Build with lean-wasm profile
     $0 changed          # Build only changed tools
     $0 clean            # Clean all build artifacts
     $0 --jobs 8 build   # Build with 8 parallel jobs
+    $0 --track-sizes --optimize Oz  # Build with size tracking and -Oz optimization
+    $0 --track-sizes --optimize custom --opt-passes "--inline-functions --vacuum"
 
 EOF
 }
@@ -203,12 +261,32 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
+        --profile)
+            PROFILE="$2"
+            shift 2
+            ;;
         --jobs)
             MAX_PARALLEL_JOBS="$2"
             shift 2
             ;;
         --base-ref)
             BASE_REF="$2"
+            shift 2
+            ;;
+        --track-sizes)
+            TRACK_SIZES=true
+            shift
+            ;;
+        --optimize)
+            OPTIMIZE_LEVEL="$2"
+            shift 2
+            ;;
+        --opt-passes)
+            OPT_PASSES="$2"
+            shift 2
+            ;;
+        --output-metrics)
+            OUTPUT_METRICS="$2"
             shift 2
             ;;
         build|clean|changed|list|help)
@@ -247,6 +325,19 @@ main() {
             ;;
         changed)
             check_requirements
+            
+            # Initialize metrics file if tracking sizes
+            if [[ "$TRACK_SIZES" = true ]]; then
+                if [[ -z "$OUTPUT_METRICS" ]]; then
+                    OUTPUT_METRICS="build_metrics_$(date +%Y%m%d_%H%M%S).tsv"
+                fi
+                # Write header if new file
+                if [[ ! -f "$OUTPUT_METRICS" ]]; then
+                    echo -e "tool_name\tprofile\topt_level\topt_passes\toriginal_size\toptimized_size\treduction_percent" > "$OUTPUT_METRICS"
+                fi
+                log_info "Size tracking enabled. Metrics will be saved to: $OUTPUT_METRICS"
+            fi
+            
             log_info "Building changed tools since $BASE_REF..."
             
             mapfile -t tools < <(get_changed_tools "$BASE_REF")
@@ -261,8 +352,22 @@ main() {
             ;;
         build)
             check_requirements
+            
+            # Initialize metrics file if tracking sizes
+            if [[ "$TRACK_SIZES" = true ]]; then
+                if [[ -z "$OUTPUT_METRICS" ]]; then
+                    OUTPUT_METRICS="build_metrics_$(date +%Y%m%d_%H%M%S).tsv"
+                fi
+                # Write header if new file
+                if [[ ! -f "$OUTPUT_METRICS" ]]; then
+                    echo -e "tool_name\tprofile\topt_level\topt_passes\toriginal_size\toptimized_size\treduction_percent" > "$OUTPUT_METRICS"
+                fi
+                log_info "Size tracking enabled. Metrics will be saved to: $OUTPUT_METRICS"
+            fi
+            
             log_info "Building all tools..."
-            log_info "Target: $TARGET, Mode: $BUILD_TYPE, Parallel jobs: $MAX_PARALLEL_JOBS"
+            local display_profile="${PROFILE:-$BUILD_TYPE}"
+            log_info "Target: $TARGET, Profile: $display_profile, Parallel jobs: $MAX_PARALLEL_JOBS"
             
             # Replace mapfile with compatible alternative for cross-shell compatibility
             tools=()

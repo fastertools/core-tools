@@ -95,3 +95,35 @@ members = [
 
 # This workspace doesn't have a default member package
 # Individual tools are built separately using cargo build -p <package-name>
+
+
+[profile.lean-wasm]
+inherits = "release"  # Start with the same settings as release
+lto = true
+opt-level = 'z'
+strip = true
+codegen-units = 1
+
+[profile.size-opt]
+inherits = "release"
+opt-level = 's'      # Optimize for size
+lto = "fat"          # Maximum link-time optimization
+strip = true
+codegen-units = 1
+panic = 'abort'
+
+[profile.aggressive-opt]
+inherits = "release"
+opt-level = 'z'      # Aggressive size optimization
+lto = "fat"
+strip = true
+codegen-units = 1
+panic = 'abort'
+overflow-checks = false
+
+[profile.balanced-opt]
+inherits = "release"
+opt-level = 2        # Balance speed and size
+lto = "thin"
+strip = true
+codegen-units = 1
